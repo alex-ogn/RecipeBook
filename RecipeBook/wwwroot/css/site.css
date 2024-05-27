@@ -1,5 +1,5 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 header nav.navbar-custom,
@@ -13,19 +13,19 @@ header nav.navbar-custom,
     color: var(--rich-cream) !important;
 }
 
-.navbar-custom .nav-link:hover {
-    /*    background-color: var(--warm-red) !important;    това е фона на бутона*/
-    color: var(--buttery-yellow) !important;
-}
+    .navbar-custom .nav-link:hover {
+        /*    background-color: var(--warm-red) !important;    това е фона на бутона*/
+        color: var(--buttery-yellow) !important;
+    }
 
 .navbar-custom .navbar-nav .nav-item {
     margin-right: 5px; /* Adjust the right margin to create space between buttons */
 }
 
-/* If you want to remove the margin on the last item to align it properly on the right */
-.navbar-custom .navbar-nav .nav-item:last-child {
-    margin-right: 0;
-}
+    /* If you want to remove the margin on the last item to align it properly on the right */
+    .navbar-custom .navbar-nav .nav-item:last-child {
+        margin-right: 0;
+    }
 
 /* Бутоните на бара */
 
@@ -37,11 +37,11 @@ header nav.navbar-custom,
     color: var(--dark-charcoal); /* Set the text color, change as needed */
 }
 
-.navbar-custom .navbar-nav .nav-link:hover,
-.navbar-custom .navbar-nav .nav-link:focus {
-    background-color: transparent; /* Ensure no background on hover/focus */
-    color: var(--buttery-yellow); /* Sets the hover/focus color to --buttery-yellow */
-}
+    .navbar-custom .navbar-nav .nav-link:hover,
+    .navbar-custom .navbar-nav .nav-link:focus {
+        background-color: transparent; /* Ensure no background on hover/focus */
+        color: var(--buttery-yellow); /* Sets the hover/focus color to --buttery-yellow */
+    }
 
 
 @media (max-width: 768px) {
@@ -49,18 +49,18 @@ header nav.navbar-custom,
         background-color: var(--dark-charcoal); /* Different color for mobile for contrast */
     }
 
-    .navbar-custom .navbar-toggler {
-        border-color: var(--rich-cream); /* Adjust toggler color */
-    }
+        .navbar-custom .navbar-toggler {
+            border-color: var(--rich-cream); /* Adjust toggler color */
+        }
 
-    .navbar-custom .navbar-toggler-icon {
-        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(241, 250, 238, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-    }
+        .navbar-custom .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(241, 250, 238, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+        }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 :root {
@@ -89,7 +89,6 @@ h1, h2, h3 {
 }
 
 a, .button {
-    background-color: var(--buttery-yellow);
     color: var(--dark-charcoal);
     padding: 10px 20px;
     border-radius: 5px;
@@ -97,10 +96,9 @@ a, .button {
     font-weight: bold;
 }
 
-a:hover, .button:hover {
-    background-color: var(--warm-red);
-    color: var(--rich-cream);
-}
+    a:hover, .button:hover {
+        color: darkblue;
+    }
 
 footer {
     background-color: var(--earthy-green);
@@ -127,3 +125,13 @@ footer {
 .container {
     max-width: 1200px; /* Or any other max-width or full-width if you prefer */
 }
+
+.form-control {
+    margin-bottom: 10px;
+}
+
+.form-label {
+    margin-inline: 10px;
+}
+
+www.w3.org
