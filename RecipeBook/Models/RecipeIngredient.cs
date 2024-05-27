@@ -13,6 +13,7 @@ namespace RecipeBook.Models
 
         public Recipe Recipe { get; set; }
 
+        [Required]
         [ForeignKey("Ingredient")]
         public int IngredientId { get; set; }
 

@@ -14,17 +14,20 @@ namespace RecipeBook.Models
 
         public string Description { get; set; }
 
+        [Required]
         public string Instructions { get; set; }
-
+        [Required]
         public int Servings { get; set; }
-
+        [Required]
         public TimeSpan CookingTime { get; set; }
-
-        public int UserId { get; set; }
+        [Required]
+        public string UserId { get; set; }
 
         [ForeignKey("UserId")]
-        public IdentityUser User { get; set; }
+        public IdentityUser? User { get; set; }
 
-        public List<RecipeIngredient> RecipeIngredients { get; set; }
+        public byte[]? Image { get; set; }  // Stores the image data
+
+        public List<RecipeIngredient>? RecipeIngredients { get; set; }
     }
 }

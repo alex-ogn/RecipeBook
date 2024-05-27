@@ -2,10 +2,60 @@ html {
   font-size: 14px;
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+header nav.navbar-custom,
+.navbar-custom.navbar-expand-sm.navbar-toggleable-sm.navbar-light.bg-white {
+    background-color: var(--earthy-green) !important;
+    color: var(--rich-cream) !important;
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: var(--rich-cream) !important;
+}
+
+.navbar-custom .nav-link:hover {
+    /*    background-color: var(--warm-red) !important;    това е фона на бутона*/
+    color: var(--buttery-yellow) !important;
+}
+
+.navbar-custom .navbar-nav .nav-item {
+    margin-right: 5px; /* Adjust the right margin to create space between buttons */
+}
+
+/* If you want to remove the margin on the last item to align it properly on the right */
+.navbar-custom .navbar-nav .nav-item:last-child {
+    margin-right: 0;
+}
+
+/* Бутоните на бара */
+
+.navbar-custom .navbar-nav .nav-link {
+    background-color: transparent; /* Remove any background */
+    border: none; /* Remove borders */
+    box-shadow: none; /* Remove shadows */
+    /*padding: 0;*/ /* Remove padding */
+    color: var(--dark-charcoal); /* Set the text color, change as needed */
+}
+
+.navbar-custom .navbar-nav .nav-link:hover,
+.navbar-custom .navbar-nav .nav-link:focus {
+    background-color: transparent; /* Ensure no background on hover/focus */
+    color: var(--buttery-yellow); /* Sets the hover/focus color to --buttery-yellow */
+}
+
+
+@media (max-width: 768px) {
+    .navbar-custom {
+        background-color: var(--dark-charcoal); /* Different color for mobile for contrast */
+    }
+
+    .navbar-custom .navbar-toggler {
+        border-color: var(--rich-cream); /* Adjust toggler color */
+    }
+
+    .navbar-custom .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(241, 250, 238, 1)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
 }
 
 html {
@@ -13,6 +63,67 @@ html {
   min-height: 100%;
 }
 
+:root {
+    --warm-red: #E63946;
+    --earthy-green: #1a6158;
+    --rich-cream: #F1FAEE;
+    --dark-charcoal: #264653;
+    --buttery-yellow: #F4A261;
+}
+
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--rich-cream);
+    color: var(--dark-charcoal);
+    font-family: 'Open Sans', sans-serif;
+}
+
+header {
+    background-color: var(--dark-charcoal);
+    color: var(--rich-cream);
+}
+
+h1, h2, h3 {
+    font-family: 'Merriweather', serif;
+    color: var(--warm-red);
+}
+
+a, .button {
+    background-color: var(--buttery-yellow);
+    color: var(--dark-charcoal);
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover, .button:hover {
+    background-color: var(--warm-red);
+    color: var(--rich-cream);
+}
+
+footer {
+    background-color: var(--earthy-green);
+    color: var(--rich-cream);
+    padding: 20px;
+    text-align: center;
+}
+
+.home-image img {
+    width: 100%; /* Ensures the image is responsive and fits the width of its container */
+    height: auto; /* Keeps the image proportionally scaled */
+    display: block; /* Removes bottom space/margin */
+    margin-bottom: 20px; /* Optional spacing */
+}
+
+/* това е за панелите в home page-a*/
+
+.card-img-top {
+    width: 100%;
+    height: 15vw; /* Responsive height based on viewport width */
+    object-fit: cover; /* Ensures the images cover the area properly */
+}
+
+.container {
+    max-width: 1200px; /* Or any other max-width or full-width if you prefer */
 }
