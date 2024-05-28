@@ -134,4 +134,41 @@ footer {
     margin-inline: 10px;
 }
 
-www.w3.org
+.image-swap {
+    display: inline-block; /* or block depending on layout needs */
+    height: 50px; /* Set according to your image size */
+    background-image: url('/images/logo3clear.png');
+    background-size: cover;
+    text-indent: -9999px; /* Hides the text */
+}
+
+    .image-swap:hover {
+        background-image: url('/images/logo1clear.png');
+    }
+
+.container.text-center {
+    padding: 20px;
+    margin-top: 30px; /* to ensure it's nicely spaced from content above */
+}
+
+.container h1 {
+    color: var(--warm-red); /* using the warm red color from your palette */
+}
+
+.container p {
+    color: #264653; /* using the dark charcoal color for contrast */
+}
+
+.container a.btn {
+    background-color: var(--buttery-yellow); /* buttery yellow for the button */
+    color: white; /* white text for readability */
+    padding: 10px 20px; /* larger padding for a better click area */
+    text-transform: uppercase; /* aesthetic choice for better visibility */
+    letter-spacing: 1px; /* spacing out letters for a modern look */
+    border: none; /* removing default border */
+    transition: background-color 0.3s; /* smooth transition for hover effect */
+}
+
+    .container a.btn:hover {
+        background-color: var(--warm-red); /* warm red for hover state */
+    }
