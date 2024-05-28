@@ -7,12 +7,14 @@ namespace RecipeBook.Views.Recipes.ViewModels
         public RecipeViewModel()
         {
             Recipe = new Recipe();
-            Ingredients = new List<RecipeIngredientViewModel>();
+            IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
+            SelectedIngredients = new List<RecipeIngredientViewModel>();
         }
 
         public Recipe Recipe { get; set; }
 
-        public List<RecipeIngredientViewModel> Ingredients { get; set; }
+        public Dictionary<string, RecipeIngredientViewModel[]> IngredientsByCategory { get; set; }
+        public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
         public byte[] imageFile { get; set; }  // For holding the binary data of the image
 

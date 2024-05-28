@@ -8,9 +8,9 @@
 
 <h4>Recipe</h4>
 <hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
+<form asp-action="Create" enctype="multipart/form-data">
+    <div class="row align-items-start">
+        <div class="col">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Recipe.Title" class="control-label"></label>
@@ -46,27 +46,33 @@
                 <!-- Ensure this name matches the parameter name in your controller -->
                 <input type="file" asp-for="imageFile" class="form-control" accept="image/*" />
             </div>
-            <div id="ingredient-list">
-                @foreach (var ingredient in Model.Ingredients)
-                {
-                    <div class="form-group">
-                        <label>@ingredient.Name</label>
-                        <input type="hidden" name="Ingredients[@Model.Ingredients.IndexOf(ingredient)].IngredientId" value="@ingredient.IngredientId" />
-                        <input type="text" name="Ingredients[@Model.Ingredients.IndexOf(ingredient)].QuantityNeeded" class="form-control" placeholder="Enter quantity" />
-                    </div>
-                }
+        </div>
+        <div class="col">
+            <label asp-for="imageFile">Ingrediants</label>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Categories
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @foreach (string Category in Model.IngredientsByCategory.Keys)
+                    {
+                        <a class="dropdown-item" href="#">AA</a>
+                    }
+                </div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
     </div>
-</div>
+</form>
 
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

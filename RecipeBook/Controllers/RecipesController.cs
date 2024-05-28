@@ -63,14 +63,25 @@ namespace RecipeBook.Controllers
         public IActionResult Create()
         {
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
+            var ingredients = _context.Ingredients
+                .Include(i => i.Category)
+                .ToList();
+
+            // Group ingredients by category in memory
+            var ingredientsByCategory = ingredients
+                .GroupBy(i => i.Category.Name)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(i => new RecipeIngredientViewModel
+                    {
+                        IngredientId = i.Id,
+                        Name = i.Name
+                    }).ToArray()
+                );
+
             var viewModel = new RecipeViewModel
             {
-                Ingredients = _context.Ingredients.Select(i => new RecipeIngredientViewModel
-                {
-                    IngredientId = i.Id,
-                    Name = i.Name,
-                    QuantityNeeded = ""  // Initialize with empty string or appropriate default
-                }).ToList()
+                IngredientsByCategory = ingredientsByCategory
             };
 
             return View(viewModel);
@@ -96,20 +107,15 @@ namespace RecipeBook.Controllers
                     }
                 }
 
+                model.Recipe.RecipeIngredients = model.SelectedIngredients.Select(ingredient => new RecipeIngredient
+                {
+                    IngredientId = ingredient.IngredientId,
+                    QuantityNeeded = ingredient.QuantityNeeded
+                }).ToList();
+
                 _context.Recipies.Add(recipe);
                 await _context.SaveChangesAsync();
 
-                foreach (var ingredient in model.Ingredients)
-                {
-                    _context.RecipeIngredients.Add(new RecipeIngredient
-                    {
-                        RecipeId = recipe.Id,
-                        IngredientId = ingredient.IngredientId,
-                        QuantityNeeded = ingredient.QuantityNeeded
-                    });
-                }
-
-                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             // Re-populate the ingredients if needed, handle failures, etc.
@@ -202,14 +208,14 @@ namespace RecipeBook.Controllers
             {
                 _context.Recipies.Remove(recipe);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool RecipeExists(int id)
         {
-          return (_context.Recipies?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Recipies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
