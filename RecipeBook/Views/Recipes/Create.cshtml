@@ -43,7 +43,7 @@
         <div class="col">
             <div class="form-group">
                 <label>Ingredients</label>
-                    <select id="categorySelect" class="form-select" onchange="updateIngredientList(this.value)">
+                <select id="categorySelect" class="form-select">
                     <option selected>Select Category</option>
                     @foreach (var category in Model.IngredientsByCategory.Keys)
                     {
@@ -189,11 +189,26 @@
             this.appendChild(selectedIngredientsInput);
         });
 
+        // Initialize the ingredient list with the first category
         document.addEventListener('DOMContentLoaded', function () {
             var categorySelect = document.getElementById('categorySelect');
-            if (categorySelect.value) {
+            if (categorySelect.value !== 'Select Category') {
                 updateIngredientList(categorySelect.value);
             }
         });
+
+        // Store the existing quantities
+        document.addEventListener('DOMContentLoaded', function () {
+        @foreach (var category in Model.IngredientsByCategory)
+        {
+            foreach (var ingredient in category.Value)
+            {
+                if (!string.IsNullOrEmpty(ingredient.QuantityNeeded))
+                {
+                    @:ingredientQuantities[@ingredient.IngredientId] = "@ingredient.QuantityNeeded";
+                }
+            }
+        }
+                                });
     </script>
 }

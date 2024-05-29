@@ -23,17 +23,8 @@ namespace RecipeBook.Controllers
         {
             var model = new HomeViewModel
             {
-                FeaturedRecipes = _context.Recipies.Take(6).ToList() // Fetches the first 6 recipes
+                FeaturedRecipes = _context.Recipies.Take(3).ToList() // Fetches the first 6 recipes
             };
-
-            //HomeViewModel model = new HomeViewModel();
-            //model.FeaturedRecipes = new List<Recipe>
-            //{
-            //    new Recipe() { Title = "Some Title", Description = "Some Description" },
-            //    new Recipe() { Title = "Some Title", Description = "Some Description" },
-            //    new Recipe() { Title = "Some Title", Description = "Some Description" },
-            //    new Recipe() { Title = "Some Title", Description = "Some Description" }
-            //};
 
             return View(model);
         }

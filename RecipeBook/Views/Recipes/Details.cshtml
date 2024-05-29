@@ -2,42 +2,82 @@
 
 @{
     ViewData["Title"] = "Details";
+    bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
+    string currentUserId = ViewData["CurrentUserId"] as string;
 }
+
+<style>
+    .table {
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+</style>
 
 <h1>Details</h1>
 
 <div>
-    <h4>Model.Title</h4>
+    <h4>@Model.Title</h4>
     <hr />
     <img src="@Url.Action("GetImage", "Recipes", new { id = Model.Id })" class="recipy-image" alt="@Model.Title">
+    <!-- Ingredients Section -->
+    <h4>Ingredients</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Ingredient</th>
+                <th>Quantity Needed</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.RecipeIngredients)
+            {
+                <tr>
+                    <td>@item.Ingredient.Name</td>
+                    <td>@item.QuantityNeeded</td>
+                </tr>
+            }
+        </tbody>
+    </table>
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Description)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Instructions)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Instructions)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Servings)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Servings)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CookingTime)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.CookingTime)
         </dd>
     </dl>
 </div>
+
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (Model.UserId == currentUserId || isUserAdmin)
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> } |
+
+    }
+
     <a asp-action="Index">Back to List</a>
 </div>

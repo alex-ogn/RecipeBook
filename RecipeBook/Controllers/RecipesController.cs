@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net.Mime;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,6 +18,7 @@ using RecipeBook.Views.Recipes.ViewModels;
 
 namespace RecipeBook.Controllers
 {
+    [Authorize(Roles = "Admin,User")]
     public class RecipesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -26,12 +29,27 @@ namespace RecipeBook.Controllers
         }
 
         // GET: Recipes
+
         public async Task<IActionResult> Index()
         {
+            bool isUserAdmin = User.IsInRole("Admin");
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Make sure you have using System.Security.Claims;
+
+            ViewData["IsUserAdmin"] = isUserAdmin;
+            ViewData["CurrentUserId"] = currentUserId;
+
             var applicationDbContext = _context.Recipies.Include(r => r.User);
             return View(await applicationDbContext.ToListAsync());
         }
 
+        public async Task<IActionResult> MyIndex()
+        {
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var applicationDbContext = _context.Recipies.Include(r => r.User).Where(r => r.UserId == userId);
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        [AllowAnonymous]
         public IActionResult GetImage(int id)
         {
             var recipe = _context.Recipies.FirstOrDefault(r => r.Id == id);
@@ -45,6 +63,7 @@ namespace RecipeBook.Controllers
             }
         }
 
+        [AllowAnonymous]
         public byte[] GetImageBuffer(int id)
         {
             var recipe = _context.Recipies.FirstOrDefault(r => r.Id == id);
@@ -52,16 +71,13 @@ namespace RecipeBook.Controllers
         }
 
         // GET: Recipes/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null || _context.Recipies == null)
-            {
-                return NotFound();
-            }
-
             var recipe = await _context.Recipies
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                                       .Include(r => r.RecipeIngredients)
+                                           .ThenInclude(ri => ri.Ingredient)
+                                       .FirstOrDefaultAsync(r => r.Id == id);
+
             if (recipe == null)
             {
                 return NotFound();
@@ -95,6 +111,12 @@ namespace RecipeBook.Controllers
             {
                 IngredientsByCategory = ingredientsByCategory
             };
+
+            bool isUserAdmin = User.IsInRole("Admin");
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Make sure you have using System.Security.Claims;
+
+            ViewData["IsUserAdmin"] = isUserAdmin;
+            ViewData["CurrentUserId"] = currentUserId;
 
             return View(viewModel);
         }

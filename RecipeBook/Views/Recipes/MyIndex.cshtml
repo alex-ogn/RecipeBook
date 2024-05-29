@@ -1,12 +1,10 @@
 ﻿@model IEnumerable<RecipeBook.Models.Recipe>
 
 @{
-    ViewData["Title"] = "Recipes";
-    bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
-    string currentUserId = ViewData["CurrentUserId"] as string;
+    ViewData["Title"] = "My recipes";
 }
 
-<h1>Recipes</h1>
+<h1>My recipes</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -23,11 +21,8 @@
                         <h5 class="card-title">@recipe.Title</h5>
                         <p class="card-text">@recipe.Description</p>
                         <a href="@Url.Action("Details", "Recipes", new { id = recipe.Id })" class="btn btn-primary">View</a>
-                        @if (recipe.UserId == currentUserId || isUserAdmin)
-                        {
-                            <a href="@Url.Action("Edit", "Recipes", new { id = recipe.Id })" class="btn btn-primary">Edit</a>
-                            <a href="@Url.Action("Delete", "Recipes", new { id = recipe.Id })" class="btn btn-primary">Delete</a>
-                        }
+                        <a href="@Url.Action("Edit", "Recipes", new { id = recipe.Id })" class="btn btn-primary">Edit</a>
+                        <a href="@Url.Action("Delete", "Recipes", new { id = recipe.Id })" class="btn btn-primary">Delete</a>
                     </div>
                 </div>
             </div>
