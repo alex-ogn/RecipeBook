@@ -170,6 +170,7 @@ namespace RecipeBook.Controllers
                         QuantityNeeded = ingredient.QuantityNeeded
                     }).ToList();
 
+                    recipe.RecipeIngredients = model.RecipeIngredients;
                     _context.Recipies.Add(recipe);
                     await _context.SaveChangesAsync();
 

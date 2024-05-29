@@ -38,6 +38,7 @@ namespace RecipeBook.Views.Recipes.ViewModels
         [Required]
         public string Instructions { get; set; }
         [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Please enter a positive number.")]
         public int Servings { get; set; }
         [Required]
         [Display(Name = "Cooking Time ")]
