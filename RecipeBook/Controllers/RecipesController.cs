@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -41,6 +43,12 @@ namespace RecipeBook.Controllers
             {
                 return NotFound();  // Return a 404 Not Found if there is no image or recipe
             }
+        }
+
+        public byte[] GetImageBuffer(int id)
+        {
+            var recipe = _context.Recipies.FirstOrDefault(r => r.Id == id);
+            return recipe.Image;
         }
 
         // GET: Recipes/Details/5
@@ -98,9 +106,21 @@ namespace RecipeBook.Controllers
         {
             try
             {
+                if (model.imageFileNew == null)
+                {
+                    ModelState.Remove("imageFileNew");
+                }
+                if (model.imageFile == null)
+                {
+                    ModelState.Remove("imageFile");
+                }
+
                 if (ModelState.IsValid)
                 {
-                    var recipe = model.Recipe;
+                    var recipe = new Recipe();
+                    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    model.EditRecipe(recipe);
+                    recipe.UserId = userId;
 
                     if (imageFile != null && imageFile.Length > 0)
                     {
@@ -117,7 +137,7 @@ namespace RecipeBook.Controllers
                         model.SelectedIngredients = JsonConvert.DeserializeObject<List<RecipeIngredientViewModel>>(SelectedIngredientsJson);
                     }
 
-                    model.Recipe.RecipeIngredients = model.SelectedIngredients.Select(ingredient => new RecipeIngredient
+                    model.RecipeIngredients = model.SelectedIngredients.Select(ingredient => new RecipeIngredient
                     {
                         IngredientId = ingredient.IngredientId,
                         QuantityNeeded = ingredient.QuantityNeeded
@@ -156,7 +176,7 @@ namespace RecipeBook.Controllers
 
                 model.IngredientsByCategory = ingredientsByCategory;
 
-                ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.Recipe.UserId);
+                ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
                 return View(model);
             }
             catch (Exception ex)
@@ -208,9 +228,9 @@ namespace RecipeBook.Controllers
                     }).OrderBy(n => n.Name).ToArray()
                 );
 
-            var viewModel = new RecipeViewModel
+
+            var viewModel = new RecipeViewModel(recipe)
             {
-                Recipe = recipe,
                 IngredientsByCategory = ingredientsByCategory,
                 SelectedIngredients = recipe.RecipeIngredients
                     .Select(ri => new RecipeIngredientViewModel
@@ -228,24 +248,35 @@ namespace RecipeBook.Controllers
         // POST: Recipes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, RecipeViewModel model, IFormFile imageFile, string SelectedIngredientsJson)
+        public async Task<IActionResult> Edit(int id, RecipeViewModel model, IFormFile imageFileNew, string SelectedIngredientsJson)
         {
-            if (id != model.Recipe.Id)
+            if (id != model.Id)
             {
                 return NotFound();
+            }
+
+            if (model.imageFileNew == null)
+            {
+                ModelState.Remove("ImageFileNew");
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var recipe = model.Recipe;
+                    var recipe = await _context.Recipies.FindAsync(model.Id);
+                    if (recipe == null)
+                    {
+                        return NotFound();
+                    }
 
-                    if (imageFile != null && imageFile.Length > 0)
+                    model.EditRecipe(recipe);
+
+                    if (imageFileNew != null && imageFileNew.Length > 0)
                     {
                         using (var memoryStream = new MemoryStream())
                         {
-                            await imageFile.CopyToAsync(memoryStream);
+                            await imageFileNew.CopyToAsync(memoryStream);
                             recipe.Image = memoryStream.ToArray();  // Saving the image as a byte array
                         }
                     }
@@ -279,7 +310,7 @@ namespace RecipeBook.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!RecipeExists(model.Recipe.Id))
+                    if (!RecipeExists(model.Id))
                     {
                         return NotFound();
                     }
@@ -324,9 +355,8 @@ namespace RecipeBook.Controllers
                     }).OrderBy(n => n.Name).ToArray()
                 );
 
-            var viewModel = new RecipeViewModel
+            var viewModel = new RecipeViewModel(recipeUnchanged)
             {
-                Recipe = recipeUnchanged,
                 IngredientsByCategory = ingredientsByCategory,
                 SelectedIngredients = recipeUnchanged.RecipeIngredients
                     .Select(ri => new RecipeIngredientViewModel
@@ -339,8 +369,8 @@ namespace RecipeBook.Controllers
 
             model.IngredientsByCategory = ingredientsByCategory;
 
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.Recipe.UserId);
-            return View(model);
+            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
+            return View(viewModel);
         }
 
         // GET: Recipes/Delete/5

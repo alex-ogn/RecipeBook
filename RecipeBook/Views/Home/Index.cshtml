@@ -23,7 +23,6 @@
         {
             <div class="col-md-4 mb-4">
                 <div class="card">
-                   @* <img src="@Url.Content("somePicture")" class="card-img-top" alt="@recipe.Title">*@
                     <img src="@Url.Action("GetImage", "Recipes", new { id = recipe.Id })" class="card-img-top" alt="@recipe.Title">
                     <div class="card-body">
                         <h5 class="card-title">@recipe.Title</h5>

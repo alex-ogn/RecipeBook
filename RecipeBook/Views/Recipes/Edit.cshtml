@@ -7,43 +7,46 @@
 <h1>Edit Recipe</h1>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data" id="recipeForm">
-    <input type="hidden" asp-for="Recipe.Id" />
+    <input type="hidden" asp-for="Id" />
     <div class="row">
         <div class="col">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="Recipe.Title" class="control-label"></label>
-                <input asp-for="Recipe.Title" class="form-control" />
-                <span asp-validation-for="Recipe.Title" class="text-danger"></span>
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Recipe.Description" class="control-label"></label>
-                <input asp-for="Recipe.Description" class="form-control" />
-                <span asp-validation-for="Recipe.Description" class="text-danger"></span>
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Recipe.Instructions" class="control-label"></label>
-                <input asp-for="Recipe.Instructions" class="form-control" />
-                <span asp-validation-for="Recipe.Instructions" class="text-danger"></span>
+                <label asp-for="Instructions" class="control-label"></label>
+                <input asp-for="Instructions" class="form-control" />
+                <span asp-validation-for="Instructions" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Recipe.Servings" class="control-label"></label>
-                <input asp-for="Recipe.Servings" class="form-control" />
-                <span asp-validation-for="Recipe.Servings" class="text-danger"></span>
+                <label asp-for="Servings" class="control-label"></label>
+                <input asp-for="Servings" class="form-control" />
+                <span asp-validation-for="Servings" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Recipe.CookingTime" class="control-label"></label>
-                <input asp-for="Recipe.CookingTime" class="form-control" />
-                <span asp-validation-for="Recipe.CookingTime" class="text-danger"></span>
+                <label asp-for="CookingTime" class="control-label"></label>
+                <input asp-for="CookingTime" class="form-control" />
+                <span asp-validation-for="CookingTime" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Recipe.UserId" class="control-label"></label>
-                <select asp-for="Recipe.UserId" class="form-control" asp-items="ViewBag.UserId"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="imageFile">Upload Image</label>
-                <input type="file" asp-for="imageFile" class="form-control" accept="image/*" />
-            </div>
+            @if (Model.imageFile != null)
+            {
+                <div class="form-group">
+                    <label>Current Image</label>
+                    <img src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.imageFile))" class="img-thumbnail" />
+                </div>
+            }
+        <div class="form-group">
+            <label>Upload New Image (optional)</label>
+            <input type="file" asp-for="imageFileNew" class="form-control" accept="image/*" />
+        </div>
         </div>
         <div class="col">
             <div class="form-group">
