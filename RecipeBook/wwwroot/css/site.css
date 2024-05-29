@@ -169,6 +169,20 @@ footer {
     transition: background-color 0.3s; /* smooth transition for hover effect */
 }
 
-    .container a.btn:hover {
-        background-color: var(--warm-red); /* warm red for hover state */
-    }
+.container a.btn:hover 
+{
+    background-color: var(--warm-red); /* warm red for hover state */
+}
+
+#ingrediantCard h5 {
+    margin: 3px;
+}
+
+#ingrediantCard {
+    padding: 0px;
+}
+
+#ingrediantCard > div > input.form-control {
+    margin: 0px !important;
+    padding: 1px;
+}

@@ -1,4 +1,5 @@
 ﻿using RecipeBook.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace RecipeBook.Views.Recipes.ViewModels
 {
@@ -16,7 +17,7 @@ namespace RecipeBook.Views.Recipes.ViewModels
         public Dictionary<string, RecipeIngredientViewModel[]> IngredientsByCategory { get; set; }
         public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
-        public byte[] imageFile { get; set; }  // For holding the binary data of the image
+        public byte[] imageFile { get; set; }
 
     }
 }

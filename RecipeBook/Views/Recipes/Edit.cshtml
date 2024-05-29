@@ -1,63 +1,219 @@
-﻿@model RecipeBook.Models.Recipe
+﻿@model RecipeBook.Views.Recipes.ViewModels.RecipeViewModel
 
 @{
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1>Edit Recipe</h1>
 
-<h4>Recipe</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
+<form asp-action="Edit" method="post" enctype="multipart/form-data" id="recipeForm">
+    <input type="hidden" asp-for="Recipe.Id" />
+    <div class="row">
+        <div class="col">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
+                <label asp-for="Recipe.Title" class="control-label"></label>
+                <input asp-for="Recipe.Title" class="form-control" />
+                <span asp-validation-for="Recipe.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <label asp-for="Recipe.Description" class="control-label"></label>
+                <input asp-for="Recipe.Description" class="form-control" />
+                <span asp-validation-for="Recipe.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Instructions" class="control-label"></label>
-                <input asp-for="Instructions" class="form-control" />
-                <span asp-validation-for="Instructions" class="text-danger"></span>
+                <label asp-for="Recipe.Instructions" class="control-label"></label>
+                <input asp-for="Recipe.Instructions" class="form-control" />
+                <span asp-validation-for="Recipe.Instructions" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Servings" class="control-label"></label>
-                <input asp-for="Servings" class="form-control" />
-                <span asp-validation-for="Servings" class="text-danger"></span>
+                <label asp-for="Recipe.Servings" class="control-label"></label>
+                <input asp-for="Recipe.Servings" class="form-control" />
+                <span asp-validation-for="Recipe.Servings" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="CookingTime" class="control-label"></label>
-                <input asp-for="CookingTime" class="form-control" />
-                <span asp-validation-for="CookingTime" class="text-danger"></span>
+                <label asp-for="Recipe.CookingTime" class="control-label"></label>
+                <input asp-for="Recipe.CookingTime" class="form-control" />
+                <span asp-validation-for="Recipe.CookingTime" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="UserId" class="control-label"></label>
-                <select asp-for="UserId" class="form-control" asp-items="ViewBag.UserId"></select>
-                <span asp-validation-for="UserId" class="text-danger"></span>
+                <label asp-for="Recipe.UserId" class="control-label"></label>
+                <select asp-for="Recipe.UserId" class="form-control" asp-items="ViewBag.UserId"></select>
             </div>
             <div class="form-group">
-                <label asp-for="Image" class="control-label">Upload Image</label>
-                <input type="file" asp-for="Image" class="form-control" accept="image/*" />
+                <label asp-for="imageFile">Upload Image</label>
+                <input type="file" asp-for="imageFile" class="form-control" accept="image/*" />
             </div>
+        </div>
+        <div class="col">
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <label>Ingredients</label>
+                <select id="categorySelect" class="form-select">
+                    <option selected>Select Category</option>
+                    @foreach (var category in Model.IngredientsByCategory.Keys)
+                    {
+                        <option value="@category">@category</option>
+                    }
+                </select>
             </div>
-        </form>
+            <div class="form-group border p-2">
+                <div class="row" id="ingredientList">
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+    <div class="form-group mt-3">
+        <input type="submit" value="Save" class="btn btn-primary" />
+    </div>
+</form>
 
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
 
+@section Styles {
+    <style>
+        .border-green {
+            border: 2px solid green;
+        }
+    </style>
+}
+
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let ingredientQuantities = {};
+
+        function updateIngredientList(selectedCategory) {
+            var ingredientContainer = document.getElementById('ingredientList');
+            ingredientContainer.innerHTML = '';
+
+            if (selectedCategory !== 'Select Category') {
+                var ingredients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.IngredientsByCategory));
+
+                if (ingredients[selectedCategory]) {
+                    ingredients[selectedCategory].forEach(function (ingredient) {
+                        var ingredientCard = document.createElement('div');
+                        ingredientCard.className = 'col-12 col-md-6 col-lg-4 mb-3';
+
+                        var card = document.createElement('div');
+                        card.className = 'card h-100';
+                        card.style.cursor = 'pointer';
+                        card.id = 'ingredientCard-' + ingredient.IngredientId;
+
+                        var cardBody = document.createElement('div');
+                        cardBody.className = 'card-body d-flex justify-content-between align-items-center';
+
+                        var cardTitle = document.createElement('h5');
+                        cardTitle.className = 'card-title';
+                        cardTitle.innerText = ingredient.Name;
+
+                        var quantityInput = document.createElement('input');
+                        quantityInput.type = 'text';
+                        quantityInput.className = 'form-control';
+                        quantityInput.placeholder = 'Quantity';
+                        quantityInput.name = `SelectedIngredients[${ingredient.IngredientId}].QuantityNeeded`;
+                        quantityInput.style.display = 'none';
+                        quantityInput.style.maxWidth = '100px'; // Adjust width as needed
+
+                        if (ingredientQuantities[ingredient.IngredientId]) {
+                            quantityInput.value = ingredientQuantities[ingredient.IngredientId];
+                            quantityInput.style.display = 'block';
+                            card.classList.add('border-green');
+                        }
+
+                        var hiddenIdInput = document.createElement('input');
+                        hiddenIdInput.type = 'hidden';
+                        hiddenIdInput.name = `SelectedIngredients[${ingredient.IngredientId}].IngredientId`;
+                        hiddenIdInput.value = ingredient.IngredientId;
+
+                        var hiddenCheckbox = document.createElement('input');
+                        hiddenCheckbox.type = 'checkbox';
+                        hiddenCheckbox.name = `SelectedIngredients[${ingredient.IngredientId}].IsSelected`;
+                        hiddenCheckbox.value = 'true';
+                        hiddenCheckbox.style.display = 'none';
+                        hiddenCheckbox.checked = !!ingredientQuantities[ingredient.IngredientId];
+
+                        cardBody.appendChild(cardTitle);
+                        cardBody.appendChild(quantityInput);
+                        cardBody.appendChild(hiddenIdInput);
+                        cardBody.appendChild(hiddenCheckbox);
+
+                        card.appendChild(cardBody);
+                        ingredientCard.appendChild(card);
+                        ingredientContainer.appendChild(ingredientCard);
+
+                        card.addEventListener('click', function () {
+                            if (hiddenCheckbox.checked) {
+                                hiddenCheckbox.checked = false;
+                                quantityInput.style.display = 'none';
+                                card.classList.remove('border-green');
+                                delete ingredientQuantities[ingredient.IngredientId];
+                            } else {
+                                hiddenCheckbox.checked = true;
+                                quantityInput.style.display = 'block';
+                                card.classList.add('border-green');
+                                ingredientQuantities[ingredient.IngredientId] = quantityInput.value || "";
+                            }
+                        });
+
+                        quantityInput.addEventListener('click', function (event) {
+                            event.stopPropagation();
+                        });
+
+                        quantityInput.addEventListener('input', function () {
+                            if (hiddenCheckbox.checked) {
+                                ingredientQuantities[ingredient.IngredientId] = this.value;
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        document.getElementById('categorySelect').addEventListener('change', function () {
+            var selectedCategory = this.value;
+            updateIngredientList(selectedCategory);
+        });
+
+        document.getElementById('recipeForm').addEventListener('submit', function () {
+            var selectedIngredients = [];
+
+            for (var ingredientId in ingredientQuantities) {
+                if (ingredientQuantities[ingredientId]) {
+                    selectedIngredients.push({
+                        IngredientId: ingredientId,
+                        QuantityNeeded: ingredientQuantities[ingredientId]
+                    });
+                }
+            }
+
+            var selectedIngredientsInput = document.createElement('input');
+            selectedIngredientsInput.type = 'hidden';
+            selectedIngredientsInput.name = 'SelectedIngredientsJson';
+            selectedIngredientsInput.value = JSON.stringify(selectedIngredients);
+            this.appendChild(selectedIngredientsInput);
+        });
+
+        // Initialize the ingredient list with the first category
+        document.addEventListener('DOMContentLoaded', function () {
+            var categorySelect = document.getElementById('categorySelect');
+            if (categorySelect.value !== 'Select Category') {
+                updateIngredientList(categorySelect.value);
+            }
+        });
+
+        // Store the existing quantities
+        document.addEventListener('DOMContentLoaded', function () {
+        @foreach (var category in Model.IngredientsByCategory)
+        {
+            foreach (var ingredient in category.Value)
+            {
+                if (!string.IsNullOrEmpty(ingredient.QuantityNeeded))
+                {
+                    @:ingredientQuantities[@ingredient.IngredientId] = "@ingredient.QuantityNeeded";
+                }
+            }
+        }
+                        });
+    </script>
 }

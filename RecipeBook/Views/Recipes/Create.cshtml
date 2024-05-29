@@ -4,12 +4,10 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
+<h1>Create Recipe</h1>
 
-<h4>Recipe</h4>
-<hr />
-<form asp-action="Create" enctype="multipart/form-data">
-    <div class="row align-items-start">
+<form asp-action="Create" method="post" enctype="multipart/form-data" id="recipeForm">
+    <div class="row">
         <div class="col">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -43,27 +41,28 @@
             </div>
             <div class="form-group">
                 <label asp-for="imageFile">Upload Image</label>
-                <!-- Ensure this name matches the parameter name in your controller -->
                 <input type="file" asp-for="imageFile" class="form-control" accept="image/*" />
             </div>
         </div>
         <div class="col">
-            <label asp-for="imageFile">Ingrediants</label>
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Categories
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    @foreach (string Category in Model.IngredientsByCategory.Keys)
+            <div class="form-group">
+                <label>Ingredients</label>
+                <select id="categorySelect" class="form-select">
+                    <option selected>Select Category</option>
+                    @foreach (var category in Model.IngredientsByCategory.Keys)
                     {
-                        <a class="dropdown-item" href="#">AA</a>
+                        <option value="@category">@category</option>
                     }
+                </select>
+            </div>
+            <div class="form-group border p-2">
+                <div class="row" id="ingredientList">
                 </div>
             </div>
         </div>
-        <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-primary" />
-        </div>
+    </div>
+    <div class="form-group mt-3">
+        <input type="submit" value="Create" class="btn btn-primary" />
     </div>
 </form>
 
@@ -71,8 +70,134 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
+@section Styles {
+    <style>
+        .border-green {
+            border: 2px solid green;
+        }
+    </style>
+}
+
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    <script>
+        let ingredientQuantities = {};
+
+        function updateIngredientList(selectedCategory) {
+            var ingredientContainer = document.getElementById('ingredientList');
+            ingredientContainer.innerHTML = '';
+
+            if (selectedCategory !== 'Select Category') {
+                var ingredients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.IngredientsByCategory));
+
+                if (ingredients[selectedCategory]) {
+                    ingredients[selectedCategory].forEach(function (ingredient) {
+                        var ingredientCard = document.createElement('div');
+                        ingredientCard.className = 'col-12 col-md-6 col-lg-4 mb-3';
+
+                        var card = document.createElement('div');
+                        card.className = 'card h-100';
+                        card.style.cursor = 'pointer';
+                        card.id = 'ingredientCard-' + ingredient.IngredientId;
+
+                        var cardBody = document.createElement('div');
+                        cardBody.className = 'card-body d-flex justify-content-between align-items-center';
+
+                        var cardTitle = document.createElement('h5');
+                        cardTitle.className = 'card-title';
+                        cardTitle.innerText = ingredient.Name;
+
+                        var quantityInput = document.createElement('input');
+                        quantityInput.type = 'text';
+                        quantityInput.className = 'form-control';
+                        quantityInput.placeholder = 'Quantity';
+                        quantityInput.name = `SelectedIngredients[${ingredient.IngredientId}].QuantityNeeded`;
+                        quantityInput.style.display = 'none';
+                        quantityInput.style.maxWidth = '100px'; // Adjust width as needed
+
+                        if (ingredientQuantities[ingredient.IngredientId]) {
+                            quantityInput.value = ingredientQuantities[ingredient.IngredientId];
+                            quantityInput.style.display = 'block';
+                            card.classList.add('border-green');
+                        }
+
+                        var hiddenIdInput = document.createElement('input');
+                        hiddenIdInput.type = 'hidden';
+                        hiddenIdInput.name = `SelectedIngredients[${ingredient.IngredientId}].IngredientId`;
+                        hiddenIdInput.value = ingredient.IngredientId;
+
+                        var hiddenCheckbox = document.createElement('input');
+                        hiddenCheckbox.type = 'checkbox';
+                        hiddenCheckbox.name = `SelectedIngredients[${ingredient.IngredientId}].IsSelected`;
+                        hiddenCheckbox.value = 'true';
+                        hiddenCheckbox.style.display = 'none';
+                        hiddenCheckbox.checked = !!ingredientQuantities[ingredient.IngredientId];
+
+                        cardBody.appendChild(cardTitle);
+                        cardBody.appendChild(quantityInput);
+                        cardBody.appendChild(hiddenIdInput);
+                        cardBody.appendChild(hiddenCheckbox);
+
+                        card.appendChild(cardBody);
+                        ingredientCard.appendChild(card);
+                        ingredientContainer.appendChild(ingredientCard);
+
+                        card.addEventListener('click', function () {
+                            if (hiddenCheckbox.checked) {
+                                hiddenCheckbox.checked = false;
+                                quantityInput.style.display = 'none';
+                                card.classList.remove('border-green');
+                                delete ingredientQuantities[ingredient.IngredientId];
+                            } else {
+                                hiddenCheckbox.checked = true;
+                                quantityInput.style.display = 'block';
+                                card.classList.add('border-green');
+                                ingredientQuantities[ingredient.IngredientId] = quantityInput.value || "";
+                            }
+                        });
+
+                        quantityInput.addEventListener('click', function (event) {
+                            event.stopPropagation();
+                        });
+
+                        quantityInput.addEventListener('input', function () {
+                            if (hiddenCheckbox.checked) {
+                                ingredientQuantities[ingredient.IngredientId] = this.value;
+                            }
+                        });
+                    });
+                }
+            }
+        }
+
+        document.getElementById('categorySelect').addEventListener('change', function () {
+            var selectedCategory = this.value;
+            updateIngredientList(selectedCategory);
+        });
+
+        document.getElementById('recipeForm').addEventListener('submit', function () {
+            var selectedIngredients = [];
+
+            for (var ingredientId in ingredientQuantities) {
+                if (ingredientQuantities[ingredientId]) {
+                    selectedIngredients.push({
+                        IngredientId: ingredientId,
+                        QuantityNeeded: ingredientQuantities[ingredientId]
+                    });
+                }
+            }
+
+            var selectedIngredientsInput = document.createElement('input');
+            selectedIngredientsInput.type = 'hidden';
+            selectedIngredientsInput.name = 'SelectedIngredientsJson';
+            selectedIngredientsInput.value = JSON.stringify(selectedIngredients);
+            this.appendChild(selectedIngredientsInput);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var categorySelect = document.getElementById('categorySelect');
+            if (categorySelect.value !== 'Select Category') {
+                updateIngredientList(categorySelect.value);
+            }
+        });
+    </script>
 }
