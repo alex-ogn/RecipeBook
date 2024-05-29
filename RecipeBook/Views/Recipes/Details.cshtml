@@ -73,11 +73,10 @@
 </div>
 
 <div>
-    @if (Model.UserId == currentUserId || isUserAdmin)
+   @if (Model.UserId == currentUserId || isUserAdmin)
     {
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> } |
-
+        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Edit</a>
     }
 
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" class="btn btn-primary">Back to List</a>
 </div>

@@ -83,6 +83,11 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
+            bool isUserAdmin = User.IsInRole("Admin");
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Make sure you have using System.Security.Claims;
+            ViewData["IsUserAdmin"] = isUserAdmin;
+            ViewData["CurrentUserId"] = currentUserId;
+
             return View(recipe);
         }
 
