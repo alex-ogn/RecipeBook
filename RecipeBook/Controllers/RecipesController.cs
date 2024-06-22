@@ -76,6 +76,7 @@ namespace RecipeBook.Controllers
             var recipe = await _context.Recipies
                                        .Include(r => r.RecipeIngredients)
                                            .ThenInclude(ri => ri.Ingredient)
+                                       .Include(r => r.Category)
                                        .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)
@@ -94,6 +95,7 @@ namespace RecipeBook.Controllers
         // GET: Recipes/Create
         public IActionResult Create()
         {
+
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             var ingredients = _context.Ingredients
                 .Include(i => i.Category)
@@ -122,6 +124,7 @@ namespace RecipeBook.Controllers
 
             ViewData["IsUserAdmin"] = isUserAdmin;
             ViewData["CurrentUserId"] = currentUserId;
+            viewModel.Categories = new SelectList(_context.RecipeCategories, "Id", "Name");
 
             return View(viewModel);
         }
@@ -141,6 +144,14 @@ namespace RecipeBook.Controllers
                 {
                     ModelState.Remove("imageFile");
                 }
+                if (model.CategoryId == null)
+                {
+                    ModelState.Remove("CategoryId");
+                }
+                if (model.Categories == null)
+                {
+                    ModelState.Remove("Categories");
+                }
 
                 if (ModelState.IsValid)
                 {
@@ -148,6 +159,7 @@ namespace RecipeBook.Controllers
                     string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     model.EditRecipe(recipe);
                     recipe.UserId = userId;
+                    recipe.Category = _context.RecipeCategories.Find(model.CategoryId.Value);
 
                     if (imageFile != null && imageFile.Length > 0)
                     {
@@ -205,6 +217,7 @@ namespace RecipeBook.Controllers
                 model.IngredientsByCategory = ingredientsByCategory;
 
                 ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
+                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
                 return View(model);
             }
             catch (Exception ex)
@@ -226,6 +239,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipe = await _context.Recipies
+                .Include(r => r.Category)
                 .Include(r => r.RecipeIngredients)
                 .ThenInclude(ri => ri.Ingredient)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -269,6 +283,8 @@ namespace RecipeBook.Controllers
                     }).ToList()
             };
 
+            viewModel.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", recipe.Category.Id);
+
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", recipe.UserId);
             return View(viewModel);
         }
@@ -288,6 +304,15 @@ namespace RecipeBook.Controllers
                 ModelState.Remove("ImageFileNew");
             }
 
+            if (model.CategoryId == null)
+            {
+                ModelState.Remove("CategoryId");
+            }
+            if (model.Categories == null)
+            {
+                ModelState.Remove("Categories");
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -299,6 +324,7 @@ namespace RecipeBook.Controllers
                     }
 
                     model.EditRecipe(recipe);
+                    recipe.Category = _context.RecipeCategories.Find(model.CategoryId.Value);
 
                     if (imageFileNew != null && imageFileNew.Length > 0)
                     {
@@ -396,7 +422,7 @@ namespace RecipeBook.Controllers
             };
 
             model.IngredientsByCategory = ingredientsByCategory;
-
+            model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
             return View(viewModel);
         }
@@ -417,6 +443,7 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
+            ViewData["Category"] = new SelectList(_context.RecipeCategories, "Id", "Name");
             return View(recipe);
         }
 

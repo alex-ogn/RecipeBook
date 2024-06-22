@@ -36,6 +36,10 @@
                 <span asp-validation-for="CookingTime" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="CategoryId" class="control-label"></label>
+                <select asp-for="CategoryId" class="form-control" asp-items="@Model.Categories"></select>
+            </div>
+            <div class="form-group">
                 <label asp-for="imageFile">Upload Image</label>
                 <input type="file" asp-for="imageFile" class="form-control" accept="image/*" />
             </div>

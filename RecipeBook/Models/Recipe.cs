@@ -23,11 +23,17 @@ namespace RecipeBook.Models
         [Required]
         public string UserId { get; set; }
 
+        [Required]
         [ForeignKey("UserId")]
         public IdentityUser? User { get; set; }
 
         public byte[]? Image { get; set; }  // Stores the image data
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
+
+        [Required]
+        [ForeignKey("RecipeCategoryId")]
+        [Display(Name = "Category")]
+        public RecipeCategory Category { get; set; }
     }
 }

@@ -10,6 +10,7 @@ namespace RecipeBook.Data
         public DbSet<IngredientCategory> IngredientCategories { get; set; }
         public DbSet<Recipe> Recipies { get; set; }
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
+        public DbSet<RecipeCategory> RecipeCategories { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
