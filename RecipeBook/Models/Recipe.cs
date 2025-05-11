@@ -25,9 +25,9 @@ namespace RecipeBook.Models
 
         [Required]
         [ForeignKey("UserId")]
-        public IdentityUser? User { get; set; }
+        public ApplicationUser? User { get; set; }
 
-        public byte[]? Image { get; set; }  // Stores the image data
+        public byte[]? Image { get; set; }
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
 

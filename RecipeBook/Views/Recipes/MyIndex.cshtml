@@ -4,11 +4,12 @@
     ViewData["Title"] = "My recipes";
 }
 
-<h1>My recipes</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+<div class="header-container">
+    <h1>Recipes</h1>
+    <div class="actions">
+        <a asp-action="Create" class="btn btn-success">Create New</a>
+    </div>
+</div>
 
 <div class="container mt-3">
     <div class="row">

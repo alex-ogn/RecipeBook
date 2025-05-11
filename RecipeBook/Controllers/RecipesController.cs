@@ -30,7 +30,8 @@ namespace RecipeBook.Controllers
 
         // GET: Recipes
 
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(int? categoryId)
         {
             bool isUserAdmin = User.IsInRole("Admin");
             string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Make sure you have using System.Security.Claims;
@@ -38,8 +39,22 @@ namespace RecipeBook.Controllers
             ViewData["IsUserAdmin"] = isUserAdmin;
             ViewData["CurrentUserId"] = currentUserId;
 
-            var applicationDbContext = _context.Recipies.Include(r => r.User);
-            return View(await applicationDbContext.ToListAsync());
+            IQueryable<Recipe> applicationDbContext = _context.Recipies.Include(r => r.User)
+                .Include(r => r.Category);
+
+            if (categoryId.HasValue)
+            {
+                applicationDbContext = applicationDbContext.Where(r => r.Category.Id == categoryId);
+            }
+
+            var viewModel = new RecipeFilterViewModel
+            {
+                Recipes = await applicationDbContext.ToListAsync(),
+                Categories = new SelectList(_context.RecipeCategories, "Id", "Name"),
+                SelectedCategoryId = categoryId
+            };
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> MyIndex()
@@ -55,11 +70,11 @@ namespace RecipeBook.Controllers
             var recipe = _context.Recipies.FirstOrDefault(r => r.Id == id);
             if (recipe != null && recipe.Image != null)
             {
-                return File(recipe.Image, "image/jpg");  // Assumes images are stored as JPEGs; adjust MIME type accordingly
+                return File(recipe.Image, "image/jpg");  
             }
             else
             {
-                return NotFound();  // Return a 404 Not Found if there is no image or recipe
+                return NotFound();  
             }
         }
 

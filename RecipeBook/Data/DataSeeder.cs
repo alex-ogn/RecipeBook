@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using RecipeBook.Models;
 
 namespace RecipeBook.Data
 {
@@ -10,7 +11,7 @@ namespace RecipeBook.Data
             {
                 var services = scope.ServiceProvider;
                 var context = services.GetRequiredService<ApplicationDbContext>();
-                var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
                 context.Database.EnsureCreated();
@@ -35,11 +36,11 @@ namespace RecipeBook.Data
             }
         }
 
-        private static async Task SeedUsers(UserManager<IdentityUser> userManager)
+        private static async Task SeedUsers(UserManager<ApplicationUser> userManager)
         {
             if (userManager.FindByEmailAsync("admin@example.com").Result == null)
             {
-                IdentityUser user = new IdentityUser
+                ApplicationUser user = new ApplicationUser
                 {
                     UserName = "admin@example.com",
                     Email = "admin@example.com"
