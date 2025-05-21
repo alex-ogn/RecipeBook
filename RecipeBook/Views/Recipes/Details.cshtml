@@ -1,88 +1,79 @@
 ﻿@model RecipeBook.Models.Recipe
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Детайли за рецепта";
     bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
     string currentUserId = ViewData["CurrentUserId"] as string;
 }
 
-<style>
-    .table {
-        width: 100%;
-        margin-top: 20px;
-    }
+<!-- Връзка към CSS файла -->
+<link rel="stylesheet" href="~/css/recipe-details.css" />
 
-    th, td {
-        padding: 8px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-</style>
+<div class="recipe-container">
+    <h1 class="recipe-title">@Model.Title</h1>
 
-<h1>Details</h1>
+    <!-- Снимка + дясна колона -->
+    <div class="recipe-main">
+        <img src="@Url.Action("GetImage", "Recipes", new { id = Model.Id })" class="recipe-image" alt="@Model.Title">
 
-<div>
-    <h4>@Model.Title</h4>
-    <hr />
-    <img src="@Url.Action("GetImage", "Recipes", new { id = Model.Id })" class="recipy-image" alt="@Model.Title">
-    <!-- Ingredients Section -->
-    <h4>Ingredients</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Ingredient</th>
-                <th>Quantity Needed</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.RecipeIngredients)
-            {
+        <div class="recipe-side-info">
+            <!-- Потребителска секция -->
+            <div class="white-box profile-box">
+                <a asp-controller="Users" asp-action="Profile" asp-route-id="@Model.User.Id">
+                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.User.Id })" class="profile-avatar" alt="Потребител" />
+                </a>
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.User.Id" class="fw-bold">
+                    @Model.User.UserName
+                </a>
+            </div>
+
+            <!-- Инфо за порции и др. -->
+            <div class="white-box">
+                <p><strong>Порции:</strong> @Model.Servings</p>
+                <p><strong>Време за готвене:</strong> @Model.CookingTime минути</p>
+                <p><strong>Категория:</strong> @Model.Category?.Name</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Съставки -->
+    <div class="section-box">
+        <h4>Съставки</h4>
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>@item.Ingredient.Name</td>
-                    <td>@item.QuantityNeeded</td>
+                    <th>Продукт</th>
+                    <th>Количество</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-    <dl class="row">
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Instructions)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Instructions)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Servings)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Servings)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CookingTime)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CookingTime)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Category.Name)
-        </dd>
-    </dl>
-</div>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.RecipeIngredients)
+                {
+                    <tr>
+                        <td>@item.Ingredient.Name</td>
+                        <td>@item.QuantityNeeded</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
-<div>
-   @if (Model.UserId == currentUserId || isUserAdmin)
-    {
-        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Edit</a>
-    }
+    <!-- Описание и инструкции -->
+    <div class="section-box">
+        <h4>Описание</h4>
+        <p>@Model.Description</p>
 
-    <a asp-action="Index" class="btn btn-primary">Back to List</a>
+        <h4 class="mt-4">Инструкции</h4>
+        <p>@Model.Instructions</p>
+    </div>
+
+    <!-- Бутони -->
+    <div class="mb-5">
+        @if (Model.UserId == currentUserId || isUserAdmin)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редактирай</a>
+        }
+
+        <a asp-action="Index" class="btn btn-secondary">Обратно към списъка</a>
+    </div>
 </div>

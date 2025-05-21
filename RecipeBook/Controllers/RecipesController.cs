@@ -57,11 +57,21 @@ namespace RecipeBook.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> MyIndex()
+        public async Task<IActionResult> MyIndex(string? id)
         {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var applicationDbContext = _context.Recipies.Include(r => r.User).Where(r => r.UserId == userId);
-            return View(await applicationDbContext.ToListAsync());
+            // Ако id не е подадено, използваме текущия потребител
+            string userId = id ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return NotFound();
+
+            var recipes = await _context.Recipies
+                .Include(r => r.User)
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
+
+            ViewData["User"] = user;
+            return View(recipes);
         }
 
         [AllowAnonymous]
@@ -92,6 +102,7 @@ namespace RecipeBook.Controllers
                                        .Include(r => r.RecipeIngredients)
                                            .ThenInclude(ri => ri.Ingredient)
                                        .Include(r => r.Category)
+                                       .Include(r => r.User)
                                        .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)
@@ -99,12 +110,14 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
+            RecipeViewModel recipeViewModel = new RecipeViewModel(recipe);
+
             bool isUserAdmin = User.IsInRole("Admin");
-            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Make sure you have using System.Security.Claims;
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             ViewData["IsUserAdmin"] = isUserAdmin;
             ViewData["CurrentUserId"] = currentUserId;
 
-            return View(recipe);
+            return View(recipeViewModel);
         }
 
         // GET: Recipes/Create
@@ -129,7 +142,7 @@ namespace RecipeBook.Controllers
                     }).OrderBy(n => n.Name).ToArray()
                 );
 
-            var viewModel = new RecipeViewModel
+            var viewModel = new RecipeEditViewModel
             {
                 IngredientsByCategory = ingredientsByCategory
             };
@@ -147,7 +160,7 @@ namespace RecipeBook.Controllers
         // POST: Recipes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(RecipeViewModel model, IFormFile imageFile, string SelectedIngredientsJson)
+        public async Task<IActionResult> Create(RecipeEditViewModel model, IFormFile imageFile, string SelectedIngredientsJson)
         {
             try
             {
@@ -286,7 +299,7 @@ namespace RecipeBook.Controllers
                 );
 
 
-            var viewModel = new RecipeViewModel(recipe)
+            var viewModel = new RecipeEditViewModel(recipe)
             {
                 IngredientsByCategory = ingredientsByCategory,
                 SelectedIngredients = recipe.RecipeIngredients
@@ -307,7 +320,7 @@ namespace RecipeBook.Controllers
         // POST: Recipes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, RecipeViewModel model, IFormFile imageFileNew, string SelectedIngredientsJson)
+        public async Task<IActionResult> Edit(int id, RecipeEditViewModel model, IFormFile imageFileNew, string SelectedIngredientsJson)
         {
             if (id != model.Id)
             {
@@ -424,7 +437,7 @@ namespace RecipeBook.Controllers
                     }).OrderBy(n => n.Name).ToArray()
                 );
 
-            var viewModel = new RecipeViewModel(recipeUnchanged)
+            var viewModel = new RecipeEditViewModel(recipeUnchanged)
             {
                 IngredientsByCategory = ingredientsByCategory,
                 SelectedIngredients = recipeUnchanged.RecipeIngredients

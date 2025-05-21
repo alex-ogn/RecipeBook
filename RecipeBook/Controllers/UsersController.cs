@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RecipeBook.Models;
 using System.Net.NetworkInformation;
 
 namespace RecipeBook.Controllers
 {
     [Authorize]
-    public class UserSettingsController : Controller
+    public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public UserSettingsController(UserManager<ApplicationUser> userManager)
+        public UsersController(UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
         }
@@ -41,13 +42,14 @@ namespace RecipeBook.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetProfilePicture()
+        public async Task<IActionResult> GetProfilePicture(string userId)
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) return NotFound();
 
             if (user?.ProfilePicture != null)
             {
-                return File(user.ProfilePicture, "png");
+                return File(user.ProfilePicture, "image/jpg");
             }
 
             return File("~/images/default-profile.png", "image/png");
@@ -55,8 +57,8 @@ namespace RecipeBook.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("/Identity/Account/Manage/GetProfilePicture")]
-        public async Task<IActionResult> GetProfilePicture([FromServices] UserManager<ApplicationUser> userManager)
+        [Route("/Identity/Account/Manage/GetCurrentUserProfilePicture")]
+        public async Task<IActionResult> GetCurrentUserProfilePicture([FromServices] UserManager<ApplicationUser> userManager)
         {
             var user = await userManager.GetUserAsync(User);
             if (user?.ProfilePicture != null)
