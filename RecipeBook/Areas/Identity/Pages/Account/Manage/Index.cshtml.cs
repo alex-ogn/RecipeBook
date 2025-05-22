@@ -138,6 +138,7 @@ namespace RecipeBook.Areas.Identity.Pages.Account.Manage
                 using var memoryStream = new MemoryStream();
                 await Input.ProfilePicture.CopyToAsync(memoryStream);
                 user.ProfilePicture = memoryStream.ToArray();
+                user.ProfilePictureVersion++;
                 await _userManager.UpdateAsync(user);
             }
 

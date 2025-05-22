@@ -34,10 +34,11 @@ namespace RecipeBook.Controllers
         public async Task<IActionResult> Index(int? categoryId)
         {
             bool isUserAdmin = User.IsInRole("Admin");
-            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); // Make sure you have using System.Security.Claims;
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
 
             ViewData["IsUserAdmin"] = isUserAdmin;
             ViewData["CurrentUserId"] = currentUserId;
+            ViewData["CurrentAction"] = "Index";
 
             IQueryable<Recipe> applicationDbContext = _context.Recipies.Include(r => r.User)
                 .Include(r => r.Category);
@@ -103,6 +104,7 @@ namespace RecipeBook.Controllers
                                            .ThenInclude(ri => ri.Ingredient)
                                        .Include(r => r.Category)
                                        .Include(r => r.User)
+                                       .Include(r => r.SavedByUsers)
                                        .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)
@@ -110,12 +112,16 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isSaved = recipe.SavedByUsers
+                                 .Any(s => s.UserId == currentUserId);
+
             RecipeViewModel recipeViewModel = new RecipeViewModel(recipe);
 
             bool isUserAdmin = User.IsInRole("Admin");
-            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             ViewData["IsUserAdmin"] = isUserAdmin;
             ViewData["CurrentUserId"] = currentUserId;
+            ViewData["IsSaved"] = isSaved;
 
             return View(recipeViewModel);
         }
@@ -498,5 +504,88 @@ namespace RecipeBook.Controllers
         {
             return (_context.Recipies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SaveRecipe(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var alreadySaved = await _context.SavedRecipes
+                .AnyAsync(sr => sr.UserId == userId && sr.RecipeId == id);
+
+            if (!alreadySaved)
+            {
+                var save = new SavedRecipe
+                {
+                    UserId = userId,
+                    RecipeId = id,
+                    DateSaved = DateTime.UtcNow
+                };
+
+                _context.SavedRecipes.Add(save);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> UnsaveRecipe(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var saved = await _context.SavedRecipes
+                .FirstOrDefaultAsync(sr => sr.UserId == userId && sr.RecipeId == id);
+
+            if (saved != null)
+            {
+                _context.SavedRecipes.Remove(saved);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Details", new { id });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> SavedRecipes(int? categoryId)
+{
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var savedRecipeIds = await _context.SavedRecipes
+                .Where(sr => sr.UserId == userId)
+                .Select(sr => sr.RecipeId)
+                .ToListAsync();
+
+            var recipesQuery = _context.Recipies
+                .Include(r => r.Category)
+                .Where(r => savedRecipeIds.Contains(r.Id));
+
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.Category.Id == categoryId.Value);
+            }
+
+            var recipes = await recipesQuery.ToListAsync();
+
+            var categories = await _context.RecipeCategories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }).ToListAsync();
+
+            var model = new RecipeFilterViewModel
+            {
+                Recipes = recipes,
+                Categories = new SelectList(categories, "Value", "Text"),
+                SelectedCategoryId = categoryId
+            };
+
+            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["CurrentUserId"] = userId;
+            ViewData["CurrentAction"] = "SavedRecipes";
+
+            return View("Index", model);
+        }
+
     }
 }

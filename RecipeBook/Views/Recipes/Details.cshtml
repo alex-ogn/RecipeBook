@@ -3,8 +3,16 @@
 @{
     ViewData["Title"] = "Детайли за рецепта";
     bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
-    string currentUserId = ViewData["CurrentUserId"] as string;
+    var currentUserId = ViewData["CurrentUserId"]?.ToString().Trim().ToLower();
+    bool isSaved = ViewData["IsSaved"] as bool? ?? false;
 }
+
+<form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-outline-warning">
+        @(isSaved ? "Премахни от запазени" : "Запази рецепта")
+    </button>
+</form>
 
 <!-- Връзка към CSS файла -->
 <link rel="stylesheet" href="~/css/recipe-details.css" />

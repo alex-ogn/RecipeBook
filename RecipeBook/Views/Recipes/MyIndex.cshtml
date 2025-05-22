@@ -8,7 +8,7 @@
 
 <!-- 👤 Профилна секция -->
 <div class="profile-header">
-    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id })" class="profile-avatar" alt="Профилна снимка" />
+    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion  })" class="profile-avatar" alt="Профилна снимка" />
     <div class="profile-info">
         <h2>@user.UserName</h2>
         <a asp-action="Create" class="btn btn-success mt-2">Създай нова рецепта</a>

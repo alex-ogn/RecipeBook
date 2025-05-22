@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook.Data;
 
@@ -11,9 +12,10 @@ using RecipeBook.Data;
 namespace RecipeBook.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250522102434_profile-picture-version")]
+    partial class profilepictureversion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -358,33 +360,6 @@ namespace RecipeBook.Data.Migrations
                     b.ToTable("RecipeIngredients");
                 });
 
-            modelBuilder.Entity("RecipeBook.Models.SavedRecipe", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("DateSaved")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SavedRecipes");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -441,7 +416,7 @@ namespace RecipeBook.Data.Migrations
                     b.HasOne("RecipeBook.Models.IngredientCategory", "Category")
                         .WithMany()
                         .HasForeignKey("IngredientCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -452,7 +427,7 @@ namespace RecipeBook.Data.Migrations
                     b.HasOne("RecipeBook.Models.RecipeCategory", "Category")
                         .WithMany()
                         .HasForeignKey("RecipeCategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("RecipeBook.Models.ApplicationUser", "User")
@@ -471,42 +446,18 @@ namespace RecipeBook.Data.Migrations
                     b.HasOne("RecipeBook.Models.Ingredient", "Ingredient")
                         .WithMany("RecipeIngredients")
                         .HasForeignKey("IngredientId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("RecipeBook.Models.Recipe", "Recipe")
                         .WithMany("RecipeIngredients")
                         .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Ingredient");
 
                     b.Navigation("Recipe");
-                });
-
-            modelBuilder.Entity("RecipeBook.Models.SavedRecipe", b =>
-                {
-                    b.HasOne("RecipeBook.Models.Recipe", "Recipe")
-                        .WithMany("SavedByUsers")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("RecipeBook.Models.ApplicationUser", "User")
-                        .WithMany("SavedRecipes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("RecipeBook.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("SavedRecipes");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.Ingredient", b =>
@@ -517,8 +468,6 @@ namespace RecipeBook.Data.Migrations
             modelBuilder.Entity("RecipeBook.Models.Recipe", b =>
                 {
                     b.Navigation("RecipeIngredients");
-
-                    b.Navigation("SavedByUsers");
                 });
 #pragma warning restore 612, 618
         }

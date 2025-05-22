@@ -35,5 +35,7 @@ namespace RecipeBook.Models
         [ForeignKey("RecipeCategoryId")]
         [Display(Name = "Category")]
         public RecipeCategory Category { get; set; }
+
+        public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();
     }
 }

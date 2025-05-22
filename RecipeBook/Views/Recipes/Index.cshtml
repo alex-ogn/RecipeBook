@@ -13,7 +13,7 @@
     </div>
 </div>
 
-<form asp-action="Index" method="get" class="filter-form">
+<form asp-action="@(ViewData["CurrentAction"] ?? "Index")" method="get" class="filter-form">
     <div class="filter-container">
         <label for="category" class="form-label">Category:</label>
         <select id="category" name="categoryId" asp-items="@Model.Categories" asp-for="SelectedCategoryId" class="form-control">
