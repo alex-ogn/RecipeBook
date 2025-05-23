@@ -12,6 +12,8 @@ namespace RecipeBook.Data
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
         public DbSet<RecipeCategory> RecipeCategories { get; set; }
         public DbSet<SavedRecipe> SavedRecipes { get; set; }
+        public DbSet<UserFollower> UserFollowers { get; set; }
+        public DbSet<RecipeLike> RecipeLikes { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -22,7 +24,7 @@ namespace RecipeBook.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // RecipeIngredient: НЕкаскадно
+            // RecipeIngredient
             modelBuilder.Entity<RecipeIngredient>()
                 .HasOne(ri => ri.Recipe)
                 .WithMany(r => r.RecipeIngredients)
@@ -35,14 +37,14 @@ namespace RecipeBook.Data
                 .HasForeignKey(ri => ri.IngredientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Recipe → Category: НЕкаскадно
+            // Recipe → Category
             modelBuilder.Entity<Recipe>()
                 .HasOne(r => r.Category)
                 .WithMany()
                 .HasForeignKey("RecipeCategoryId")
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Ingredient → Category: НЕкаскадно
+            // Ingredient → Category
             modelBuilder.Entity<Ingredient>()
                 .HasOne(i => i.Category)
                 .WithMany()
@@ -60,6 +62,32 @@ namespace RecipeBook.Data
                 .HasOne(sr => sr.Recipe)
                 .WithMany(r => r.SavedByUsers)
                 .HasForeignKey(sr => sr.RecipeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // UserFollower
+            modelBuilder.Entity<UserFollower>()
+                .HasOne(uf => uf.Follower)
+                .WithMany(u => u.Following)
+                .HasForeignKey(uf => uf.FollowerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<UserFollower>()
+                .HasOne(uf => uf.Followed)
+                .WithMany(u => u.Followers)
+                .HasForeignKey(uf => uf.FollowedId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // RecipeLike
+            modelBuilder.Entity<RecipeLike>()
+                .HasOne(l => l.User)
+                .WithMany(u => u.LikedRecipes)
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RecipeLike>()
+                .HasOne(l => l.Recipe)
+                .WithMany(r => r.Likes)
+                .HasForeignKey(l => l.RecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }

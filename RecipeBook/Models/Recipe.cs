@@ -37,5 +37,8 @@ namespace RecipeBook.Models
         public RecipeCategory Category { get; set; }
 
         public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();
+
+        public ICollection<RecipeLike> Likes { get; set; } = new List<RecipeLike>();
+
     }
 }

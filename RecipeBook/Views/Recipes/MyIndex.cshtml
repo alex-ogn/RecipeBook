@@ -2,20 +2,51 @@
 @{
     ViewData["Title"] = "Моите рецепти";
     var user = ViewData["User"] as ApplicationUser;
+    var currentUserId = ViewData["CurrentUserId"] as string;
+    var isFollowing = ViewData["IsFollowing"] as bool? ?? false;
+    bool isOwnProfile = user?.Id == currentUserId;
+    var followersCount = ViewData["FollowersCount"] as int? ?? 0;
+    var followingCount = ViewData["FollowingCount"] as int? ?? 0;
+
 }
 
 <link rel="stylesheet" href="~/css/profile.css" />
 
-<!-- 👤 Профилна секция -->
+<!--  Профилна секция -->
 <div class="profile-header">
-    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion  })" class="profile-avatar" alt="Профилна снимка" />
+    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion })"
+         class="profile-avatar" alt="Профилна снимка" />
+
     <div class="profile-info">
         <h2>@user.UserName</h2>
-        <a asp-action="Create" class="btn btn-success mt-2">Създай нова рецепта</a>
+
+        @if (isOwnProfile)
+        {
+            <a asp-action="Create" class="btn btn-success mt-2">Създай нова рецепта</a>
+        }
+        else
+        {
+            <form asp-action="@(isFollowing ? "Unfollow" : "Follow")"
+              asp-controller="Users" method="post" class="mt-2">
+                <input type="hidden" name="userId" value="@user.Id" />
+                <button type="submit" class="btn btn-outline-primary">
+                    @(isFollowing ? "Отследвай" : "Последвай")
+                </button>
+            </form>
+        }
+    </div>
+
+    <div class="profile-stats mt-2">
+        <a asp-controller="Users" asp-action="Followers" asp-route-id="@user.Id">
+            Последователи: @followersCount
+        </a> |
+        <a asp-controller="Users" asp-action="Following" asp-route-id="@user.Id">
+            Следвани: @followingCount
+        </a>
     </div>
 </div>
 
-<!-- 🧾 Списък с рецепти -->
+<!--  Списък с рецепти -->
 <div class="container mt-4">
     <h3>Рецепти на @user.UserName</h3>
     <div class="row mt-3">

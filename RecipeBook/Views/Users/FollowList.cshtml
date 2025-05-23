@@ -1,0 +1,32 @@
+﻿@model List<RecipeBook.Views.Users.ViewModels.FollowViewModel>
+
+@{
+    ViewData["Title"] = ViewData["ListTitle"];
+    var currentUserId = ViewData["CurrentUserId"] as string;
+}
+
+<h3>@ViewData["ListTitle"]</h3>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        var user = item.User;
+        <div class="col-md-4 mb-3">
+            <div class="card p-3 d-flex align-items-center">
+                <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id })" class="rounded-circle" width="60" height="60" />
+                <h5>@user.UserName</h5>
+
+                @if (user.Id != currentUserId)
+                {
+                    <form asp-action="@(item.IsFollowing ? "Unfollow" : "Follow")"
+                  asp-controller="Users" method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-outline-primary btn-sm mt-1">
+                            @(item.IsFollowing ? "Отследвай ❌" : "Последвай")
+                        </button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+</div>

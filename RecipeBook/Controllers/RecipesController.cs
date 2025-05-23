@@ -63,6 +63,8 @@ namespace RecipeBook.Controllers
             // Ако id не е подадено, използваме текущия потребител
             string userId = id ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user == null) return NotFound();
 
@@ -71,7 +73,18 @@ namespace RecipeBook.Controllers
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
 
+            var isFollowing = await _context.UserFollowers
+               .AnyAsync(f => f.FollowerId == currentUserId && f.FollowedId == id);
+
+            var followersCount = _context.UserFollowers.Count(f => f.FollowedId == user.Id);
+            var followingCount = _context.UserFollowers.Count(f => f.FollowerId == user.Id);
+
             ViewData["User"] = user;
+            ViewData["CurrentUserId"] = currentUserId;
+            ViewData["IsFollowing"] = isFollowing;
+            ViewData["FollowersCount"] = followersCount;
+            ViewData["FollowingCount"] = followingCount;
+
             return View(recipes);
         }
 
@@ -117,6 +130,12 @@ namespace RecipeBook.Controllers
                                  .Any(s => s.UserId == currentUserId);
 
             RecipeViewModel recipeViewModel = new RecipeViewModel(recipe);
+
+            bool isLiked = await _context.RecipeLikes
+                .AnyAsync(l => l.RecipeId == id && l.UserId == currentUserId);
+
+            ViewData["IsLiked"] = isLiked;
+            ViewData["LikeCount"] = await _context.RecipeLikes.CountAsync(l => l.RecipeId == id);
 
             bool isUserAdmin = User.IsInRole("Admin");
             ViewData["IsUserAdmin"] = isUserAdmin;
@@ -546,6 +565,47 @@ namespace RecipeBook.Controllers
         }
 
         [Authorize]
+        public async Task<IActionResult> LikedRecipes(int? categoryId)
+{
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var likedRecipeIds = await _context.RecipeLikes
+                .Where(sr => sr.UserId == userId)
+                .Select(sr => sr.RecipeId)
+                .ToListAsync();
+
+            var recipesQuery = _context.Recipies
+                .Include(r => r.Category)
+                .Where(r => likedRecipeIds.Contains(r.Id));
+
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.Category.Id == categoryId.Value);
+            }
+
+            var recipes = await recipesQuery.ToListAsync();
+
+            var categories = await _context.RecipeCategories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }).ToListAsync();
+
+            var model = new RecipeFilterViewModel
+            {
+                Recipes = recipes,
+                Categories = new SelectList(categories, "Value", "Text"),
+                SelectedCategoryId = categoryId
+            };
+
+            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["CurrentUserId"] = userId;
+            ViewData["CurrentAction"] = "SavedRecipes";
+
+            return View("Index", model);
+        }
+        [Authorize]
         public async Task<IActionResult> SavedRecipes(int? categoryId)
 {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -585,6 +645,47 @@ namespace RecipeBook.Controllers
             ViewData["CurrentAction"] = "SavedRecipes";
 
             return View("Index", model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Like(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var alreadyLiked = await _context.RecipeLikes
+                .AnyAsync(l => l.RecipeId == id && l.UserId == userId);
+
+            if (!alreadyLiked)
+            {
+                _context.RecipeLikes.Add(new RecipeLike
+                {
+                    RecipeId = id,
+                    UserId = userId
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            return Redirect(Request.Headers["Referer"].ToString());
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Unlike(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var like = await _context.RecipeLikes
+                .FirstOrDefaultAsync(l => l.RecipeId == id && l.UserId == userId);
+
+            if (like != null)
+            {
+                _context.RecipeLikes.Remove(like);
+                await _context.SaveChangesAsync();
+            }
+
+            return Redirect(Request.Headers["Referer"].ToString());
         }
 
     }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RecipeBook.Data;
 
@@ -11,9 +12,10 @@ using RecipeBook.Data;
 namespace RecipeBook.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250523105234_AddFollowers")]
+    partial class AddFollowers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -358,33 +360,6 @@ namespace RecipeBook.Data.Migrations
                     b.ToTable("RecipeIngredients");
                 });
 
-            modelBuilder.Entity("RecipeBook.Models.RecipeLike", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<DateTime>("LikedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RecipeLikes");
-                });
-
             modelBuilder.Entity("RecipeBook.Models.SavedRecipe", b =>
                 {
                     b.Property<int>("Id")
@@ -540,25 +515,6 @@ namespace RecipeBook.Data.Migrations
                     b.Navigation("Recipe");
                 });
 
-            modelBuilder.Entity("RecipeBook.Models.RecipeLike", b =>
-                {
-                    b.HasOne("RecipeBook.Models.Recipe", "Recipe")
-                        .WithMany("Likes")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("RecipeBook.Models.ApplicationUser", "User")
-                        .WithMany("LikedRecipes")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("RecipeBook.Models.SavedRecipe", b =>
                 {
                     b.HasOne("RecipeBook.Models.Recipe", "Recipe")
@@ -603,8 +559,6 @@ namespace RecipeBook.Data.Migrations
 
                     b.Navigation("Following");
 
-                    b.Navigation("LikedRecipes");
-
                     b.Navigation("SavedRecipes");
                 });
 
@@ -615,8 +569,6 @@ namespace RecipeBook.Data.Migrations
 
             modelBuilder.Entity("RecipeBook.Models.Recipe", b =>
                 {
-                    b.Navigation("Likes");
-
                     b.Navigation("RecipeIngredients");
 
                     b.Navigation("SavedByUsers");

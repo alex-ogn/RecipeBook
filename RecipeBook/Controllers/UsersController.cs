@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.Views.Users.ViewModels;
 using System.Net.NetworkInformation;
+using System.Security.Claims;
 
 namespace RecipeBook.Controllers
 {
@@ -11,9 +14,11 @@ namespace RecipeBook.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _context;
 
-        public UsersController(UserManager<ApplicationUser> userManager)
+        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
+            _context = context;
             _userManager = userManager;
         }
 
@@ -68,5 +73,96 @@ namespace RecipeBook.Controllers
 
             return File("~/images/default-profile", "image/png");
         }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Follow(string userId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (currentUserId == userId) return BadRequest();
+
+            var exists = await _context.UserFollowers
+                .AnyAsync(uf => uf.FollowerId == currentUserId && uf.FollowedId == userId);
+
+            if (!exists)
+            {
+                _context.UserFollowers.Add(new UserFollower
+                {
+                    FollowerId = currentUserId,
+                    FollowedId = userId
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            // върни се към страницата, от която е подадена формата
+            return Redirect(Request.Headers["Referer"].ToString());
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Unfollow(string userId)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var follow = await _context.UserFollowers
+                .FirstOrDefaultAsync(uf => uf.FollowerId == currentUserId && uf.FollowedId == userId);
+
+            if (follow != null)
+            {
+                _context.UserFollowers.Remove(follow);
+                await _context.SaveChangesAsync();
+            }
+
+            // върни се към страницата, от която е подадена формата
+            return Redirect(Request.Headers["Referer"].ToString());
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Followers(string id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var followers = await _context.UserFollowers
+                .Where(f => f.FollowedId == id)
+                .Include(f => f.Follower)
+                .ToListAsync();
+
+            var viewModel = followers.Select(f => new FollowViewModel
+            {
+                User = f.Follower,
+                IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowerId)
+            }).ToList();
+
+            ViewData["ListTitle"] = "Последователи";
+            ViewData["CurrentUserId"] = currentUserId;
+
+            return View("FollowList", viewModel);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Following(string id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var following = await _context.UserFollowers
+                .Where(f => f.FollowerId == id)
+                .Include(f => f.Followed)
+                .ToListAsync();
+
+            var viewModel = following.Select(f => new FollowViewModel
+            {
+                User = f.Followed,
+                IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowedId)
+            }).ToList();
+
+            ViewData["ListTitle"] = "Следвани";
+            ViewData["CurrentUserId"] = currentUserId;
+
+            return View("FollowList", viewModel);
+        }
+
+
     }
 }

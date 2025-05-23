@@ -5,12 +5,21 @@
     bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
     var currentUserId = ViewData["CurrentUserId"]?.ToString().Trim().ToLower();
     bool isSaved = ViewData["IsSaved"] as bool? ?? false;
+    bool isLiked = ViewData["IsLiked"] as bool? ?? false;
+    var likeCount = (int)(ViewData["LikeCount"] ?? 0);
 }
 
 <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post">
     <input type="hidden" name="id" value="@Model.Id" />
     <button type="submit" class="btn btn-outline-warning">
         @(isSaved ? "Премахни от запазени" : "Запази рецепта")
+    </button>
+</form>
+
+<form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="d-inline">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <button type="submit" class="btn btn-sm @(isLiked ? "btn-danger" : "btn-outline-danger")">
+        ❤️ @likeCount
     </button>
 </form>
 
