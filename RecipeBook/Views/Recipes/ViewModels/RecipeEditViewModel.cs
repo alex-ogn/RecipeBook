@@ -40,11 +40,13 @@ namespace RecipeBook.Views.Recipes.ViewModels
         [Required]
         public string Instructions { get; set; }
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Please enter a positive number.")]
+        [Range(1, 100, ErrorMessage = "Порциите трябва да са в диапазона между 1 и 100.")]
+        [Display(Name = "Порции")]
         public int Servings { get; set; }
-        [Required]
-        [Display(Name = "Cooking Time ")]
-        public TimeSpan CookingTime { get; set; }
+        //[Required]
+        [Range(1, 300, ErrorMessage = "Времето за готвене трябва да е между 1 и 300 минути.")]
+        [Display(Name = "Време за готвене (в минути)")]
+        public int CookingTime { get; set; }
 
         public string? UserId { get; set; }
 
@@ -57,10 +59,10 @@ namespace RecipeBook.Views.Recipes.ViewModels
         public Dictionary<string, RecipeIngredientViewModel[]> IngredientsByCategory { get; set; }
         public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
-        [Display(Name = "Category")]
+        [Display(Name = "Категория")]
         public int? CategoryId { get; set; }  // Holds the selected category ID
 
-        [Display(Name = "Category")]
+        [Display(Name = "Категория")]
         public SelectList Categories { get; set; }  // Used to populate the dropdown in the view
 
         public void EditRecipe(Recipe recipe)

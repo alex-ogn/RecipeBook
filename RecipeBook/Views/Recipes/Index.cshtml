@@ -6,6 +6,9 @@
     string currentUserId = ViewData["CurrentUserId"] as string;
 }
 
+
+@using System.Text.RegularExpressions
+
 <div class="header-container">
     <h1>Recipes</h1>
     <div class="actions">
@@ -23,56 +26,12 @@
     </div>
 </form>
 
-<style>
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .actions {
-        margin-bottom: 20px; /* Adjust as needed for spacing */
-    }
-
-    .filter-form {
-        max-width: 400px; /* Adjust based on your design preference */
-        margin: 20px 0; /* Adds vertical spacing around the form */
-    }
-
-        .filter-form .filter-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .filter-form select.form-control {
-            flex-grow: 1; /* Allows the select to grow within the container */
-        }
-
-        .filter-form .btn-primary {
-            margin-left: 10px; /* Ensures spacing between select and button */
-        }
-</style>
 
 <div class="container mt-3">
     <div class="row">
-        @foreach (var recipe in Model.Recipes)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="@Url.Action("GetImage", "Recipes", new { id = recipe.Id })" class="card-img-top" alt="@recipe.Title">
-                    <div class="card-body">
-                        <h5 class="card-title">@recipe.Title</h5>
-                        <p class="card-text">@recipe.Description</p>
-                        <a href="@Url.Action("Details", "Recipes", new { id = recipe.Id })" class="btn btn-primary">View</a>
-                        @if (recipe.UserId == currentUserId || isUserAdmin)
-                        {
-                            <a href="@Url.Action("Edit", "Recipes", new { id = recipe.Id })" class="btn btn-primary">Edit</a>
-                            <a href="@Url.Action("Delete", "Recipes", new { id = recipe.Id })" class="btn btn-primary">Delete</a>
-                        }
-                    </div>
-                </div>
-            </div>
-        }
+     @foreach (var card in @Model.Recipes)
+    {
+        @Html.Partial("_RecipeCard", card)
+    }
     </div>
 </div>

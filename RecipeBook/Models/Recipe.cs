@@ -16,10 +16,14 @@ namespace RecipeBook.Models
 
         [Required]
         public string Instructions { get; set; }
+
         [Required]
         public int Servings { get; set; }
+
         [Required]
-        public TimeSpan CookingTime { get; set; }
+        [Display(Name = "Време за готвене (в минути)")]
+        public int CookingTime { get; set; }
+
         [Required]
         public string UserId { get; set; }
 
@@ -29,7 +33,7 @@ namespace RecipeBook.Models
 
         public byte[]? Image { get; set; }
 
-        public List<RecipeIngredient>? RecipeIngredients { get; set; }
+        public List<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
 
         [Required]
         [ForeignKey("RecipeCategoryId")]
@@ -39,6 +43,8 @@ namespace RecipeBook.Models
         public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();
 
         public ICollection<RecipeLike> Likes { get; set; } = new List<RecipeLike>();
+
+        public int ViewCount { get; set; } = 0;
 
     }
 }

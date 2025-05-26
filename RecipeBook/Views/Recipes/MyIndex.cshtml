@@ -1,4 +1,5 @@
-﻿@model IEnumerable<RecipeBook.Models.Recipe>
+﻿@model IEnumerable<@RecipeBook.Views.Recipes.ViewModels.RecipeCardViewModel>
+
 @{
     ViewData["Title"] = "Моите рецепти";
     var user = ViewData["User"] as ApplicationUser;
@@ -9,6 +10,8 @@
     var followingCount = ViewData["FollowingCount"] as int? ?? 0;
 
 }
+
+@using System.Text.RegularExpressions
 
 <link rel="stylesheet" href="~/css/profile.css" />
 
@@ -49,23 +52,10 @@
 <!--  Списък с рецепти -->
 <div class="container mt-4">
     <h3>Рецепти на @user.UserName</h3>
-    <div class="row mt-3">
-        @foreach (var recipe in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <img src="@Url.Action("GetImage", "Recipes", new { id = recipe.Id })" class="card-img-top" alt="@recipe.Title">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">@recipe.Title</h5>
-                        <p class="card-text">@recipe.Description</p>
-                        <div class="mt-auto">
-                            <a asp-action="Details" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-primary">Детайли</a>
-                            <a asp-action="Edit" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-secondary">Редактирай</a>
-                            <a asp-action="Delete" asp-route-id="@recipe.Id" class="btn btn-sm btn-outline-danger">Изтрий</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
+    <div class="row mt-3">       
+     @foreach (var card in @Model)
+    {
+        @Html.Partial("_RecipeCard", card)
+    }
     </div>
 </div>

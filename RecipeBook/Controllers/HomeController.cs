@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Views.Home.ViewModels;
+using RecipeBook.Views.Recipes.ViewModels;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace RecipeBook.Controllers
 {
@@ -21,9 +23,25 @@ namespace RecipeBook.Controllers
 
         public IActionResult Index()
         {
+            var recipes = _context.Recipies.Include(r => r.Likes).Take(3).ToList(); // Fetches the first 6 recipes
+
+            var cardViewModels =  recipes.Select(r => new RecipeCardViewModel
+            {
+                Id = r.Id,
+                Title = r.Title,
+                DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
+        .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
+                ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
+                UserName = r.User?.UserName ?? "Потребител",
+                UserId = r.UserId,
+                LikesCount = r.Likes?.Count ?? 0,
+                ViewCount = r.ViewCount,
+                IsOwner = false
+            }).ToList();
+
             var model = new HomeViewModel
             {
-                FeaturedRecipes = _context.Recipies.Take(3).ToList() // Fetches the first 6 recipes
+                FeaturedRecipes = cardViewModels
             };
 
             return View(model);

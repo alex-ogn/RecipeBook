@@ -6,31 +6,20 @@
 
 <div class="container mt-3">
 
-@*    <div class="home-image">
-        <img src="~/images/cooking_book.png" alt="Featured Image" style="width: 100%; height: auto;">
-    </div>*@
-
     <div class="container text-center mt-4">
         <img src="~/images/logo2clear.png" alt="Featured Image" style="width: 50%; height: auto;">
         <br />
-        <h1 class="display-4">Explore the Joy of Cooking!</h1>
-        <p class="lead">Discover new recipes, unleash your creativity, and share your culinary masterpieces!</p>
-        <a class="btn btn-primary" href="@Url.Action("Create", "Recipes")">Add Your Recipe</a>
+        <h1 class="display-4">Открийте радостта от готвенето!</h1>
+        <p class="lead">Открийте нови рецепти, разгърнете креативността си и споделете кулинарните си шедьоври!</p>
+        <a class="btn btn-primary" href="@Url.Action("Create", "Recipes")">Добави своята рецепта</a>
     </div>
 
     <div class="row">
-        @foreach (var recipe in Model.FeaturedRecipes)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <img src="@Url.Action("GetImage", "Recipes", new { id = recipe.Id })" class="card-img-top" alt="@recipe.Title">
-                    <div class="card-body">
-                        <h5 class="card-title">@recipe.Title</h5>
-                        <p class="card-text">@recipe.Description</p>
-                        <a href="@Url.Action("Details", "Recipes", new { id = recipe.Id })" class="btn btn-primary">View Recipe</a>
-                    </div>
-                </div>
-            </div>
-        }
+    @foreach (var card in Model.FeaturedRecipes)
+    {
+        @Html.Partial("_RecipeCard", card)
+    }
     </div>
 </div>
+
+
