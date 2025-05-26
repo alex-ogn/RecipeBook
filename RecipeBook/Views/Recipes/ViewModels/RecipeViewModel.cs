@@ -20,6 +20,7 @@ namespace RecipeBook.Views.Recipes.ViewModels
             Image = recipe.Image;
             RecipeIngredients = recipe.RecipeIngredients;
             Category = recipe.Category;
+            ViewCount = recipe.ViewCount;
         }
     }
 }

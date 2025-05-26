@@ -4,7 +4,7 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit Recipe</h1>
+<h1>Редактирай рецепта</h1>
 
 <form asp-action="Edit" method="post" enctype="multipart/form-data" id="recipeForm">
     <input type="hidden" asp-for="Id" />
@@ -17,13 +17,13 @@
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" class="form-control" rows="6"></textarea>
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Instructions" class="control-label"></label>
-                <input asp-for="Instructions" class="form-control" />
+                <label asp-for="Instructions"></label>
+                <textarea asp-for="Instructions" class="form-control" rows="6"></textarea>
                 <span asp-validation-for="Instructions" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -85,9 +85,38 @@
             border: 2px solid green;
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trumbowyg@2.28.0/dist/ui/trumbowyg.min.css" />
 }
 
 @section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.28.0/dist/trumbowyg.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('textarea[name="Description"]').trumbowyg({
+                btns: [
+                    ['strong', 'em', 'underline'],
+                    ['unorderedList', 'orderedList'],
+                    ['removeformat']
+                ]
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $('textarea[name="Instructions"]').trumbowyg({
+                btns: [
+                    ['strong', 'em', 'underline'],
+                    ['unorderedList', 'orderedList'],
+                    ['removeformat']
+                ]
+            });
+        });
+    </script>
+
     <script>
         let ingredientQuantities = {};
 

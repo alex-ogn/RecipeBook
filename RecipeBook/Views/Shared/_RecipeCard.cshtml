@@ -1,0 +1,30 @@
+﻿@model RecipeBook.Views.Recipes.ViewModels.RecipeCardViewModel
+
+<div class="col-md-4 mb-4">
+    <div class="card h-100">
+        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Title">
+        <div class="card-body d-flex flex-column">
+            <h5 class="card-title">@Model.Title</h5>
+            <p class="card-text">@Model.DescriptionPreview</p>
+            <div class="mt-auto">
+            <a asp-action="Details" asp-controller="Recipes" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
+                Детайли
+            </a>
+
+            @if (Model.IsOwner)
+            {
+                <a asp-action="Edit" asp-controller="Recipes" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">
+                    Редактирай
+                </a>
+                <a asp-action="Delete" asp-controller="Recipes" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">
+                    Изтрий
+                </a>
+            }
+            </div>
+            <div class="text-muted small mt-2 text-end">
+                <span class="me-3">❤️ @Model.LikesCount</span>
+                <span>👁️ @Model.ViewCount</span>
+            </div>
+        </div>
+    </div>
+</div>

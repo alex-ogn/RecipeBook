@@ -14,7 +14,10 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.Services;
 using RecipeBook.Views.Recipes.ViewModels;
+using Ganss.Xss;
+using System.Text.RegularExpressions;
 
 namespace RecipeBook.Controllers
 {
@@ -22,14 +25,13 @@ namespace RecipeBook.Controllers
     public class RecipesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IRecipePdfService _pdfService;
 
-        public RecipesController(ApplicationDbContext context)
+        public RecipesController(ApplicationDbContext context, IRecipePdfService pdfService)
         {
             _context = context;
+            _pdfService = pdfService;
         }
-
-        // GET: Recipes
-
 
         public async Task<IActionResult> Index(int? categoryId)
         {
@@ -40,17 +42,22 @@ namespace RecipeBook.Controllers
             ViewData["CurrentUserId"] = currentUserId;
             ViewData["CurrentAction"] = "Index";
 
-            IQueryable<Recipe> applicationDbContext = _context.Recipies.Include(r => r.User)
+            IQueryable<Recipe> recipesQuery = _context.Recipies
+                .Include(r => r.User)
+                .Include(r => r.Likes)
                 .Include(r => r.Category);
 
             if (categoryId.HasValue)
             {
-                applicationDbContext = applicationDbContext.Where(r => r.Category.Id == categoryId);
+                recipesQuery = recipesQuery.Where(r => r.Category.Id == categoryId);
             }
+
+            var recipes = await recipesQuery.ToListAsync();
+            var cardViewModels = MapToCardViewModels(recipes, currentUserId);
 
             var viewModel = new RecipeFilterViewModel
             {
-                Recipes = await applicationDbContext.ToListAsync(),
+                Recipes = cardViewModels,
                 Categories = new SelectList(_context.RecipeCategories, "Id", "Name"),
                 SelectedCategoryId = categoryId
             };
@@ -70,6 +77,7 @@ namespace RecipeBook.Controllers
 
             var recipes = await _context.Recipies
                 .Include(r => r.User)
+                 .Include(r => r.Likes)
                 .Where(r => r.UserId == userId)
                 .ToListAsync();
 
@@ -85,7 +93,8 @@ namespace RecipeBook.Controllers
             ViewData["FollowersCount"] = followersCount;
             ViewData["FollowingCount"] = followingCount;
 
-            return View(recipes);
+            var cardViewModels = MapToCardViewModels(recipes, currentUserId);
+            return View(cardViewModels);
         }
 
         [AllowAnonymous]
@@ -126,6 +135,22 @@ namespace RecipeBook.Controllers
             }
 
             string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var cookieKey = $"viewed_recipe_{id}";
+
+            // Ако потребителят не е автор и няма cookie:
+            if (recipe.UserId != currentUserId && !Request.Cookies.ContainsKey(cookieKey))
+            {
+                recipe.ViewCount++;
+                _context.Update(recipe);
+                await _context.SaveChangesAsync();
+
+                // cookie за 1 час
+                Response.Cookies.Append(cookieKey, "1", new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+            }
+
             bool isSaved = recipe.SavedByUsers
                                  .Any(s => s.UserId == currentUserId);
 
@@ -208,11 +233,28 @@ namespace RecipeBook.Controllers
 
                 if (ModelState.IsValid)
                 {
+
                     var recipe = new Recipe();
                     string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     model.EditRecipe(recipe);
                     recipe.UserId = userId;
                     recipe.Category = _context.RecipeCategories.Find(model.CategoryId.Value);
+
+                    var sanitizer = new HtmlSanitizer();
+                    sanitizer.AllowedTags.Add("b");
+                    sanitizer.AllowedTags.Add("i");
+                    sanitizer.AllowedTags.Add("ul");
+                    sanitizer.AllowedTags.Add("ol");
+                    sanitizer.AllowedTags.Add("li");
+                    sanitizer.AllowedTags.Add("p");
+                    sanitizer.AllowedTags.Add("span");
+                    sanitizer.AllowedTags.Add("strong");
+                    sanitizer.AllowedTags.Add("em");
+                    sanitizer.AllowedTags.Add("br");
+
+                    // Почистване на Description/Instructions
+                    recipe.Description = sanitizer.Sanitize(recipe.Description);
+                    recipe.Instructions = sanitizer.Sanitize(recipe.Instructions);
 
                     if (imageFile != null && imageFile.Length > 0)
                     {
@@ -576,6 +618,7 @@ namespace RecipeBook.Controllers
 
             var recipesQuery = _context.Recipies
                 .Include(r => r.Category)
+                .Include(r => r.Likes)
                 .Where(r => likedRecipeIds.Contains(r.Id));
 
             if (categoryId.HasValue)
@@ -584,6 +627,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipes = await recipesQuery.ToListAsync();
+            var cardViewModels = MapToCardViewModels(recipes, userId);
 
             var categories = await _context.RecipeCategories
                 .Select(c => new SelectListItem
@@ -594,7 +638,7 @@ namespace RecipeBook.Controllers
 
             var model = new RecipeFilterViewModel
             {
-                Recipes = recipes,
+                Recipes = cardViewModels,
                 Categories = new SelectList(categories, "Value", "Text"),
                 SelectedCategoryId = categoryId
             };
@@ -625,6 +669,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipes = await recipesQuery.ToListAsync();
+            var cardViewModels = MapToCardViewModels(recipes, userId);
 
             var categories = await _context.RecipeCategories
                 .Select(c => new SelectListItem
@@ -635,7 +680,7 @@ namespace RecipeBook.Controllers
 
             var model = new RecipeFilterViewModel
             {
-                Recipes = recipes,
+                Recipes = cardViewModels,
                 Categories = new SelectList(categories, "Value", "Text"),
                 SelectedCategoryId = categoryId
             };
@@ -686,6 +731,39 @@ namespace RecipeBook.Controllers
             }
 
             return Redirect(Request.Headers["Referer"].ToString());
+        }
+
+        public async Task<IActionResult> ExportPdf(int id)
+        {
+            var recipe = await _context.Recipies
+                .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
+                .Include(r => r.Category)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (recipe == null)
+                return NotFound();
+
+            var pdf = _pdfService.GenerateRecipePdf(recipe);
+            return File(pdf, "application/pdf", $"{recipe.Title}.pdf");
+        }
+
+        private List<RecipeCardViewModel> MapToCardViewModels(IEnumerable<Recipe> recipes, string currentUserId)
+        {
+            bool isUserAdmin = User.IsInRole("Admin");
+
+            return recipes.Select(r => new RecipeCardViewModel
+            {
+                Id = r.Id,
+                Title = r.Title,
+                DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
+                    .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
+                ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
+                UserName = r.User?.UserName ?? "Потребител",
+                UserId = r.UserId,
+                LikesCount = r.Likes?.Count ?? 0,
+                ViewCount = r.ViewCount,
+                IsOwner = r.UserId == currentUserId || isUserAdmin
+            }).ToList();
         }
 
     }

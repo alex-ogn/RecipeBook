@@ -1,9 +1,9 @@
-﻿using RecipeBook.Models;
+﻿using RecipeBook.Views.Recipes.ViewModels;
 
 namespace RecipeBook.Views.Home.ViewModels
 {
     public class HomeViewModel
     {
-        public List<Recipe> FeaturedRecipes { get; set; }
+        public List<RecipeCardViewModel> FeaturedRecipes { get; set; }
     }
 }
