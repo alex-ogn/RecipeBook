@@ -1,3 +1,7 @@
+body {
+    padding-top: 80px; /* заради fixed-top */
+}
+
 html {
     font-size: 14px;
 }
