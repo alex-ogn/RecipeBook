@@ -18,6 +18,7 @@ using RecipeBook.Services;
 using RecipeBook.Views.Recipes.ViewModels;
 using Ganss.Xss;
 using System.Text.RegularExpressions;
+using RecipeBook.Views.Enums;
 
 namespace RecipeBook.Controllers
 {
@@ -33,33 +34,39 @@ namespace RecipeBook.Controllers
             _pdfService = pdfService;
         }
 
-        public async Task<IActionResult> Index(int? categoryId)
+        public async Task<IActionResult> Index(int? categoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
         {
-            bool isUserAdmin = User.IsInRole("Admin");
-            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier); 
-
-            ViewData["IsUserAdmin"] = isUserAdmin;
+            string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             ViewData["CurrentUserId"] = currentUserId;
             ViewData["CurrentAction"] = "Index";
 
-            IQueryable<Recipe> recipesQuery = _context.Recipies
+            var query = _context.Recipies
                 .Include(r => r.User)
+                .Include(r => r.Category)
                 .Include(r => r.Likes)
-                .Include(r => r.Category);
+                .AsQueryable();
 
             if (categoryId.HasValue)
             {
-                recipesQuery = recipesQuery.Where(r => r.Category.Id == categoryId);
+                query = query.Where(r => r.Category.Id == categoryId);
             }
 
-            var recipes = await recipesQuery.ToListAsync();
-            var cardViewModels = MapToCardViewModels(recipes, currentUserId);
+            query = sortOrder switch
+            {
+                RecipeSortOption.MostLiked => query.OrderByDescending(r => r.Likes.Count),
+                RecipeSortOption.MostViewed => query.OrderByDescending(r => r.ViewCount),
+                _ => query.OrderByDescending(r => r.Id)
+            };
+
+            var recipes = await query.ToListAsync();
+            var recipeCards = MapToCardViewModels(recipes, currentUserId);
 
             var viewModel = new RecipeFilterViewModel
             {
-                Recipes = cardViewModels,
+                Recipes = recipeCards,
                 Categories = new SelectList(_context.RecipeCategories, "Id", "Name"),
-                SelectedCategoryId = categoryId
+                SelectedCategoryId = categoryId,
+                SortOrder = sortOrder
             };
 
             return View(viewModel);
