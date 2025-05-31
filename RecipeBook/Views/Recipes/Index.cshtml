@@ -1,37 +1,69 @@
 ﻿@model RecipeBook.Views.Recipes.ViewModels.RecipeFilterViewModel
+@using RecipeBook.Views.Enums
 
-@{
-    ViewData["Title"] = "Recipes";
-    bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
-    string currentUserId = ViewData["CurrentUserId"] as string;
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h1 class="display-5 mb-2">Рецепти</h1>
+        <a asp-action="Create" class="btn btn-success">+ Нова рецепта</a>
+    </div>
+
+    @if (TempData["SearchResults"] != null)
+{
+    <div class="alert alert-info mt-3">
+        Резултати от търсене за: <strong>@TempData["SearchResults"]</strong>
+    </div>
 }
 
+    <form asp-action="Index" method="get" class="mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Категория:</label>
+                <select name="categoryId" asp-items="@Model.Categories" class="form-select">
+                    <option value="">Всички</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Сортирай по:</label>
+                <select name="sortOrder" class="form-select">
+                    @foreach (RecipeSortOption option in Enum.GetValues(typeof(RecipeSortOption)))
+                    {
+                        var label = option switch
+                        {
+                            RecipeSortOption.Newest => "Най-нови",
+                            RecipeSortOption.MostLiked => "Най-харесвани",
+                            RecipeSortOption.MostViewed => "Най-гледани",
+                            _ => option.ToString()
+                        };
 
-@using System.Text.RegularExpressions
+                        <option value="@option" selected="@(Model.SortOrder == option)">
+                            @label
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-primary">Филтрирай</button>
+            </div>
+            <div class="col-md-2 d-grid">
+                <a asp-action="Index" class="btn btn-outline-secondary">Изчисти</a>
+            </div>
+        </div>
+    </form>
 
-<div class="header-container">
-    <h1>Recipes</h1>
-    <div class="actions">
-        <a asp-action="Create" class="btn btn-success">Create New</a>
-    </div>
-</div>
-
-<form asp-action="@(ViewData["CurrentAction"] ?? "Index")" method="get" class="filter-form">
-    <div class="filter-container">
-        <label for="category" class="form-label">Category:</label>
-        <select id="category" name="categoryId" asp-items="@Model.Categories" asp-for="SelectedCategoryId" class="form-control">
-            <option value="">All</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Filter</button>
-    </div>
-</form>
-
-
-<div class="container mt-3">
-    <div class="row">
-     @foreach (var card in @Model.Recipes)
+    @if (Model.Recipes.Any())
     {
-        @Html.Partial("_RecipeCard", card)
+        <div class="row">
+            @foreach (var card in Model.Recipes)
+            {
+                @Html.Partial("_RecipeCard", card)
+            }
+        </div>
     }
-    </div>
+    else
+    {
+        <div class="alert alert-info mt-4">Няма рецепти по избрания филтър.</div>
+    }
 </div>
+
+

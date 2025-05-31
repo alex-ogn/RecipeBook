@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RecipeBook.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
+
      @RenderSection("Styles", required: false)
 </head>
 <body>
@@ -56,6 +58,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">За нас</a>
                         </li>
+                        <li class="nav-item">
+                            <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3">
+                                <input class="form-control me-2" type="search" name="q" placeholder="Търси рецепти или потребител..." aria-label="Search" />
+                                <button class="btn btn-outline-success" type="submit">🔍</button>
+                            </form>
+                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -80,3 +88,4 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
