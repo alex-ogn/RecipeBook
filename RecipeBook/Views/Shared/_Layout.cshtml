@@ -13,62 +13,72 @@
 </head>
 <body>
     <header>
-            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3 navbar-custom">
+        <nav class="navbar navbar-expand-sm navbar-light fixed-top navbar-custom">
             <div class="container-fluid">
                 <a class="navbar-brand image-swap" href="/" alt="Homepage">
                     Recipe Book
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <!-- ☰ Бутон за мобилно меню -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+
+                <!-- Основно меню -->
+                <div class="collapse navbar-collapse" id="mainNavbar">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                        <!-- Администрация -->
                         @if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="IngredientCategories" asp-action="Index">Категории на съставки</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Ingredients" asp-action="Index">Съставки</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="RecipeCategories" asp-action="Index">Категории на рецепти</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">📁 Администрация</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="IngredientCategories" asp-action="Index">Категории на съставки</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Ingredients" asp-action="Index">Съставки</a></li>
+                                    <li><a class="dropdown-item" asp-controller="RecipeCategories" asp-action="Index">Категории на рецепти</a></li>
+                                </ul>
                             </li>
                         }
+
                         @using System.Security.Claims
                         @{
                             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                         }
-                        @if (User.IsInRole("Admin") || User.IsInRole("User"))
+                        <!-- Моите -->
+                        @if (User.IsInRole("User") || User.IsInRole("Admin"))
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Recipes" asp-action="Index">Рецепти</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@userId">Моите рецепти</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Recipes" asp-action="SavedRecipes">Запазени</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Recipes" asp-action="LikedRecipes">Харесани</a>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">👤 Моите</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@userId">Моите рецепти</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="SavedRecipes">Запазени</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="LikedRecipes">Харесани</a></li>
+                                </ul>
                             </li>
                         }
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="About">За нас</a>
+
+                        <!-- 🌍 Общи -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">🌍 Общи</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="Recipes" asp-action="Index">Рецепти</a></li>
+                                <li><a class="dropdown-item" asp-controller="Home" asp-action="About">За нас</a></li>
+                            </ul>
                         </li>
-                        <li class="nav-item">
-                            <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3">
-                                <input class="form-control me-2" type="search" name="q" placeholder="Търси рецепти или потребител..." aria-label="Search" />
-                                <button class="btn btn-outline-success" type="submit">🔍</button>
-                            </form>
-                         </li>
                     </ul>
+
+                    <!-- 🔍 Търсачка -->
+                    <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3 position-relative">
+                        <input id="globalSearchBox" name="q" class="form-control me-2" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
+                        <button class="btn btn-outline-success" type="submit">🔍</button>
+                    </form>
+
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
+
     </header>
 
     <div class="container">
