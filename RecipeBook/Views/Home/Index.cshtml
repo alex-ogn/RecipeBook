@@ -4,15 +4,46 @@
 
 @model RecipeBook.Views.Home.ViewModels.HomeViewModel
 
+<link rel="stylesheet" href="~/css/Index.css" />
+
 <div class="container mt-3">
 
-    <div class="container text-center mt-4">
-        <img src="~/images/logo2clear.png" alt="Featured Image" style="width: 50%; height: auto;">
-        <br />
-        <h1 class="display-4">Открийте радостта от готвенето!</h1>
-        <p class="lead">Открийте нови рецепти, разгърнете креативността си и споделете кулинарните си шедьоври!</p>
-        <a class="btn btn-primary" href="@Url.Action("Create", "Recipes")">Добави своята рецепта</a>
-    </div>
+    <!-- Hero Section -->
+    <section class="hero-section position-relative overflow-hidden mb-5">
+        <!-- Logo background image -->
+        <img src="~/images/logo2clear.png" alt="Logo" class="hero-logo-bg">
+
+        <div class="container position-relative z-1">
+            <div class="row align-items-center">
+                <div class="col-lg-6 text-center text-lg-start">
+                    <h1 class="display-5 fw-bold mb-3 text-dark-charcoal">Открийте радостта от готвенето</h1>
+                    <p class="lead text-muted mb-4">Открийте нови рецепти, разгърнете креативността си и споделете кулинарните си шедьоври!</p>
+                    <a asp-action="Create" asp-controller="Recipes" class="btn btn-warning me-3">➕ Добави рецепта</a>
+                    <a asp-action="Index" asp-controller="Recipes" class="btn btn-outline-dark">🔍 Разгледай рецепти</a>
+                </div>
+                <div class="col-lg-6 mt-4 mt-lg-0">
+                    <div class="row g-3 justify-content-center">
+                        <div class="col-6">
+                            <div class="stats-card text-center">
+                                <h3 class="text-warm-red fw-bold">@Model.CountRecipes</h3>
+                                <p class="mb-0 text-muted">Рецепти</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="stats-card text-center">
+                                <h3 class="text-accent fw-bold">@Model.CountUsers</h3>
+                                <p class="mb-0 text-muted">Потребители</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <br />
+
+    <h1>Най-популярни</h1>
 
     <div class="row">
     @foreach (var card in Model.FeaturedRecipes)

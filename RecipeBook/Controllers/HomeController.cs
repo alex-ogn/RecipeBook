@@ -23,14 +23,20 @@ namespace RecipeBook.Controllers
 
         public IActionResult Index()
         {
-            var recipes = _context.Recipies.Include(r => r.Likes).Take(3).ToList(); // Fetches the first 6 recipes
+            var recipes = _context.Recipies
+                .Include(r => r.Likes)
+                .Include(r => r.User)
+                .OrderByDescending(r => r.Likes.Count)  // Сортиране първо по харесвания
+                .ThenByDescending(r => r.ViewCount)     // после по гледания
+                .Take(6)
+                .ToList();
 
-            var cardViewModels =  recipes.Select(r => new RecipeCardViewModel
+            var cardViewModels = recipes.Select(r => new RecipeCardViewModel
             {
                 Id = r.Id,
                 Title = r.Title,
                 DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
-        .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
+                    .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
                 ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
                 UserName = r.User?.UserName ?? "Потребител",
                 UserId = r.UserId,
@@ -41,11 +47,14 @@ namespace RecipeBook.Controllers
 
             var model = new HomeViewModel
             {
+                CountUsers = _context.Users.Count(),
+                CountRecipes = _context.Recipies.Count(),
                 FeaturedRecipes = cardViewModels
             };
 
             return View(model);
         }
+
 
         public IActionResult About()
         {

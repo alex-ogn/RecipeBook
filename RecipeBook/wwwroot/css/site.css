@@ -1,37 +1,13 @@
-body {
-    padding-top: 80px; /* ������ fixed-top */
+﻿body {
+    padding-top: 80px; /* заради fixed-top */
 }
 
 html {
     font-size: 14px;
 }
 
-header nav.navbar-custom,
-.navbar-custom.navbar-expand-sm.navbar-toggleable-sm.navbar-light.bg-white {
-    background-color: var(--earthy-green) !important;
-    color: var(--rich-cream) !important;
-}
 
-.navbar-custom .navbar-brand,
-.navbar-custom .nav-link {
-    color: var(--rich-cream) !important;
-}
-
-    .navbar-custom .nav-link:hover {
-        /*    background-color: var(--warm-red) !important;    ���� � ���� �� ������*/
-        color: var(--buttery-yellow) !important;
-    }
-
-.navbar-custom .navbar-nav .nav-item {
-    margin-right: 5px; /* Adjust the right margin to create space between buttons */
-}
-
-    /* If you want to remove the margin on the last item to align it properly on the right */
-    .navbar-custom .navbar-nav .nav-item:last-child {
-        margin-right: 0;
-    }
-
-/* �������� �� ���� */
+/* Бутоните на бара */
 
 .navbar-custom .navbar-nav .nav-link {
     background-color: transparent; /* Remove any background */
@@ -73,6 +49,8 @@ html {
     --rich-cream: #F1FAEE;
     --dark-charcoal: #264653;
     --buttery-yellow: #F4A261;
+    --light-text-color: #f1f1f1;
+    --accent-color: #f4a261; /* buttery-orange for hover */
 }
 
 body {
@@ -126,7 +104,7 @@ footer {
     margin: 0 auto; /* Centers the image if it is not as wide as the container */
 }
 
-/* ���� � �� �������� � home page-a*/
+/* това е за панелите в home page-a*/
 
 .card-img-top {
     width: 100%; /* makes the image responsive */
@@ -242,3 +220,80 @@ body, html {
 /*    // Ensures full viewport height padding-bottom: 100px;
     // Add padding at the bottom equal to or greater than the height of the footer*/
 }
+
+
+/********************************************************* Navbar background and transparency **************************************/
+
+.navbar-custom .navbar-brand,
+.navbar-custom .nav-link {
+    color: var(--rich-cream) !important;
+}
+
+    .navbar-custom .nav-link:hover {
+        /*    background-color: var(--warm-red) !important;    това е фона на бутона*/
+        color: var(--buttery-yellow) !important;
+    }
+
+.navbar-custom .navbar-nav .nav-item {
+    margin-right: 5px; /* Adjust the right margin to create space between buttons */
+}
+
+    /* If you want to remove the margin on the last item to align it properly on the right */
+    .navbar-custom .navbar-nav .nav-item:last-child {
+        margin-right: 0;
+    }
+
+
+.navbar-custom {
+    background-color: rgba(26, 97, 88, 0.85); /* earthy-green с 85% прозрачност */
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    color: var(--rich-cream);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+    /* 🟨 Link colors */
+    .navbar-custom .navbar-brand,
+    .navbar-custom .nav-link {
+        color: #f1f1f1; /* светъл текст */
+        transition: color 0.3s ease;
+    }
+
+        .navbar-custom .nav-link:hover {
+            color: #f4a261; /* акцентен цвят при hover */
+        }
+
+    /* 🟦 Dropdown menus on hover */
+    .navbar-custom .dropdown:hover > .dropdown-menu {
+        display: block;
+    }
+
+    /* 🟫 Dropdown menu style */
+    .navbar-custom .dropdown-menu {
+        background-color: rgba(26, 97, 88, 0.85); /* earthy-green същата полупрозрачност като navbar */
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border: none;
+        border-radius: 8px;
+        margin-top: 0;
+        padding: 0;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ⬜ Dropdown items */
+    .navbar-custom .dropdown-item {
+        color: #f1f1f1;
+        padding: 12px 20px;
+        transition: background-color 0.2s ease;
+    }
+
+        .navbar-custom .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: #f4a261;
+        }
+
+    /* Optional: remove caret */
+    .navbar-custom .dropdown-toggle::after {
+        display: none;
+    }
