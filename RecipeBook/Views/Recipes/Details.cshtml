@@ -9,19 +9,7 @@
     var likeCount = (int)(ViewData["LikeCount"] ?? 0);
 }
 
-<form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post">
-    <input type="hidden" name="id" value="@Model.Id" />
-    <button type="submit" class="btn btn-outline-warning">
-        @(isSaved ? "Премахни от запазени" : "Запази рецепта")
-    </button>
-</form>
 
-<form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="d-inline">
-    <input type="hidden" name="id" value="@Model.Id" />
-    <button type="submit" class="btn btn-sm @(isLiked ? "btn-danger" : "btn-outline-danger")">
-        ❤️ @likeCount
-    </button>
-</form>
 
 <!-- Връзка към CSS файла -->
 <link rel="stylesheet" href="~/css/recipe-details.css" />
@@ -55,6 +43,24 @@
                 <a asp-action="ExportPdf" asp-route-id="@Model.Id" target="_blank" class="btn btn-outline-secondary mt-2">
                     📄 Изтегли като PDF
                 </a>
+
+                <br /><br />
+
+                <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="d-inline">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-sm @(isLiked ? "btn-danger" : "btn-outline-danger")">
+                        ❤️ @likeCount
+                    </button>
+                </form>
+
+                <br />
+
+                <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-outline-warning">
+                        @(isSaved ? "Премахни от запазени" : "Запази")
+                    </button>
+                </form>
 
             </div>
         </div>
@@ -93,6 +99,50 @@
         <div class="formatted-text">
             @Html.Raw(Model.Instructions)
         </div>
+    </div>
+
+    <div class="section-box">
+        <form asp-action="AddComment" method="post">
+            <input type="hidden" name="recipeId" value="@Model.Id" />
+            <div class="mb-2">
+                <textarea name="content" class="form-control" placeholder="Напиши коментар..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-sm btn-outline-success">Публикувай</button>
+        </form>
+
+        <br />
+    <h5>Коментари:</h5>
+    @if (Model.Comments != null && Model.Comments.Any())
+    {
+        @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+        {
+            <div class="border rounded p-2 mb-2 bg-light">
+                <p class="mb-1">@comment.Content</p>
+                <small class="text-muted">от @comment.User.UserName на @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
+
+                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == ViewData["CurrentUserId"]?.ToString()))
+                {
+                        <form asp-action="EditComment" method="get" class="d-inline ms-2">
+                            <input type="hidden" name="id" value="@comment.Id" />
+                            <button type="submit" class="comment-action-btn edit">Редактирай</button>
+                        </form>
+                }
+              
+                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == ViewData["CurrentUserId"]?.ToString() || Model.UserId == currentUserId))
+                {
+                        <form asp-action="DeleteComment" method="post" class="d-inline ms-2">
+                            <input type="hidden" name="id" value="@comment.Id" />
+                            <button type="submit" class="comment-action-btn delete">Изтрий</button>
+                        </form>
+                }
+
+            </div>
+        }
+    }
+    else
+    {
+       <p class="text-muted">Няма добавени коментари.</p>
+    }
     </div>
 
     <!-- Бутони -->

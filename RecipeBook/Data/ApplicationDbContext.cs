@@ -14,6 +14,7 @@ namespace RecipeBook.Data
         public DbSet<SavedRecipe> SavedRecipes { get; set; }
         public DbSet<UserFollower> UserFollowers { get; set; }
         public DbSet<RecipeLike> RecipeLikes { get; set; }
+        public DbSet<RecipeComment> RecipeComments { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -89,6 +90,21 @@ namespace RecipeBook.Data
                 .WithMany(r => r.Likes)
                 .HasForeignKey(l => l.RecipeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // RecipeComment
+            modelBuilder.Entity<RecipeComment>()
+                .HasOne(rc => rc.Recipe)
+                .WithMany(r => r.Comments)
+                .HasForeignKey(rc => rc.RecipeId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            modelBuilder.Entity<RecipeComment>()
+                .HasOne(rc => rc.User)
+                .WithMany()
+                .HasForeignKey(rc => rc.UserId)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+
         }
     }
 }

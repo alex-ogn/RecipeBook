@@ -21,6 +21,7 @@ namespace RecipeBook.Views.Recipes.ViewModels
             RecipeIngredients = recipe.RecipeIngredients;
             Category = recipe.Category;
             ViewCount = recipe.ViewCount;
+            Comments = recipe.Comments;
         }
     }
 }

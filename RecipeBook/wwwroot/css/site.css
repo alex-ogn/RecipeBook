@@ -297,3 +297,30 @@ body, html {
     .navbar-custom .dropdown-toggle::after {
         display: none;
     }
+
+
+/* comments */
+.comment-action-btn {
+    all: unset;
+    background-color: transparent;
+    border: none;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    text-decoration: underline;
+    font-weight: normal;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+    .comment-action-btn.edit {
+        color: green;
+    }
+
+    .comment-action-btn.delete {
+        color: red;
+    }
+
+    .comment-action-btn:hover {
+        text-decoration: none;
+        opacity: 0.85;
+    }
