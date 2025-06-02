@@ -49,5 +49,7 @@ namespace RecipeBook.Models
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public ICollection<RecipeComment> Comments { get; set; } = new List<RecipeComment>();
+
     }
 }

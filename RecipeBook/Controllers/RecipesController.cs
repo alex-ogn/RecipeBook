@@ -109,11 +109,11 @@ namespace RecipeBook.Controllers
             var recipe = _context.Recipies.FirstOrDefault(r => r.Id == id);
             if (recipe != null && recipe.Image != null)
             {
-                return File(recipe.Image, "image/jpg");  
+                return File(recipe.Image, "image/jpg");
             }
             else
             {
-                return NotFound();  
+                return NotFound();
             }
         }
 
@@ -133,6 +133,8 @@ namespace RecipeBook.Controllers
                                        .Include(r => r.Category)
                                        .Include(r => r.User)
                                        .Include(r => r.SavedByUsers)
+                                       .Include(r => r.Comments)
+                                        .ThenInclude(c => c.User)
                                        .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)
@@ -621,7 +623,7 @@ namespace RecipeBook.Controllers
 
         [Authorize]
         public async Task<IActionResult> LikedRecipes(int? categoryId)
-{
+        {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var likedRecipeIds = await _context.RecipeLikes
@@ -664,7 +666,7 @@ namespace RecipeBook.Controllers
         }
         [Authorize]
         public async Task<IActionResult> SavedRecipes(int? categoryId)
-{
+        {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var savedRecipeIds = await _context.SavedRecipes
@@ -778,6 +780,93 @@ namespace RecipeBook.Controllers
                 IsOwner = r.UserId == currentUserId || isUserAdmin
             }).ToList();
         }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddComment(int recipeId, string content)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(content)) return RedirectToAction("Details", "Recipes", new { id = recipeId });
+
+            var comment = new RecipeComment
+            {
+                Content = content,
+                RecipeId = recipeId,
+                UserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.RecipeComments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", "Recipes", new { id = recipeId });
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteComment(int id)
+        {
+            var comment = await _context.RecipeComments.Include(c => c.Recipe).FirstOrDefaultAsync(c => c.Id == id);
+            if (comment == null) return NotFound();
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            bool isAdmin = User.IsInRole("Admin");
+            bool isOwner = comment.UserId == userId;
+            bool isRecipeOwner = comment.Recipe.UserId == userId;
+
+            if (!isAdmin && !isOwner && !isRecipeOwner)
+                return Forbid();
+
+            _context.RecipeComments.Remove(comment);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", "Recipes", new { id = comment.RecipeId });
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> EditComment(int id)
+        {
+            var comment = await _context.RecipeComments.Include(c => c.User).FirstOrDefaultAsync(c => c.Id == id);
+            if (comment == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (comment.UserId != currentUserId && !User.IsInRole("Admin"))
+                return Forbid();
+
+            var model = new CommentEditViewModel
+            {
+                Id = comment.Id,
+                Content = comment.Content
+            };
+
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditComment(CommentEditViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var comment = await _context.RecipeComments.FindAsync(model.Id);
+            if (comment == null) return NotFound();
+
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (comment.UserId != currentUserId && !User.IsInRole("Admin"))
+                return Forbid();
+
+            comment.Content = model.Content;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", "Recipes", new { id = comment.RecipeId });
+        }
+
 
     }
 }
