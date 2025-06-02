@@ -22,7 +22,6 @@ using RecipeBook.Views.Enums;
 
 namespace RecipeBook.Controllers
 {
-    [Authorize(Roles = "Admin,User")]
     public class RecipesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -177,6 +176,8 @@ namespace RecipeBook.Controllers
             return View(recipeViewModel);
         }
 
+
+        [Authorize(Roles = "Admin,User")]
         // GET: Recipes/Create
         public IActionResult Create()
         {
@@ -214,6 +215,7 @@ namespace RecipeBook.Controllers
             return View(viewModel);
         }
 
+        [Authorize]
         // POST: Recipes/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -332,6 +334,7 @@ namespace RecipeBook.Controllers
             }
         }
 
+        [Authorize]
         // GET: Recipes/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
@@ -391,6 +394,7 @@ namespace RecipeBook.Controllers
             return View(viewModel);
         }
 
+        [Authorize]
         // POST: Recipes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -529,6 +533,7 @@ namespace RecipeBook.Controllers
             return View(viewModel);
         }
 
+        [Authorize]
         // GET: Recipes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
@@ -572,6 +577,7 @@ namespace RecipeBook.Controllers
         {
             return (_context.Recipies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> SaveRecipe(int id)

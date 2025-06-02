@@ -16,18 +16,18 @@ public class SearchController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(string q)
+    public async Task<IActionResult> Index(string searchString)
     {
-        if (string.IsNullOrWhiteSpace(q))
+        if (string.IsNullOrWhiteSpace(searchString))
         {
             return RedirectToAction("Index", "Recipes");
         }
 
-        q = q.ToLower().Trim();
+        searchString = searchString.ToLower().Trim();
 
         // Търсене в потребители
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(q));
+            .FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(searchString));
 
         if (user != null)
         {
@@ -36,7 +36,7 @@ public class SearchController : Controller
 
         // Търсене в категории
         var category = await _context.RecipeCategories
-            .FirstOrDefaultAsync(c => c.Name.ToLower().Contains(q));
+            .FirstOrDefaultAsync(c => c.Name.ToLower().Contains(searchString));
 
         if (category != null)
         {
@@ -47,11 +47,11 @@ public class SearchController : Controller
         var matchingRecipes = await _context.Recipies
             .Include(r => r.User)
             .Include(r => r.Category)
-            .Where(r => r.Title.ToLower().Contains(q))
+            .Where(r => r.Title.ToLower().Contains(searchString))
             .ToListAsync();
 
         // Създай view model и пренасочи
-        TempData["SearchResults"] = q; // по желание за съобщение
+        TempData["SearchResults"] = searchString; // по желание за съобщение
         ViewData["CurrentUserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
         ViewData["IsUserAdmin"] = User.IsInRole("Admin");
 
@@ -76,7 +76,6 @@ public class SearchController : Controller
 
         return View("~/Views/Recipes/Index.cshtml", model);
     }
-
 
 
 }

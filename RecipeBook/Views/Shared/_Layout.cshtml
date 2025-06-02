@@ -32,11 +32,12 @@
                         @if (User.IsInRole("Admin"))
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">📁 Администрация</a>
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Администрация</a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" asp-controller="IngredientCategories" asp-action="Index">Категории на съставки</a></li>
                                     <li><a class="dropdown-item" asp-controller="Ingredients" asp-action="Index">Съставки</a></li>
                                     <li><a class="dropdown-item" asp-controller="RecipeCategories" asp-action="Index">Категории на рецепти</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Потребители</a></li>
                                 </ul>
                             </li>
                         }
@@ -49,7 +50,7 @@
                         @if (User.IsInRole("User") || User.IsInRole("Admin"))
                         {
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">👤 Моите</a>
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Моите</a>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@userId">Моите рецепти</a></li>
                                     <li><a class="dropdown-item" asp-controller="Recipes" asp-action="SavedRecipes">Запазени</a></li>
@@ -58,9 +59,9 @@
                             </li>
                         }
 
-                        <!-- 🌍 Общи -->
+                        <!-- Общи -->
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">🌍 Общи</a>
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Общи</a>
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" asp-controller="Recipes" asp-action="Index">Рецепти</a></li>
                                 <li><a class="dropdown-item" asp-controller="Home" asp-action="About">За нас</a></li>
@@ -68,9 +69,9 @@
                         </li>
                     </ul>
 
-                    <!-- 🔍 Търсачка -->
+                    <!-- Търсачка -->
                     <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3 position-relative">
-                        <input id="globalSearchBox" name="q" class="form-control me-2" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
+                        <input id="globalSearchBox" name="searchString" class="form-control me-2" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
                         <button class="btn btn-outline-success" type="submit">🔍</button>
                     </form>
 
