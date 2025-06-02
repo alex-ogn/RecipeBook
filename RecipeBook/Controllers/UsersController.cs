@@ -10,7 +10,7 @@ using System.Security.Claims;
 
 namespace RecipeBook.Controllers
 {
-    [Authorize]
+
     public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -22,13 +22,129 @@ namespace RecipeBook.Controllers
             _userManager = userManager;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Index()
+        [Authorize]
+        // Показва списък с всички потребители
+        public async Task<IActionResult> Index(string search)
         {
-            var user = await _userManager.GetUserAsync(User);
-            return View(user);
+            var usersQuery = _userManager.Users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                usersQuery = usersQuery.Where(u =>
+                    u.UserName.Contains(search) || u.Email.Contains(search));
+            }
+
+            var users = await usersQuery.ToListAsync();
+            ViewData["Search"] = search;
+            return View(users);
         }
 
+
+        [Authorize(Roles = "Admin")]
+        // GET: Users/Edit/id
+        public async Task<IActionResult> Edit(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var model = new EditUserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email
+            };
+
+            return View(model);
+        }
+
+        // POST: Users/Edit/id
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [HttpPost]
+        public async Task<IActionResult> Edit(EditUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null) return NotFound();
+
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+
+            if (model.ProfilePicture != null)
+            {
+                using var ms = new MemoryStream();
+                await model.ProfilePicture.CopyToAsync(ms);
+                user.ProfilePicture = ms.ToArray();
+                user.ProfilePictureVersion++;
+            }
+
+            // Смяна на паролата
+            if (!string.IsNullOrEmpty(model.NewPassword))
+            {
+                var passwordValidator = HttpContext.RequestServices.GetRequiredService<IPasswordValidator<ApplicationUser>>();
+                var passwordHasher = HttpContext.RequestServices.GetRequiredService<IPasswordHasher<ApplicationUser>>();
+
+                var passwordValidation = await passwordValidator.ValidateAsync(_userManager, user, model.NewPassword);
+                if (!passwordValidation.Succeeded)
+                {
+                    foreach (var error in passwordValidation.Errors)
+                        ModelState.AddModelError("NewPassword", error.Description);
+
+                    return View(model);
+                }
+
+                user.PasswordHash = passwordHasher.HashPassword(user, model.NewPassword);
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError("", error.Description);
+
+                return View(model);
+            }
+
+            TempData["SuccessMessage"] = "Профилът е обновен.";
+            return RedirectToAction("Index", "Users");
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangePassword(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            ViewBag.UserId = user.Id;
+            ViewBag.Username = user.UserName;
+            return View();
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string id, string newPassword)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            if (result.Succeeded)
+                return RedirectToAction(nameof(Index));
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View();
+        }
+
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
         {
