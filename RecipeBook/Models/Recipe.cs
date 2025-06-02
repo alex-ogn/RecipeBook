@@ -46,5 +46,8 @@ namespace RecipeBook.Models
 
         public int ViewCount { get; set; } = 0;
 
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }
