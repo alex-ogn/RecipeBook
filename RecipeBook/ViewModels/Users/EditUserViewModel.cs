@@ -18,7 +18,7 @@ namespace RecipeBook.ViewModels.Users
 
         [Phone(ErrorMessage = "Моля, въведете валиден телефонен номер.")]
         [Display(Name = "Телефон")]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [Display(Name = "Нова парола")]
         [DataType(DataType.Password)]

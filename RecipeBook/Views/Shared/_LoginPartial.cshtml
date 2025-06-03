@@ -1,12 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
 <ul class="navbar-nav">
 @if (SignInManager.IsSignedIn(User))
 {
+   var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
     <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Здравейте, @User.Identity?.Name</a>
+            <a class="nav-link text-dark" asp-controller="Users" asp-action="Edit" asp-route-id="@userId" title="Manage"> Здравейте, @User.Identity?.Name</a>
     </li>
     <li class="nav-item">
         <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">

@@ -28,7 +28,7 @@
         {
             <tr>
                 <td>
-                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id })"
+                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, user.ProfilePictureVersion })"
      alt="Профилна снимка"
      class="rounded-circle"
      style="width: 100px; height: 100px; object-fit: cover;" /> 
