@@ -17,12 +17,14 @@ namespace RecipeBook.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
         private readonly IUserProfileService _userProfileService;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IUserProfileService userProfileService)
+        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IUserProfileService userProfileService, SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
             _userProfileService = userProfileService;
+            _signInManager = signInManager;
         }
 
         [Authorize]
@@ -43,11 +45,21 @@ namespace RecipeBook.Controllers
         }
 
 
-        [Authorize(Roles = "Admin")]
-        // GET: Users/Edit/id
-        public async Task<IActionResult> Edit(string id)
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> Edit(string? id)
         {
-            var user = await _userManager.FindByIdAsync(id);
+            // Ако няма ID (т.е. обикновен потребител), вземаме текущия
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            if (!isAdmin && id != null && id != currentUserId)
+            {
+                return Forbid(); // Не е админ, но пробва да редактира чужд профил
+            }
+
+            var targetId = id ?? currentUserId;
+            var user = await _userManager.FindByIdAsync(targetId);
             if (user == null) return NotFound();
 
             var model = new EditUserViewModel
@@ -64,17 +76,26 @@ namespace RecipeBook.Controllers
 
 
         // POST: Users/Edit/id
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EditUserViewModel model)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var isAdmin = User.IsInRole("Admin");
+
+            // Ограничение: обикновен потребител може да променя само себе си
+            if (!isAdmin && model.Id != currentUserId)
+            {
+                return Forbid();
+            }
+
             if (!ModelState.IsValid) return View(model);
 
             var user = await _userManager.FindByIdAsync(model.Id);
             if (user == null) return NotFound();
 
-            var result = await _userProfileService.UpdateUserProfileAsync(user, model, isAdmin: true);
+            var result = await _userProfileService.UpdateUserProfileAsync(user, model, isAdmin);
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
@@ -83,9 +104,13 @@ namespace RecipeBook.Controllers
                 return View(model);
             }
 
+            if (!isAdmin)
+                await _signInManager.RefreshSignInAsync(user); // важи само за текущия юзър
+
             TempData["SuccessMessage"] = "Профилът е обновен.";
-            return RedirectToAction("Index");
+            return isAdmin ? RedirectToAction("Index") : RedirectToAction("Edit");
         }
+
 
 
         [Authorize(Roles = "Admin")]
