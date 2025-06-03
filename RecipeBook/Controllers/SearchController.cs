@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
-using RecipeBook.Views.Recipes.ViewModels;
+using RecipeBook.ViewModels.Recipes;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;

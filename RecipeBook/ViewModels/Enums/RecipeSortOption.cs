@@ -1,4 +1,4 @@
-﻿namespace RecipeBook.Views.Enums
+﻿namespace RecipeBook.ViewModels.Enums
 {
     public enum RecipeSortOption
     {

@@ -44,24 +44,25 @@
                     📄 Изтегли като PDF
                 </a>
 
-                <br /><br />
+                <br />    <br /> 
 
-                <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="d-inline">
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="btn btn-sm @(isLiked ? "btn-danger" : "btn-outline-danger")">
-                        ❤️ @likeCount
-                    </button>
-                </form>
+                 <div class="d-flex gap-3 align-items-center">           
+                    <!-- Харесване -->
+                    <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="icon-form">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="icon-button">
+                            <i class="bi bi-heart-fill @(isLiked ? "text-danger" : "text-secondary")"></i>
+                        </button>
+                    </form>
 
-                <br />
-
-                <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post">
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <button type="submit" class="btn btn-outline-warning">
-                        @(isSaved ? "Премахни от запазени" : "Запази")
-                    </button>
-                </form>
-
+                    <!-- Запазване -->
+                    <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post" class="icon-form">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="icon-button">
+                            <i class="bi @(isSaved ? "bi-bookmark-fill text-warning" : "bi-bookmark text-secondary")"></i>
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

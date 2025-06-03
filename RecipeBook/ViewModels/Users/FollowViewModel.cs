@@ -1,6 +1,6 @@
 ﻿using RecipeBook.Models;
 
-namespace RecipeBook.Views.Users.ViewModels
+namespace RecipeBook.ViewModels.Users
 {
     public class FollowViewModel
     {

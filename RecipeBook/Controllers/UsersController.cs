@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
-using RecipeBook.Views.Users.ViewModels;
+using RecipeBook.Services;
+using RecipeBook.ViewModels.Users;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
 
@@ -15,11 +16,13 @@ namespace RecipeBook.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ApplicationDbContext _context;
+        private readonly IUserProfileService _userProfileService;
 
-        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IUserProfileService userProfileService)
         {
             _context = context;
             _userManager = userManager;
+            _userProfileService = userProfileService;
         }
 
         [Authorize]
@@ -51,55 +54,27 @@ namespace RecipeBook.Controllers
             {
                 Id = user.Id,
                 UserName = user.UserName,
-                Email = user.Email
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                ProfilePictureVersion = user.ProfilePictureVersion
             };
 
             return View(model);
         }
 
+
         // POST: Users/Edit/id
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [HttpPost]
         public async Task<IActionResult> Edit(EditUserViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
+            if (!ModelState.IsValid) return View(model);
 
             var user = await _userManager.FindByIdAsync(model.Id);
             if (user == null) return NotFound();
 
-            user.UserName = model.UserName;
-            user.Email = model.Email;
-
-            if (model.ProfilePicture != null)
-            {
-                using var ms = new MemoryStream();
-                await model.ProfilePicture.CopyToAsync(ms);
-                user.ProfilePicture = ms.ToArray();
-                user.ProfilePictureVersion++;
-            }
-
-            // Смяна на паролата
-            if (!string.IsNullOrEmpty(model.NewPassword))
-            {
-                var passwordValidator = HttpContext.RequestServices.GetRequiredService<IPasswordValidator<ApplicationUser>>();
-                var passwordHasher = HttpContext.RequestServices.GetRequiredService<IPasswordHasher<ApplicationUser>>();
-
-                var passwordValidation = await passwordValidator.ValidateAsync(_userManager, user, model.NewPassword);
-                if (!passwordValidation.Succeeded)
-                {
-                    foreach (var error in passwordValidation.Errors)
-                        ModelState.AddModelError("NewPassword", error.Description);
-
-                    return View(model);
-                }
-
-                user.PasswordHash = passwordHasher.HashPassword(user, model.NewPassword);
-            }
-
-            var result = await _userManager.UpdateAsync(user);
+            var result = await _userProfileService.UpdateUserProfileAsync(user, model, isAdmin: true);
             if (!result.Succeeded)
             {
                 foreach (var error in result.Errors)
@@ -109,7 +84,7 @@ namespace RecipeBook.Controllers
             }
 
             TempData["SuccessMessage"] = "Профилът е обновен.";
-            return RedirectToAction("Index", "Users");
+            return RedirectToAction("Index");
         }
 
 
@@ -174,20 +149,6 @@ namespace RecipeBook.Controllers
             }
 
             return File("~/images/default-profile.png", "image/png");
-        }
-
-        [HttpGet]
-        [Authorize]
-        [Route("/Identity/Account/Manage/GetCurrentUserProfilePicture")]
-        public async Task<IActionResult> GetCurrentUserProfilePicture([FromServices] UserManager<ApplicationUser> userManager)
-        {
-            var user = await userManager.GetUserAsync(User);
-            if (user?.ProfilePicture != null)
-            {
-                return File(user.ProfilePicture, "image/jpg");
-            }
-
-            return File("~/images/default-profile", "image/png");
         }
 
         [Authorize]

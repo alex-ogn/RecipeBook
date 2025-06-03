@@ -324,3 +324,23 @@ body, html {
         text-decoration: none;
         opacity: 0.85;
     }
+
+
+/* Remove button styling, make it look like plain icon */
+.icon-button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: 1.5rem; /* Adjust icon size */
+    line-height: 1;
+}
+
+    .icon-button:focus {
+        outline: none;
+    }
+
+    /* Optional hover effect */
+    .icon-button:hover i {
+        opacity: 0.8;
+    }

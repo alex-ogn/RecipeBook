@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Linq;
 
-namespace RecipeBook.Views.Recipes.ViewModels
+namespace RecipeBook.ViewModels.Recipes
 {
     public class RecipeViewModel : Recipe
     {

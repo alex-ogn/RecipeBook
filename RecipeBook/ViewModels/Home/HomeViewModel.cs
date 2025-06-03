@@ -1,6 +1,6 @@
-﻿using RecipeBook.Views.Recipes.ViewModels;
+﻿using RecipeBook.ViewModels.Recipes;
 
-namespace RecipeBook.Views.Home.ViewModels
+namespace RecipeBook.ViewModels.Home
 {
     public class HomeViewModel
     {

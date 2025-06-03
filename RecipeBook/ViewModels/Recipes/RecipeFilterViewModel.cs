@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using RecipeBook.Models;
-using RecipeBook.Views.Enums;
+using RecipeBook.ViewModels.Enums;
 
-namespace RecipeBook.Views.Recipes.ViewModels
+namespace RecipeBook.ViewModels.Recipes
 {
     public class RecipeFilterViewModel
     {
