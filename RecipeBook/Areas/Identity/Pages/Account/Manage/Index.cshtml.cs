@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RecipeBook.Models;
+using RecipeBook.Services;
+using RecipeBook.ViewModels.Users;
 
 namespace RecipeBook.Areas.Identity.Pages.Account.Manage
 {
@@ -17,38 +19,23 @@ namespace RecipeBook.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserProfileService _userProfileService;
 
         public IndexModel(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            IUserProfileService userProfileService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _userProfileService = userProfileService;
         }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public string Username { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        [TempData]
-        public string StatusMessage { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
         [BindProperty]
         public InputModel Input { get; set; }
 
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
+        [TempData]
+        public string SuccessMessage { get; set; }
+
         /// </summary>
         public class InputModel
         {
@@ -61,89 +48,57 @@ namespace RecipeBook.Areas.Identity.Pages.Account.Manage
 
             [Display(Name = "Профилна снимка")]
             public IFormFile? ProfilePicture { get; set; }
-        }
 
-        private async Task LoadAsync(ApplicationUser user)
-        {
-            var userName = await _userManager.GetUserNameAsync(user);
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
+            public string Id { get; set; }
 
-            Username = userName;
-
-            Input = new InputModel
-            {
-                PhoneNumber = phoneNumber,
-                UserName = userName
-            };
+            public int ProfilePictureVersion { get; set; }
         }
 
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
+            if (user == null) return NotFound();
 
-            await LoadAsync(user);
+            Input = new InputModel
+            {
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber,
+                Id = user.Id,
+                ProfilePictureVersion = user.ProfilePictureVersion
+            };
+
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
-            }
+            if (user == null) return NotFound();
 
             if (!ModelState.IsValid)
             {
-                await LoadAsync(user);
                 return Page();
             }
 
-            if (Input.UserName != user.UserName)
+            // Използване на общия сервиз
+            var result = await _userProfileService.UpdateUserProfileAsync(user, new ViewModels.Users.EditUserViewModel
             {
-                var existingUser = await _userManager.FindByNameAsync(Input.UserName);
-                if (existingUser != null && existingUser.Id != user.Id)
-                {
-                    ModelState.AddModelError("Input.UserName", "Потребителското име вече съществува.");
-                    await LoadAsync(user);
-                    return Page();
-                }
+                Id = user.Id,
+                UserName = Input.UserName,
+                PhoneNumber = Input.PhoneNumber,
+                ProfilePicture = Input.ProfilePicture
+            }, isAdmin: false);
 
-                var setUserNameResult = await _userManager.SetUserNameAsync(user, Input.UserName);
-                if (!setUserNameResult.Succeeded)
-                {
-                    ModelState.AddModelError("Input.UserName", "Грешка при обновяване на потребителското име.");
-                    await LoadAsync(user);
-                    return Page();
-                }
-            }
-
-            var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
-            if (Input.PhoneNumber != phoneNumber)
+            if (!result.Succeeded)
             {
-                var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-                if (!setPhoneResult.Succeeded)
-                {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
-                    return RedirectToPage();
-                }
-            }
+                foreach (var error in result.Errors)
+                    ModelState.AddModelError(string.Empty, error.Description);
 
-            if (Input.ProfilePicture != null && Input.ProfilePicture.Length > 0)
-            {
-                using var memoryStream = new MemoryStream();
-                await Input.ProfilePicture.CopyToAsync(memoryStream);
-                user.ProfilePicture = memoryStream.ToArray();
-                user.ProfilePictureVersion++;
-                await _userManager.UpdateAsync(user);
+                return Page();
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            TempData["SuccessMessage"] = "Профилът беше успешно обновен.";
             return RedirectToPage();
         }
 

@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
-using RecipeBook.Views.Home.ViewModels;
-using RecipeBook.Views.Recipes.ViewModels;
+using RecipeBook.ViewModels.Home;
+using RecipeBook.ViewModels.Recipes;
 using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;

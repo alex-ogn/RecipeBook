@@ -1,40 +1,68 @@
-﻿@model RecipeBook.Views.Users.ViewModels.EditUserViewModel
+﻿@model RecipeBook.ViewModels.Users.EditUserViewModel
 
-<h2>Редактиране на потребител</h2>
+@{
+    ViewData["Title"] = "Редакция на потребител";
+}
 
-<form asp-action="Edit" enctype="multipart/form-data" method="post">
-    <input type="hidden" asp-for="Id" />
+<h1>Редактирай потребител</h1>
 
-    <div class="form-group">
-        <label asp-for="UserName"></label>
-        <input asp-for="UserName" class="form-control" />
-        <span asp-validation-for="UserName" class="text-danger"></span>
+<form asp-action="Edit" method="post" enctype="multipart/form-data">
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label asp-for="UserName" class="form-label"></label>
+                <input asp-for="UserName" class="form-control" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="NewPassword" class="form-label"></label>
+                <input asp-for="NewPassword" class="form-control" />
+                <span asp-validation-for="NewPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
+                <label asp-for="ConfirmPassword" class="form-label"></label>
+                <input asp-for="ConfirmPassword" class="form-control" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="ProfilePicture" class="form-label">Нова профилна снимка</label>
+                <input asp-for="ProfilePicture" type="file" accept="image/*" class="form-control" accept=".png,application/pdf" />
+            </div>
+
+            <div asp-validation-summary="All" class="text-danger mb-3">
+                <input type="hidden" asp-for="Id" />
+            </div>
+
+            <div class="form-group mb-3">
+                <input type="submit" value="Запази промените" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Назад</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <label>Текуща профилна снимка:</label>
+            <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.Id, pictureVersion = Model.ProfilePictureVersion })"
+                 class="img-thumbnail mt-2"
+                 style="width: 200px; height: 200px; object-fit: cover;" />
+        </div>
+
     </div>
-
-    <div class="form-group">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
-    </div>
-
-    <div class="form-group">
-        <label asp-for="NewPassword"></label>
-        <input asp-for="NewPassword" class="form-control" />
-        <span asp-validation-for="NewPassword" class="text-danger"></span>
-    </div>
-
-    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.Id })"
-         alt="Профилна снимка"
-         class="rounded-circle"
-         style="width: 100px; height: 100px; object-fit: cover;" />
-
-
-    <div class="form-group">
-        <label asp-for="ProfilePicture"></label>
-        <input asp-for="ProfilePicture" type="file" class="form-control" />
-    </div>
-
-    <button type="submit" class="btn btn-primary">Запази</button>
 </form>
 
 @section Scripts {

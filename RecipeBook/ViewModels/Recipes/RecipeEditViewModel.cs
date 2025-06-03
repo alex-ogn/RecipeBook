@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.InteropServices;
 
-namespace RecipeBook.Views.Recipes.ViewModels
+namespace RecipeBook.ViewModels.Recipes
 {
     public class RecipeEditViewModel
     {
@@ -16,15 +16,15 @@ namespace RecipeBook.Views.Recipes.ViewModels
         }
         public RecipeEditViewModel(Recipe recipe)
         {
-            this.Id= recipe.Id;
-            this.Title= recipe.Title;
-            this.Description= recipe.Description;
-            this.Instructions= recipe.Instructions;
-            this.Servings= recipe.Servings;
-            this.CookingTime= recipe.CookingTime;
-            this.UserId = recipe.UserId;
-            this.imageFile = recipe.Image;
-            this.CategoryId = recipe.Category?.Id;
+            Id = recipe.Id;
+            Title = recipe.Title;
+            Description = recipe.Description;
+            Instructions = recipe.Instructions;
+            Servings = recipe.Servings;
+            CookingTime = recipe.CookingTime;
+            UserId = recipe.UserId;
+            imageFile = recipe.Image;
+            CategoryId = recipe.Category?.Id;
 
             IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
             SelectedIngredients = new List<RecipeIngredientViewModel>();
@@ -67,12 +67,12 @@ namespace RecipeBook.Views.Recipes.ViewModels
 
         public void EditRecipe(Recipe recipe)
         {
-            recipe.Id = this.Id;
-            recipe.Title = this.Title;
-            recipe.Description = this.Description;
-            recipe.Instructions = this.Instructions;
-            recipe.Servings = this.Servings;
-            recipe.CookingTime = this.CookingTime;
+            recipe.Id = Id;
+            recipe.Title = Title;
+            recipe.Description = Description;
+            recipe.Instructions = Instructions;
+            recipe.Servings = Servings;
+            recipe.CookingTime = CookingTime;
 
 
         }

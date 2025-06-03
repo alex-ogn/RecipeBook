@@ -15,10 +15,10 @@ using Newtonsoft.Json;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Services;
-using RecipeBook.Views.Recipes.ViewModels;
 using Ganss.Xss;
 using System.Text.RegularExpressions;
-using RecipeBook.Views.Enums;
+using RecipeBook.ViewModels.Recipes;
+using RecipeBook.ViewModels.Enums;
 
 namespace RecipeBook.Controllers
 {
