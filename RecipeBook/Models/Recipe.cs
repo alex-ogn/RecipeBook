@@ -33,21 +33,23 @@ namespace RecipeBook.Models
 
         public byte[]? Image { get; set; }
 
-        public List<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
-
         [Required]
+        public int RecipeCategoryId { get; set; }
+
         [ForeignKey("RecipeCategoryId")]
-        [Display(Name = "Category")]
-        public RecipeCategory Category { get; set; }
-
-        public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();
-
-        public ICollection<RecipeLike> Likes { get; set; } = new List<RecipeLike>();
+        [Display(Name = "Категория")]
+        public RecipeCategory RecipeCategory { get; set; }
 
         public int ViewCount { get; set; } = 0;
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public List<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+
+        public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();
+
+        public ICollection<RecipeLike> Likes { get; set; } = new List<RecipeLike>();
 
         public ICollection<RecipeComment> Comments { get; set; } = new List<RecipeComment>();
 

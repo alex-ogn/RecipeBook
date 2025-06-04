@@ -10,5 +10,7 @@ namespace RecipeBook.Models
         [Required]
         public string Name { get; set; }
 
+        public ICollection<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
+
     }
 }

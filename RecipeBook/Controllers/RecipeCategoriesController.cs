@@ -143,19 +143,31 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.RecipeCategories == null)
+            var category = await _context.RecipeCategories
+                .Include(c => c.Recipes)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
+                return NotFound();
+
+            if (category.Recipes != null && category.Recipes.Any())
             {
-                return Problem("Entity set 'ApplicationDbContext.RecipeCategories'  is null.");
+                var recipeTitles = category.Recipes
+                    .Select(r => r.Title)
+                    .ToList();
+
+                var usedIn = string.Join(", ", recipeTitles);
+                TempData["ErrorMessage"] = $"Категорията се използва в следните рецепти: {usedIn}. Премахни я първо от тях.";
+                return RedirectToAction(nameof(Index));
             }
-            var recipeCategory = await _context.RecipeCategories.FindAsync(id);
-            if (recipeCategory != null)
-            {
-                _context.RecipeCategories.Remove(recipeCategory);
-            }
-            
+
+            _context.RecipeCategories.Remove(category);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Категорията беше изтрита успешно.";
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool RecipeCategoryExists(int id)
         {

@@ -19,7 +19,7 @@ namespace RecipeBook.ViewModels.Recipes
             User = recipe.User;
             Image = recipe.Image;
             RecipeIngredients = recipe.RecipeIngredients;
-            Category = recipe.Category;
+            RecipeCategory = recipe.RecipeCategory;
             ViewCount = recipe.ViewCount;
             Comments = recipe.Comments;
         }

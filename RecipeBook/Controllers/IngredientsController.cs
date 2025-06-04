@@ -24,7 +24,7 @@ namespace RecipeBook.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Ingredients.Include(i => i.Category);
+            var applicationDbContext = _context.Ingredients.Include(i => i.IngredientCategory);
             return View(await applicationDbContext.ToListAsync());
         }
 
@@ -37,7 +37,7 @@ namespace RecipeBook.Controllers
             }
 
             var ingredient = await _context.Ingredients
-                .Include(i => i.Category)
+                .Include(i => i.IngredientCategory)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ingredient == null)
             {
@@ -128,7 +128,7 @@ namespace RecipeBook.Controllers
             }
 
             var ingredient = await _context.Ingredients
-                .Include(i => i.Category)
+                .Include(i => i.IngredientCategory)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ingredient == null)
             {
@@ -142,19 +142,33 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Ingredients == null)
+            var ingredient = await _context.Ingredients
+                .Include(i => i.RecipeIngredients)
+                .ThenInclude(ri => ri.Recipe)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (ingredient == null)
+                return NotFound();
+
+            if (ingredient.RecipeIngredients.Any())
             {
-                return Problem("Entity set 'ApplicationDbContext.Ingredients'  is null.");
+                var usedInRecipes = ingredient.RecipeIngredients
+                    .Select(ri => ri.Recipe.Title)
+                    .ToList();
+
+                var recipeNames = string.Join(", ", usedInRecipes);
+
+                TempData["ErrorMessage"] = $"Съставката се използва в рецепти: {recipeNames}. Моля, първо я премахни от тях.";
+                return RedirectToAction(nameof(Index));
             }
-            var ingredient = await _context.Ingredients.FindAsync(id);
-            if (ingredient != null)
-            {
-                _context.Ingredients.Remove(ingredient);
-            }
-            
+
+            _context.Ingredients.Remove(ingredient);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Съставката беше изтрита успешно.";
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool IngredientExists(int id)
         {

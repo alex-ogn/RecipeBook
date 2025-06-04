@@ -40,14 +40,14 @@ namespace RecipeBook.Data
 
             // Recipe → Category
             modelBuilder.Entity<Recipe>()
-                .HasOne(r => r.Category)
+                .HasOne(r => r.RecipeCategory)
                 .WithMany()
                 .HasForeignKey("RecipeCategoryId")
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Ingredient → Category
             modelBuilder.Entity<Ingredient>()
-                .HasOne(i => i.Category)
+                .HasOne(i => i.IngredientCategory)
                 .WithMany()
                 .HasForeignKey("IngredientCategoryId")
                 .OnDelete(DeleteBehavior.Restrict);

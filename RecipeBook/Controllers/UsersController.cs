@@ -221,7 +221,7 @@ namespace RecipeBook.Controllers
             return Redirect(Request.Headers["Referer"].ToString());
         }
 
-        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> Followers(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -243,7 +243,7 @@ namespace RecipeBook.Controllers
             return View("FollowList", viewModel);
         }
 
-        [Authorize]
+        [HttpGet]
         public async Task<IActionResult> Following(string id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);

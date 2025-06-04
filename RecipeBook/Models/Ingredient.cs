@@ -11,11 +11,12 @@ namespace RecipeBook.Models
         [Required]
         public string Name { get; set; }
 
+        [Required]
         public int IngredientCategoryId { get; set; }
 
         [ForeignKey("IngredientCategoryId")]
         [Display(Name = "Category")]
-        public IngredientCategory? Category { get; set; }
+        public IngredientCategory IngredientCategory { get; set; }
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
     }
