@@ -265,6 +265,27 @@ namespace RecipeBook.Controllers
             return View("FollowList", viewModel);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(string id)
+        {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var result = await _userProfileService.DeleteUserAsync(id, currentUserId);
+
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError("", error.Description);
+                }
+                return RedirectToAction("Edit", new { id });
+            }
+
+            TempData["SuccessMessage"] = "Потребителят беше успешно изтрит.";
+            return RedirectToAction("Index");
+        }
+
 
     }
 }

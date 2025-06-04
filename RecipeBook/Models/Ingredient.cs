@@ -14,9 +14,9 @@ namespace RecipeBook.Models
         [Required]
         public int IngredientCategoryId { get; set; }
 
-        [ForeignKey("IngredientCategoryId")]
+    //    [ForeignKey("IngredientCategoryId")]
         [Display(Name = "Category")]
-        public IngredientCategory IngredientCategory { get; set; }
+        public IngredientCategory? IngredientCategory { get; set; }
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
     }

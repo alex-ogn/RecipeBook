@@ -10,8 +10,10 @@ namespace RecipeBook.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Име")]
         public string Title { get; set; }
 
+        [Required]
         public string Description { get; set; }
 
         [Required]
@@ -36,22 +38,23 @@ namespace RecipeBook.Models
         [Required]
         public int RecipeCategoryId { get; set; }
 
-        [ForeignKey("RecipeCategoryId")]
+    //    [ForeignKey("RecipeCategoryId")]
         [Display(Name = "Категория")]
-        public RecipeCategory RecipeCategory { get; set; }
+        public RecipeCategory? RecipeCategory { get; set; }
 
         public int ViewCount { get; set; } = 0;
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public List<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
+        public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
 
         public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();
 
         public ICollection<RecipeLike> Likes { get; set; } = new List<RecipeLike>();
 
         public ICollection<RecipeComment> Comments { get; set; } = new List<RecipeComment>();
+
 
     }
 }

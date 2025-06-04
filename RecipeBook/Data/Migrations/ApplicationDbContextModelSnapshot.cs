@@ -249,7 +249,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("IngredientCategoryId");
 
-                    b.ToTable("Ingredients", (string)null);
+                    b.ToTable("Ingredients");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.IngredientCategory", b =>
@@ -266,7 +266,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("IngredientCategories", (string)null);
+                    b.ToTable("IngredientCategories");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.Recipe", b =>
@@ -317,7 +317,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Recipies", (string)null);
+                    b.ToTable("Recipies");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeCategory", b =>
@@ -334,7 +334,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RecipeCategories", (string)null);
+                    b.ToTable("RecipeCategories");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeComment", b =>
@@ -365,7 +365,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecipeComments", (string)null);
+                    b.ToTable("RecipeComments");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeIngredient", b =>
@@ -392,7 +392,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("RecipeIngredients", (string)null);
+                    b.ToTable("RecipeIngredients");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeLike", b =>
@@ -419,7 +419,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecipeLikes", (string)null);
+                    b.ToTable("RecipeLikes");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.SavedRecipe", b =>
@@ -446,7 +446,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SavedRecipes", (string)null);
+                    b.ToTable("SavedRecipes");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.UserFollower", b =>
@@ -474,7 +474,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("FollowerId");
 
-                    b.ToTable("UserFollowers", (string)null);
+                    b.ToTable("UserFollowers");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -530,19 +530,19 @@ namespace RecipeBook.Data.Migrations
 
             modelBuilder.Entity("RecipeBook.Models.Ingredient", b =>
                 {
-                    b.HasOne("RecipeBook.Models.IngredientCategory", "Category")
-                        .WithMany()
+                    b.HasOne("RecipeBook.Models.IngredientCategory", "IngredientCategory")
+                        .WithMany("Ingredients")
                         .HasForeignKey("IngredientCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Category");
+                    b.Navigation("IngredientCategory");
                 });
 
             modelBuilder.Entity("RecipeBook.Models.Recipe", b =>
                 {
-                    b.HasOne("RecipeBook.Models.RecipeCategory", "Category")
-                        .WithMany()
+                    b.HasOne("RecipeBook.Models.RecipeCategory", "RecipeCategory")
+                        .WithMany("Recipes")
                         .HasForeignKey("RecipeCategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -553,7 +553,7 @@ namespace RecipeBook.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Category");
+                    b.Navigation("RecipeCategory");
 
                     b.Navigation("User");
                 });
@@ -669,6 +669,11 @@ namespace RecipeBook.Data.Migrations
                     b.Navigation("RecipeIngredients");
                 });
 
+            modelBuilder.Entity("RecipeBook.Models.IngredientCategory", b =>
+                {
+                    b.Navigation("Ingredients");
+                });
+
             modelBuilder.Entity("RecipeBook.Models.Recipe", b =>
                 {
                     b.Navigation("Comments");
@@ -678,6 +683,11 @@ namespace RecipeBook.Data.Migrations
                     b.Navigation("RecipeIngredients");
 
                     b.Navigation("SavedByUsers");
+                });
+
+            modelBuilder.Entity("RecipeBook.Models.RecipeCategory", b =>
+                {
+                    b.Navigation("Recipes");
                 });
 #pragma warning restore 612, 618
         }
