@@ -144,17 +144,27 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.IngredientCategories == null)
+            var category = await _context.IngredientCategories
+                .Include(c => c.Ingredients)
+                .FirstOrDefaultAsync(c => c.Id == id);
+
+            if (category == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.IngredientCategories'  is null.");
+                return NotFound();
             }
-            var ingredientCategory = await _context.IngredientCategories.FindAsync(id);
-            if (ingredientCategory != null)
+
+            if (category.Ingredients.Any())
             {
-                _context.IngredientCategories.Remove(ingredientCategory);
+                // Връщаме грешка със списък на съставките, които използват категорията
+                var ingredientNames = category.Ingredients.Select(i => i.Name).ToList();
+                TempData["ErrorMessage"] = $"Категорията не може да бъде изтрита, защото се използва от следните съставки: {string.Join(", ", ingredientNames)}";
+                return RedirectToAction(nameof(Index));
             }
-            
+
+            _context.IngredientCategories.Remove(category);
             await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Категорията беше успешно изтрита.";
             return RedirectToAction(nameof(Index));
         }
 

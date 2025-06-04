@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Users;
 using System.Text.RegularExpressions;
@@ -7,18 +9,24 @@ namespace RecipeBook.Services
 {
     public class UserProfileService : IUserProfileService
     {
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IPasswordValidator<ApplicationUser> _passwordValidator;
         private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
+        private readonly IRecipeService _recipeService;
 
         public UserProfileService(
+            ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IPasswordValidator<ApplicationUser> passwordValidator,
-            IPasswordHasher<ApplicationUser> passwordHasher)
+            IPasswordHasher<ApplicationUser> passwordHasher,
+            IRecipeService recipeService)
         {
+            _context = context;
             _userManager = userManager;
             _passwordValidator = passwordValidator;
             _passwordHasher = passwordHasher;
+            _recipeService = recipeService;
         }
 
         public async Task<IdentityResult> UpdateUserProfileAsync(ApplicationUser user, EditUserViewModel model, bool isAdmin = false)
@@ -86,6 +94,36 @@ namespace RecipeBook.Services
 
             return await _userManager.UpdateAsync(user);
         }
+
+        public async Task<IdentityResult> DeleteUserAsync(string targetUserId, string currentUserId)
+        {
+            if (targetUserId == currentUserId)
+                return IdentityResult.Failed(new IdentityError { Description = "Не може да изтриете себе си." });
+
+            var user = await _userManager.Users
+                .Include(u => u.Recipes)
+                .FirstOrDefaultAsync(u => u.Id == targetUserId);
+
+            if (user == null)
+                return IdentityResult.Failed(new IdentityError { Description = "Потребителят не е намерен." });
+
+            // Изтриване на рецептите и свързани записи
+            foreach (var recipe in user.Recipes.ToList())
+            {
+                await _recipeService.DeleteRecipeAsync(recipe.Id, forceDelete: true);
+            }
+
+            // Изтриване на други релации
+            _context.SavedRecipes.RemoveRange(_context.SavedRecipes.Where(x => x.UserId == targetUserId));
+            _context.RecipeLikes.RemoveRange(_context.RecipeLikes.Where(x => x.UserId == targetUserId));
+            _context.UserFollowers.RemoveRange(_context.UserFollowers.Where(f => f.FollowerId == targetUserId || f.FollowedId == targetUserId));
+            _context.RecipeComments.RemoveRange(_context.RecipeComments.Where(c => c.UserId == targetUserId));
+
+            await _context.SaveChangesAsync();
+
+            return await _userManager.DeleteAsync(user);
+        }
+
     }
 
 }

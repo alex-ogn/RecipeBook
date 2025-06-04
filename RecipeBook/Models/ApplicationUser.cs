@@ -10,5 +10,6 @@
         public ICollection<UserFollower> Followers { get; set; } = new List<UserFollower>();  // Тези, които ме следват
         public ICollection<UserFollower> Following { get; set; } = new List<UserFollower>();  // Тези, които аз следвам
         public ICollection<RecipeLike> LikedRecipes { get; set; } = new List<RecipeLike>();
+        public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
     }
 }

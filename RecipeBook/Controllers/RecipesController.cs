@@ -26,11 +26,13 @@ namespace RecipeBook.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IRecipePdfService _pdfService;
+        private readonly IRecipeService _recipeService;
 
-        public RecipesController(ApplicationDbContext context, IRecipePdfService pdfService)
+        public RecipesController(ApplicationDbContext context, IRecipePdfService pdfService, IRecipeService recipeService)
         {
             _context = context;
             _pdfService = pdfService;
+            _recipeService = recipeService;
         }
 
         public async Task<IActionResult> Index(int? categoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
@@ -561,19 +563,17 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Recipies == null)
-            {
-                return Problem("Entity set 'ApplicationDbContext.Recipies'  is null.");
-            }
-            var recipe = await _context.Recipies.FindAsync(id);
-            if (recipe != null)
-            {
-                _context.Recipies.Remove(recipe);
-            }
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            await _context.SaveChangesAsync();
+            var success = await _recipeService.DeleteRecipeAsync(id, currentUserId);
+
+            if (!success)
+                return Forbid();
+
+            TempData["SuccessMessage"] = "Рецептата е изтрита успешно.";
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool RecipeExists(int id)
         {

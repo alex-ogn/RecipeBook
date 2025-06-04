@@ -7,5 +7,6 @@ namespace RecipeBook.Services
     public interface IUserProfileService
     {
         Task<IdentityResult> UpdateUserProfileAsync(ApplicationUser user, EditUserViewModel model, bool isAdmin = false);
+        Task<IdentityResult> DeleteUserAsync(string targetUserId, string currentUserId);
     }
 }
