@@ -249,7 +249,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("IngredientCategoryId");
 
-                    b.ToTable("Ingredients");
+                    b.ToTable("Ingredients", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.IngredientCategory", b =>
@@ -266,7 +266,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("IngredientCategories");
+                    b.ToTable("IngredientCategories", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.Recipe", b =>
@@ -317,7 +317,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Recipies");
+                    b.ToTable("Recipies", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeCategory", b =>
@@ -334,7 +334,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RecipeCategories");
+                    b.ToTable("RecipeCategories", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeComment", b =>
@@ -365,7 +365,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecipeComments");
+                    b.ToTable("RecipeComments", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeIngredient", b =>
@@ -392,7 +392,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("RecipeId");
 
-                    b.ToTable("RecipeIngredients");
+                    b.ToTable("RecipeIngredients", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.RecipeLike", b =>
@@ -419,7 +419,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecipeLikes");
+                    b.ToTable("RecipeLikes", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.SavedRecipe", b =>
@@ -446,7 +446,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("SavedRecipes");
+                    b.ToTable("SavedRecipes", (string)null);
                 });
 
             modelBuilder.Entity("RecipeBook.Models.UserFollower", b =>
@@ -474,7 +474,7 @@ namespace RecipeBook.Data.Migrations
 
                     b.HasIndex("FollowerId");
 
-                    b.ToTable("UserFollowers");
+                    b.ToTable("UserFollowers", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

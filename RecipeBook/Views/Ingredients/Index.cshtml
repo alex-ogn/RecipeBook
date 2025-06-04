@@ -4,6 +4,17 @@
     ViewData["Title"] = "Ingredients";
 }
 
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+
 <h1>Ingredients</h1>
 
 <p>
@@ -16,7 +27,7 @@
                 @Html.DisplayNameFor(model => model.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Category)
+                @Html.DisplayNameFor(model => model.IngredientCategory)
             </th>
             <th></th>
         </tr>
@@ -28,7 +39,7 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Category.Name)
+                @Html.DisplayFor(modelItem => item.IngredientCategory.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

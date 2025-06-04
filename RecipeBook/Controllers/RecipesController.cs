@@ -41,13 +41,13 @@ namespace RecipeBook.Controllers
 
             var query = _context.Recipies
                 .Include(r => r.User)
-                .Include(r => r.Category)
+                .Include(r => r.RecipeCategory)
                 .Include(r => r.Likes)
                 .AsQueryable();
 
             if (categoryId.HasValue)
             {
-                query = query.Where(r => r.Category.Id == categoryId);
+                query = query.Where(r => r.RecipeCategory.Id == categoryId);
             }
 
             query = sortOrder switch
@@ -130,7 +130,7 @@ namespace RecipeBook.Controllers
             var recipe = await _context.Recipies
                                        .Include(r => r.RecipeIngredients)
                                            .ThenInclude(ri => ri.Ingredient)
-                                       .Include(r => r.Category)
+                                       .Include(r => r.RecipeCategory)
                                        .Include(r => r.User)
                                        .Include(r => r.SavedByUsers)
                                        .Include(r => r.Comments)
@@ -186,12 +186,12 @@ namespace RecipeBook.Controllers
 
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
             var ingredients = _context.Ingredients
-                .Include(i => i.Category)
+                .Include(i => i.IngredientCategory)
                 .ToList();
 
             // Group ingredients by category in memory
             var ingredientsByCategory = ingredients
-                .GroupBy(i => i.Category.Name)
+                .GroupBy(i => i.IngredientCategory.Name)
                 .OrderBy(comparer => comparer.Key)
                 .ToDictionary(
                     g => g.Key,
@@ -249,7 +249,7 @@ namespace RecipeBook.Controllers
                     string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     model.EditRecipe(recipe);
                     recipe.UserId = userId;
-                    recipe.Category = _context.RecipeCategories.Find(model.CategoryId.Value);
+                    recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
 
                     var sanitizer = new HtmlSanitizer();
                     sanitizer.AllowedTags.Add("b");
@@ -305,11 +305,11 @@ namespace RecipeBook.Controllers
 
                 // Re-populate the ingredients if needed, handle failures, etc.
                 var ingredients = _context.Ingredients
-                    .Include(i => i.Category)
+                    .Include(i => i.IngredientCategory)
                     .ToList();
 
                 var ingredientsByCategory = ingredients
-                    .GroupBy(i => i.Category.Name)
+                    .GroupBy(i => i.IngredientCategory.Name)
                     .OrderBy(comparer => comparer.Key)
                     .ToDictionary(
                         g => g.Key,
@@ -346,7 +346,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipe = await _context.Recipies
-                .Include(r => r.Category)
+                .Include(r => r.RecipeCategory)
                 .Include(r => r.RecipeIngredients)
                 .ThenInclude(ri => ri.Ingredient)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -357,12 +357,12 @@ namespace RecipeBook.Controllers
             }
 
             var ingredients = _context.Ingredients
-                .Include(i => i.Category)
+                .Include(i => i.IngredientCategory)
                 .ToList();
 
             // Group ingredients by category in memory
             var ingredientsByCategory = ingredients
-                .GroupBy(i => i.Category.Name)
+                .GroupBy(i => i.IngredientCategory.Name)
                 .OrderBy(comparer => comparer.Key)
                 .ToDictionary(
                     g => g.Key,
@@ -390,7 +390,7 @@ namespace RecipeBook.Controllers
                     }).ToList()
             };
 
-            viewModel.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", recipe.Category.Id);
+            viewModel.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", recipe.RecipeCategory.Id);
 
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", recipe.UserId);
             return View(viewModel);
@@ -432,7 +432,7 @@ namespace RecipeBook.Controllers
                     }
 
                     model.EditRecipe(recipe);
-                    recipe.Category = _context.RecipeCategories.Find(model.CategoryId.Value);
+                    recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
 
                     if (imageFileNew != null && imageFileNew.Length > 0)
                     {
@@ -497,12 +497,12 @@ namespace RecipeBook.Controllers
                .FirstOrDefaultAsync(m => m.Id == id);
 
             var ingredients = _context.Ingredients
-               .Include(i => i.Category)
+               .Include(i => i.IngredientCategory)
                .ToList();
 
             // Group ingredients by category in memory
             var ingredientsByCategory = ingredients
-                .GroupBy(i => i.Category.Name)
+                .GroupBy(i => i.IngredientCategory.Name)
                 .OrderBy(comparer => comparer.Key)
                 .ToDictionary(
                     g => g.Key,
@@ -632,13 +632,13 @@ namespace RecipeBook.Controllers
                 .ToListAsync();
 
             var recipesQuery = _context.Recipies
-                .Include(r => r.Category)
+                .Include(r => r.RecipeCategory)
                 .Include(r => r.Likes)
                 .Where(r => likedRecipeIds.Contains(r.Id));
 
             if (categoryId.HasValue)
             {
-                recipesQuery = recipesQuery.Where(r => r.Category.Id == categoryId.Value);
+                recipesQuery = recipesQuery.Where(r => r.RecipeCategory.Id == categoryId.Value);
             }
 
             var recipes = await recipesQuery.ToListAsync();
@@ -675,12 +675,12 @@ namespace RecipeBook.Controllers
                 .ToListAsync();
 
             var recipesQuery = _context.Recipies
-                .Include(r => r.Category)
+                .Include(r => r.RecipeCategory)
                 .Where(r => savedRecipeIds.Contains(r.Id));
 
             if (categoryId.HasValue)
             {
-                recipesQuery = recipesQuery.Where(r => r.Category.Id == categoryId.Value);
+                recipesQuery = recipesQuery.Where(r => r.RecipeCategory.Id == categoryId.Value);
             }
 
             var recipes = await recipesQuery.ToListAsync();
@@ -752,7 +752,7 @@ namespace RecipeBook.Controllers
         {
             var recipe = await _context.Recipies
                 .Include(r => r.RecipeIngredients).ThenInclude(ri => ri.Ingredient)
-                .Include(r => r.Category)
+                .Include(r => r.RecipeCategory)
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (recipe == null)

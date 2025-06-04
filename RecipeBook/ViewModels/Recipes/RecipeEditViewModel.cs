@@ -24,7 +24,7 @@ namespace RecipeBook.ViewModels.Recipes
             CookingTime = recipe.CookingTime;
             UserId = recipe.UserId;
             imageFile = recipe.Image;
-            CategoryId = recipe.Category?.Id;
+            CategoryId = recipe.RecipeCategory?.Id;
 
             IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
             SelectedIngredients = new List<RecipeIngredientViewModel>();

@@ -46,7 +46,7 @@ public class SearchController : Controller
         // Търсене по име на рецепта
         var matchingRecipes = await _context.Recipies
             .Include(r => r.User)
-            .Include(r => r.Category)
+            .Include(r => r.RecipeCategory)
             .Where(r => r.Title.ToLower().Contains(searchString))
             .ToListAsync();
 

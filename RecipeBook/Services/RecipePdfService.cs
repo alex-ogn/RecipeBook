@@ -37,7 +37,7 @@ namespace RecipeBook.Services
                             col.Item().PaddingTop(10);
                         }
 
-                        col.Item().Text($"Категория: {recipe.Category?.Name}");
+                        col.Item().Text($"Категория: {recipe.RecipeCategory?.Name}");
                         col.Item().Text($"Порции: {recipe.Servings}");
                         col.Item().Text($"Време за готвене: {recipe.CookingTime} мин.");
 
