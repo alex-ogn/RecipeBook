@@ -70,6 +70,10 @@ h1, h2, h3 {
     color: var(--warm-red);
 }
 
+.text-warm-red {
+    color: var(--warm-red);
+}
+
 a, .button {
     color: var(--dark-charcoal);
     padding: 10px 20px;

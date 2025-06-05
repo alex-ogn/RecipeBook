@@ -24,6 +24,13 @@ builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Users/AccessDenied";
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,6 +52,24 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/Identity/Account/Login", context =>
+{
+    context.Response.Redirect("/Account/Login");
+    return Task.CompletedTask;
+});
+
+app.MapGet("/Identity/Account/Register", context =>
+{
+    context.Response.Redirect("/Account/Register");
+    return Task.CompletedTask;
+});
+
+app.MapGet("/Identity/Account/Manage/{*path}", context =>
+{
+    context.Response.Redirect("/Users/Edit");
+    return Task.CompletedTask;
+});
 
 app.MapControllerRoute(
     name: "default",
