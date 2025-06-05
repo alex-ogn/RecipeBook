@@ -47,6 +47,18 @@ namespace RecipeBook.Models
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        [Display(Name = "Вегетарианска")]
+        public bool IsVegetarian { get; set; }
+
+        [Display(Name = "Веган")]
+        public bool IsVegan { get; set; }
+
+        [Display(Name = "Без глутен")]
+        public bool IsGlutenFree { get; set; }
+
+        [Display(Name = "Без лактоза")]
+        public bool IsLactoseFree { get; set; }
+
         public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();
 
         public ICollection<SavedRecipe> SavedByUsers { get; set; } = new List<SavedRecipe>();

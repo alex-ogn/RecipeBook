@@ -38,14 +38,8 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-primary">Редактирай</a>
                 </td>
-                
-                <td>
-                    <form asp-action="Delete" method="post" asp-route-id="@user.Id" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Изтрий</button>
-                    </form>
-                </td>
-
-            </tr>
+               
+           </tr>
         }
     </tbody>
 </table>

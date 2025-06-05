@@ -7,7 +7,7 @@ namespace RecipeBook.ViewModels.Recipes
 {
     public class RecipeViewModel : Recipe
     {
-        public RecipeViewModel(Recipe recipe)
+        public RecipeViewModel(Recipe recipe, List<RecipeCardViewModel> SimilarRecipes)
         {
             Id = recipe.Id;
             Title = recipe.Title;
@@ -22,6 +22,13 @@ namespace RecipeBook.ViewModels.Recipes
             RecipeCategory = recipe.RecipeCategory;
             ViewCount = recipe.ViewCount;
             Comments = recipe.Comments;
+            IsVegetarian = recipe.IsVegetarian;
+            IsVegan = recipe.IsVegan;
+            IsGlutenFree = recipe.IsGlutenFree;
+            IsLactoseFree = recipe.IsLactoseFree;
+            this.SimilarRecipes = SimilarRecipes;
         }
+
+        public List<RecipeCardViewModel> SimilarRecipes { get; set; } = new List<RecipeCardViewModel>();
     }
 }

@@ -53,6 +53,13 @@
                 <input type="submit" value="Запази промените" class="btn btn-primary" />
                 <a asp-action="Index" class="btn btn-secondary">Назад</a>
             </div>
+
+            <div class="form-group mb-3">
+                <form asp-action="Delete" method="post" asp-route-id="Id" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Изтрий</button>
+                </form>
+            </div>
+
         </div>
 
         <div class="col-md-4">

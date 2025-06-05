@@ -1,4 +1,5 @@
-﻿@model RecipeBook.Models.Recipe
+﻿@using RecipeBook.ViewModels.Recipes;
+@model RecipeViewModel
 
 @{
     ViewData["Title"] = "Детайли за рецепта";
@@ -8,8 +9,6 @@
     bool isLiked = ViewData["IsLiked"] as bool? ?? false;
     var likeCount = (int)(ViewData["LikeCount"] ?? 0);
 }
-
-
 
 <!-- Връзка към CSS файла -->
 <link rel="stylesheet" href="~/css/recipe-details.css" />
@@ -40,15 +39,27 @@
                 <p><strong>Преглеждания:</strong> @Model.ViewCount</p>
                 <p><strong>Дата на добавяне:</strong> @Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
 
-                <a asp-action="ExportPdf" asp-route-id="@Model.Id" target="_blank" class="btn btn-outline-secondary mt-2">
-                    📄 Изтегли като PDF
-                </a>
+                @if (Model.IsVegetarian)
+                {
+                    <span class="badge bg-success">Вегетарианска</span>
+                }
+                @if (Model.IsVegan)
+                {
+                    <span class="badge bg-success">Веган</span>
+                }
+                @if (Model.IsGlutenFree)
+                {
+                    <span class="badge bg-warning text-dark">Без глутен</span>
+                }
+                @if (Model.IsLactoseFree)
+                {
+                    <span class="badge bg-warning text-dark">Без лактоза</span>
+                }
 
-                <br />    <br /> 
-
+                <br/> </br/>
                  <div class="d-flex gap-3 align-items-center">           
                     <!-- Харесване -->
-                    <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="icon-form">
+                    <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="icon-form" title="Харесай">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="icon-button">
                             <i class="bi bi-heart-fill @(isLiked ? "text-danger" : "text-secondary")"></i>
@@ -56,10 +67,16 @@
                     </form>
 
                     <!-- Запазване -->
-                    <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post" class="icon-form">
+                    <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post" class="icon-form" title="Запази">
                         <input type="hidden" name="id" value="@Model.Id" />
                         <button type="submit" class="icon-button">
                             <i class="bi @(isSaved ? "bi-bookmark-fill text-warning" : "bi-bookmark text-secondary")"></i>
+                        </button>
+                    </form>
+
+                    <form asp-action="ExportPdf" asp-route-id="@Model.Id" method="get" target="_blank" class="icon-form" title="Изтегли като PDF">
+                        <button type="submit" class="icon-button">
+                            <i class="bi bi-file-earmark-arrow-down text-secondary"></i>
                         </button>
                     </form>
                 </div>
@@ -155,4 +172,20 @@
 
         <a asp-action="Index" class="btn btn-secondary">Обратно към списъка</a>
     </div>
+
+    @if (Model.SimilarRecipes?.Any() == true)
+    {
+        @if (Model.SimilarRecipes?.Any() == true)
+        {
+            <h1>Подобни рецепти</h1>
+
+            <div class="row">
+                @foreach (var recipe in Model.SimilarRecipes)
+                {
+                    @Html.Partial("_RecipeCard", recipe)
+                }
+            </div>
+        }
+    }
+
 </div>
