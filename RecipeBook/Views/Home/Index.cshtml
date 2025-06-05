@@ -44,6 +44,18 @@
 
     <br />
 
+    @if (Model.Suggestions?.Any() == true)
+    {
+        <h1>Препоръчани за теб</h1>
+
+        <div class="row">
+            @foreach (var recipe in Model.Suggestions)
+            {
+                @Html.Partial("_RecipeCard", recipe)
+            }
+        </div>
+    }
+
     <h1>Най-популярни</h1>
 
     <div class="row">

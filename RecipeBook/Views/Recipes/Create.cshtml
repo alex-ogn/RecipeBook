@@ -44,6 +44,22 @@
                 <label asp-for="imageFile">Upload Image</label>
                 <input type="file" asp-for="imageFile" class="form-control" accept="image/*" />
             </div>
+            <div class="form-check">
+                <input asp-for="IsVegetarian" class="form-check-input" />
+                <label asp-for="IsVegetarian" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="IsVegan" class="form-check-input" />
+                <label asp-for="IsVegan" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="IsGlutenFree" class="form-check-input" />
+                <label asp-for="IsGlutenFree" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="IsLactoseFree" class="form-check-input" />
+                <label asp-for="IsLactoseFree" class="form-check-label"></label>
+            </div>
         </div>
         <div class="col">
             <div class="form-group">

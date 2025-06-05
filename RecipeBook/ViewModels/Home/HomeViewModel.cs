@@ -7,5 +7,7 @@ namespace RecipeBook.ViewModels.Home
         public int CountUsers { get; set; }
         public int CountRecipes { get; set; }
         public List<RecipeCardViewModel> FeaturedRecipes { get; set; }
+        public List<RecipeCardViewModel> Suggestions { get; set; } = new List<RecipeCardViewModel>();
+
     }
 }

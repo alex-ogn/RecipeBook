@@ -25,6 +25,10 @@ namespace RecipeBook.ViewModels.Recipes
             UserId = recipe.UserId;
             imageFile = recipe.Image;
             CategoryId = recipe.RecipeCategory?.Id;
+            IsVegetarian = recipe.IsVegetarian;
+            IsVegan = recipe.IsVegan;
+            IsGlutenFree = recipe.IsGlutenFree;
+            IsLactoseFree = recipe.IsLactoseFree;
 
             IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
             SelectedIngredients = new List<RecipeIngredientViewModel>();
@@ -65,6 +69,19 @@ namespace RecipeBook.ViewModels.Recipes
         [Display(Name = "Категория")]
         public SelectList Categories { get; set; }  // Used to populate the dropdown in the view
 
+
+        [Display(Name = "Вегетарианска")]
+        public bool IsVegetarian { get; set; }
+
+        [Display(Name = "Веган")]
+        public bool IsVegan { get; set; }
+
+        [Display(Name = "Без глутен")]
+        public bool IsGlutenFree { get; set; }
+
+        [Display(Name = "Без лактоза")]
+        public bool IsLactoseFree { get; set; }
+
         public void EditRecipe(Recipe recipe)
         {
             recipe.Id = Id;
@@ -73,8 +90,10 @@ namespace RecipeBook.ViewModels.Recipes
             recipe.Instructions = Instructions;
             recipe.Servings = Servings;
             recipe.CookingTime = CookingTime;
-
-
+            recipe.IsVegetarian = IsVegetarian;
+            recipe.IsVegan = IsVegan;
+            recipe.IsGlutenFree = IsGlutenFree;
+            recipe.IsLactoseFree = IsLactoseFree;
         }
 
     }

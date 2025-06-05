@@ -145,6 +145,9 @@ namespace RecipeBook.Controllers
             }
 
             string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var similarRecipes = await _recipeService.GetSimilarRecipesAsync(recipe, currentUserId);
+
             var cookieKey = $"viewed_recipe_{id}";
 
             // Ако потребителят не е автор и няма cookie:
@@ -164,7 +167,7 @@ namespace RecipeBook.Controllers
             bool isSaved = recipe.SavedByUsers
                                  .Any(s => s.UserId == currentUserId);
 
-            RecipeViewModel recipeViewModel = new RecipeViewModel(recipe);
+            RecipeViewModel recipeViewModel = new RecipeViewModel(recipe, similarRecipes);
 
             bool isLiked = await _context.RecipeLikes
                 .AnyAsync(l => l.RecipeId == id && l.UserId == currentUserId);

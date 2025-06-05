@@ -49,10 +49,28 @@
                     <img src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.imageFile))" class="img-thumbnail" />
                 </div>
             }
-        <div class="form-group">
-            <label>Upload New Image (optional)</label>
-            <input type="file" asp-for="imageFileNew" class="form-control" accept="image/*" />
-        </div>
+            <div class="form-group">
+                <label>Upload New Image (optional)</label>
+                <input type="file" asp-for="imageFileNew" class="form-control" accept="image/*" />
+            </div>
+
+            <div class="form-check">
+            <input asp-for="IsVegetarian" class="form-check-input" />
+            <label asp-for="IsVegetarian" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="IsVegan" class="form-check-input" />
+                <label asp-for="IsVegan" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="IsGlutenFree" class="form-check-input" />
+                <label asp-for="IsGlutenFree" class="form-check-label"></label>
+            </div>
+            <div class="form-check">
+                <input asp-for="IsLactoseFree" class="form-check-input" />
+                <label asp-for="IsLactoseFree" class="form-check-label"></label>
+            </div>
+
         </div>
         <div class="col">
             <div class="form-group">
