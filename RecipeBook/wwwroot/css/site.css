@@ -348,3 +348,44 @@ body, html {
     .icon-button:hover i {
         opacity: 0.8;
     }
+
+
+/* стил на иконата за търсене */
+.search-icon-button {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 1.25rem;
+    padding: 0.25rem;
+    cursor: pointer;
+}
+
+    .search-icon-button:hover {
+        color: var(--buttery-yellow); 
+    }
+
+/* стил на бутона за филтриране */
+.btn-outline-accent {
+    color: var(--buttery-yellow); /* оранжев текст */
+    background-color: transparent;
+    border: 1px solid var(--buttery-yellow);
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-accent:hover {
+        background-color: var(--buttery-yellow);
+        color: white;
+        text-decoration: none;
+    }
+
+
+a.btn.btn-unstyled {
+    background-color: transparent !important; /* премахва фона */
+    color: var(--buttery-yellow) !important; /* цвят на текста */
+    border: 1px solid var(--buttery-yellow); /* само контур */
+}
+
+    a.btn.btn-unstyled:hover {
+        background-color: var(--buttery-yellow) !important;
+        color: white !important;
+    }

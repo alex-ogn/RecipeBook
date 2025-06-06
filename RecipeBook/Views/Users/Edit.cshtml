@@ -4,73 +4,82 @@
     ViewData["Title"] = "Редакция на потребител";
 }
 
-<h1>Редактирай профил</h1>
+<div class="container mt-4">
+    <h1 class="mb-4">Редактирай профил</h1>
 
-<form asp-action="Edit" method="post" enctype="multipart/form-data">
-
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
     <div class="row">
-        <div class="col-md-4">
-            <div class="form-group mb-3">
-                <label asp-for="UserName" class="form-label"></label>
-                <input asp-for="UserName" class="form-control" />
-                <span asp-validation-for="UserName" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="Email" class="form-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="PhoneNumber" class="form-label"></label>
-                <input asp-for="PhoneNumber" class="form-control" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="NewPassword" class="form-label"></label>
-                <input asp-for="NewPassword" class="form-control" />
-                <span asp-validation-for="NewPassword" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="ConfirmPassword" class="form-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
-                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-            </div>
-
-            <div class="form-group mb-3">
-                <label asp-for="ProfilePicture" class="form-label">Нова профилна снимка</label>
-                <input asp-for="ProfilePicture" type="file" accept="image/*" class="form-control" accept=".png,application/pdf" />
-            </div>
-
-            <div asp-validation-summary="All" class="text-danger mb-3">
+        <div class="col-md-6">
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
                 <input type="hidden" asp-for="Id" />
-            </div>
 
-            <div class="form-group mb-3">
-                <input type="submit" value="Запази промените" class="btn btn-primary" />
-                <a asp-action="Index" class="btn btn-secondary">Назад</a>
-            </div>
+                <div class="mb-3">
+                    <label asp-for="UserName" class="form-label"></label>
+                    <input asp-for="UserName" class="form-control" />
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
 
-            <div class="form-group mb-3">
-                <form asp-action="Delete" method="post" asp-route-id="Id" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Изтрий</button>
-                </form>
-            </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
 
+                <div class="mb-3">
+                    <label asp-for="PhoneNumber" class="form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control" />
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="NewPassword" class="form-label"></label>
+                    <input asp-for="NewPassword" class="form-control" />
+                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ProfilePicture" class="form-label"></label>
+                    <input asp-for="ProfilePicture" type="file" class="form-control" accept="image/*" />
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle me-1"></i> Запази
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Назад
+                    </a>
+                </div>
+            </form>
+
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="mt-3" onsubmit="return confirm('Сигурни ли сте, че искате да изтриете този потребител?');">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i> Изтрий потребител
+                </button>
+            </form>
         </div>
 
-        <div class="col-md-4">
-            <label>Текуща профилна снимка:</label>
+        <div class="col-md-4 offset-md-1">
+            <label class="form-label">Текуща профилна снимка:</label>
             <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.Id, pictureVersion = Model.ProfilePictureVersion })"
                  class="img-thumbnail mt-2"
                  style="width: 200px; height: 200px; object-fit: cover;" />
         </div>
-
     </div>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

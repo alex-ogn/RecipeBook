@@ -42,7 +42,7 @@ namespace RecipeBook.Data
             {
                 ApplicationUser user = new ApplicationUser
                 {
-                    UserName = "admin@example.com",
+                    UserName = "admin",
                     Email = "admin@example.com"
                 };
 

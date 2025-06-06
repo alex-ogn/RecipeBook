@@ -22,12 +22,32 @@ namespace RecipeBook.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int? categoryId)
         {
-            var applicationDbContext = _context.Ingredients.Include(i => i.IngredientCategory);
-            return View(await applicationDbContext.ToListAsync());
-        }
+            var categories = await _context.IngredientCategories.ToListAsync();
+            ViewData["Categories"] = new SelectList(categories, "Id", "Name");
+            ViewData["Search"] = searchString;
+            ViewData["SelectedCategoryId"] = categoryId;
 
+            var ingredientsQuery = _context.Ingredients
+                .Include(i => i.IngredientCategory)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                ingredientsQuery = ingredientsQuery
+                    .Where(i => i.Name.Contains(searchString));
+            }
+
+            if (categoryId.HasValue)
+            {
+                ingredientsQuery = ingredientsQuery
+                    .Where(i => i.IngredientCategoryId == categoryId);
+            }
+
+            var ingredients = await ingredientsQuery.ToListAsync();
+            return View(ingredients);
+        }
 
         public async Task<IActionResult> Details(int? id)
         {

@@ -44,6 +44,25 @@ namespace RecipeBook.Controllers
             return View(users);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet]
+        public async Task<IActionResult> Details(string? id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var model = new EditUserViewModel
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                ProfilePictureVersion = user.ProfilePictureVersion
+            };
+
+            return View(model);
+        }
+
 
         [Authorize]
         [HttpGet]
@@ -275,10 +294,14 @@ namespace RecipeBook.Controllers
 
             if (!result.Succeeded)
             {
+                string errorMsg = "Потребителят не беше изтрит.";
+
                 foreach (var error in result.Errors)
                 {
-                    ModelState.AddModelError("", error.Description);
+                    errorMsg += " " + error.Description;
                 }
+
+                TempData["ErrorMessage"] = errorMsg;
                 return RedirectToAction("Edit", new { id });
             }
 

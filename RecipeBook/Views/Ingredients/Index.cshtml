@@ -1,52 +1,74 @@
 ﻿@model IEnumerable<RecipeBook.Models.Ingredient>
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Ingredients";
+    ViewData["Title"] = "Съставки";
+    var selectedCategoryId = ViewData["SelectedCategoryId"] as int?;
 }
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-}
+<h1 class="mb-4">Съставки</h1>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-}
+<div class="d-flex justify-content-end mb-3">
+    <a asp-action="Create" class="btn btn-success">
+        <i class="bi bi-plus-circle me-1"></i> Добави нова съставка
+    </a>
+</div>
 
+<form method="get" class="row mb-4">
+    <div class="col-md-4">
+        <input type="text" name="searchString" class="form-control" placeholder="Търси по име..."
+               value="@ViewData["Search"]" />
+    </div>
+    <div class="col-md-4">
+        <select name="categoryId" class="form-select">
+            <option value="">-- Всички категории --</option>
+            @foreach (var cat in (SelectList)ViewData["Categories"])
+            {
+                <option value="@cat.Value" selected="@(selectedCategoryId == int.Parse(cat.Value))">
+                    @cat.Text
+                </option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4 d-flex gap-2">
 
-<h1>Ingredients</h1>
+        <button type="submit" class="btn btn-outline-accent me-2">
+            <i class="bi bi-funnel"></i> Филтрирай
+        </button>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
+        <a asp-action="Index" class="btn btn-outline-warning btn-unstyled">
+            <i class="bi bi-x-circle"></i> Изчисти
+        </a>
+
+    </div>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IngredientCategory)
-            </th>
-            <th></th>
+            <th>Име</th>
+            <th>Категория</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IngredientCategory.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.IngredientCategory?.Name</td>
+                <td class="text-end">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary me-1">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info me-1">
+                        <i class="bi bi-info-circle"></i>
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
