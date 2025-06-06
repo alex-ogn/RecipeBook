@@ -1,0 +1,48 @@
+﻿@using RecipeBook.ViewModels.AdminStatistics;
+@model AdminUserStatsViewModel
+
+<h2>Най-активни потребители</h2>
+
+<canvas id="recipesChart" height="100"></canvas>
+<canvas id="likesChart" height="100" class="mt-4"></canvas>
+
+<h3 class="mt-5">Потребители без активност</h3>
+<ul>
+@foreach (var u in Model.InactiveUsers)
+{
+    <li>@u.UserName</li>
+}
+</ul>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const recipeData = {
+        labels: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.UserName))),
+        datasets: [{
+            label: 'Брой рецепти',
+            data: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.RecipeCount))),
+            backgroundColor: '#1a6158'
+        }]
+    };
+
+    const likesData = {
+        labels: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.UserName))),
+        datasets: [{
+            label: 'Харесвания на рецепти',
+            data: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.LikesReceived))),
+            backgroundColor: '#f4a261'
+        }]
+    };
+
+    new Chart(document.getElementById('recipesChart'), {
+        type: 'bar',
+        data: recipeData,
+    });
+
+    new Chart(document.getElementById('likesChart'), {
+        type: 'bar',
+        data: likesData,
+    });
+</script>
+}
