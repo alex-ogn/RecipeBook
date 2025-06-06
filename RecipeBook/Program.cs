@@ -23,6 +23,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

@@ -12,6 +12,10 @@
 
      @RenderSection("Styles", required: false)
 </head>
+
+<!-- За статистиката на админа -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm fixed-top navbar-custom">
@@ -39,6 +43,14 @@
                                     <li><a class="dropdown-item" asp-controller="Ingredients" asp-action="Index">Съставки</a></li>
                                     <li><a class="dropdown-item" asp-controller="RecipeCategories" asp-action="Index">Категории на рецепти</a></li>
                                     <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Потребители</a></li>
+                                </ul>
+                            </li>
+
+                                <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Статистика</a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="AdminStatistics" asp-action="UserStats">Потребители</a></li>
+                                    <li><a class="dropdown-item" asp-controller="AdminStatistics" asp-action="RecipeStats">Рецепти</a></li>
                                 </ul>
                             </li>
                         }

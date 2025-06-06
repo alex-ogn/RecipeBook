@@ -1,0 +1,82 @@
+﻿@using RecipeBook.ViewModels.AdminStatistics;
+@model RecipeAnalyticsViewModel
+@{
+    ViewData["Title"] = "Статистика за рецепти";
+}
+
+<h2 class="mb-4">Статистика за рецепти</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <h4>Най-коментирани рецепти</h4>
+        <ul class="list-group">
+            @foreach (var r in Model.MostCommentedRecipes)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @r.Title
+                    <span class="badge bg-primary rounded-pill">@r.Count</span>
+                </li>
+            }
+        </ul>
+    </div>
+
+    <div class="col-md-6">
+        <h4>Най-запазвани рецепти</h4>
+        <ul class="list-group">
+            @foreach (var r in Model.MostSavedRecipes)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    @r.Title
+                    <span class="badge bg-success rounded-pill">@r.Count</span>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<hr />
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h4>Разпределение по категории</h4>
+        <canvas id="categoryChart"></canvas>
+    </div>
+
+    <div class="col-md-6">
+        <h4>Активност по часове</h4>
+        <canvas id="hourChart"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const categoryChart = new Chart(document.getElementById('categoryChart'), {
+            type: 'pie',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.CategoryDistribution.Keys)),
+                datasets: [{
+                    data: @Html.Raw(Json.Serialize(Model.CategoryDistribution.Values)),
+                    backgroundColor: ['#E63946', '#F4A261', '#2A9D8F', '#264653', '#A8DADC']
+                }]
+            }
+        });
+
+        const hourChart = new Chart(document.getElementById('hourChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.HourDistribution.Keys)),
+                datasets: [{
+                    label: 'Рецепти по час',
+                    data: @Html.Raw(Json.Serialize(Model.HourDistribution.Values)),
+                    backgroundColor: '#457B9D'
+                }]
+            },
+            options: {
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+}
