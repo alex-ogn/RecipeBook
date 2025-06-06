@@ -1,37 +1,36 @@
 ﻿@model RecipeBook.Models.Ingredient
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Добавяне на съставка";
 }
 
-<h1>Create</h1>
+<h1 class="mb-4">Добави нова съставка</h1>
 
-<h4>Ingredient</h4>
-<hr />
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Име</label>
                 <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <span asp-validation-for="Name" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="IngredientCategory" class="control-label"></label>
-                <select asp-for="IngredientCategoryId" class ="form-control" asp-items="ViewBag.IngredientCategoryId"></select>
+
+            <div class="mb-3">
+                <label asp-for="IngredientCategoryId" class="form-label">Категория</label>
+                <select asp-for="IngredientCategoryId" class="form-select" asp-items="ViewBag.IngredientCategoryId"></select>
+                <span asp-validation-for="IngredientCategoryId" class="text-danger small"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-success">Добави</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Назад</a>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <partial name="_ValidationScriptsPartial" />
 }

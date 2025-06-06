@@ -81,8 +81,12 @@
                     <!-- Търсачка -->
                     <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3 position-relative">
                         <input id="globalSearchBox" name="searchString" class="form-control me-2" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
-                        <button class="btn btn-outline-success" type="submit">🔍</button>
+
+                        <button type="submit" class="search-icon-button" title="Търси">
+                            <i class="bi bi-search"></i>
+                        </button>
                     </form>
+
 
                     <partial name="_LoginPartial" />
                 </div>
@@ -99,7 +103,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="footer">
-            &copy; 2024 - RecipeBook - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; RecipeBook - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

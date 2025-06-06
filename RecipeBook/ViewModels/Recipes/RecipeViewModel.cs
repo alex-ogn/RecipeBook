@@ -21,6 +21,7 @@ namespace RecipeBook.ViewModels.Recipes
             RecipeIngredients = recipe.RecipeIngredients;
             RecipeCategory = recipe.RecipeCategory;
             ViewCount = recipe.ViewCount;
+            CreatedAt = recipe.CreatedAt;
             Comments = recipe.Comments;
             IsVegetarian = recipe.IsVegetarian;
             IsVegan = recipe.IsVegan;

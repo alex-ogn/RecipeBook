@@ -8,6 +8,7 @@ namespace RecipeBook.Models
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Име")]
         public string Name { get; set; }
 
         public ICollection<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
