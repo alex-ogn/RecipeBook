@@ -23,8 +23,12 @@
             }
             </div>
             <div class="text-muted small mt-2 text-end">
-                <span class="me-3">❤️ @Model.LikesCount</span>
-                <span>👁️ @Model.ViewCount</span>
+                <span class="me-2">
+                    <i class="bi bi-heart-fill text-danger"></i> @Model.LikesCount
+                </span>
+                <span>
+                    <i class="bi bi-eye text-secondary"></i> @Model.ViewCount
+                </span>
             </div>
         </div>
     </div>

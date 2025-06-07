@@ -16,6 +16,15 @@
         Резултати от търсене за: <strong>@TempData["SearchResults"]</strong>
     </div>
 }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
 
     <form asp-action="Index" method="get" class="mb-4">
         <div class="row g-3 align-items-end">
@@ -44,12 +53,17 @@
                     }
                 </select>
             </div>
-            <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-primary">Филтрирай</button>
-            </div>
-            <div class="col-md-2 d-grid">
-                <a asp-action="Index" class="btn btn-outline-secondary">Изчисти</a>
-            </div>
+    <div class="col-md-4 d-flex gap-2">
+
+        <button type="submit" class="btn btn-outline-accent me-2">
+            <i class="bi bi-funnel"></i> Филтрирай
+        </button>
+
+        <a asp-action="Index" class="btn btn-outline-warning btn-unstyled">
+            <i class="bi bi-x-circle"></i> Изчисти
+        </a>
+
+    </div>
         </div>
     </form>
 

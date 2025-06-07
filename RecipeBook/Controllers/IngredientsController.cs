@@ -78,6 +78,15 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,IngredientCategoryId")] Ingredient ingredient)
         {
+            var exists = await _context.Ingredients
+                     .AnyAsync(i => i.Name == ingredient.Name && i.IngredientCategoryId == ingredient.IngredientCategoryId );
+
+            if (exists)
+            {
+                ModelState.AddModelError("", "Съставка с това име вече съществува в тази категория.");
+                ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+                return View(ingredient);
+            }
 
             if (ModelState.IsValid)
             {
@@ -113,6 +122,16 @@ namespace RecipeBook.Controllers
             if (id != ingredient.Id)
             {
                 return NotFound();
+            }
+
+            var exists = await _context.Ingredients
+                .AnyAsync(i => i.Name == ingredient.Name && i.IngredientCategoryId == ingredient.IngredientCategoryId && i.Id != ingredient.Id);
+
+            if (exists)
+            {
+                ModelState.AddModelError("", "Съставка с това име вече съществува в тази категория.");
+                ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+                return View(ingredient);
             }
 
             if (ModelState.IsValid)
