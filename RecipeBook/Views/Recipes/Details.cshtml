@@ -86,26 +86,45 @@
     </div>
 
     <!-- Съставки -->
+    <!-- Съставки по категории с rowspan -->
+    <!-- Съставки по категории -->
     <div class="section-box">
-        <h4>Съставки</h4>
-        <table class="table table-striped">
-            <thead>
+        <h4 class="mb-3">Съставки</h4>
+
+        <table class="table table-bordered align-middle">
+            <thead class="table-warning">
                 <tr>
-                    <th>Продукт</th>
-                    <th>Количество</th>
+                    <th style="width: 25%;">Категория</th>
+                    <th style="width: 45%;">Продукт</th>
+                    <th style="width: 30%;">Количество</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model.RecipeIngredients)
+                @foreach (var group in Model.RecipeIngredients
+                .GroupBy(i => i.Ingredient.IngredientCategory.Name)
+                .OrderBy(g => g.Key))
                 {
-                    <tr>
-                        <td>@item.Ingredient.Name</td>
-                        <td>@item.QuantityNeeded</td>
-                    </tr>
+                    var rowspan = group.Count();
+                    var first = true;
+
+                    foreach (var item in group)
+                    {
+                        <tr>
+                            @if (first)
+                            {
+                                <td rowspan="@rowspan" class="fw-bold text-center align-middle bg-light">@group.Key</td>
+                                first = false;
+                            }
+                            <td>@item.Ingredient.Name</td>
+                            <td>@item.QuantityNeeded</td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
     </div>
+
+
 
     <!-- Описание и инструкции -->
     <div class="section-box">
