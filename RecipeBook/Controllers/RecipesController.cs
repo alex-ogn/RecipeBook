@@ -132,6 +132,7 @@ namespace RecipeBook.Controllers
             var recipe = await _context.Recipies
                                        .Include(r => r.RecipeIngredients)
                                            .ThenInclude(ri => ri.Ingredient)
+                                                .ThenInclude(i => i.IngredientCategory)
                                        .Include(r => r.RecipeCategory)
                                        .Include(r => r.User)
                                        .Include(r => r.SavedByUsers)
