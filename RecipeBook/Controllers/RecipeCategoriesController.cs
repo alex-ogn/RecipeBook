@@ -60,6 +60,11 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] RecipeCategory recipeCategory)
         {
+            if (_context.RecipeCategories.Any(c => c.Name == recipeCategory.Name))
+            {
+                ModelState.AddModelError("Name", "Категория с това име вече съществува.");
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(recipeCategory);
@@ -95,6 +100,11 @@ namespace RecipeBook.Controllers
             if (id != recipeCategory.Id)
             {
                 return NotFound();
+            }
+
+            if (_context.RecipeCategories.Any(c => c.Name == recipeCategory.Name && c.Id != recipeCategory.Id))
+            {
+                ModelState.AddModelError("Name", "Категория с това име вече съществува.");
             }
 
             if (ModelState.IsValid)

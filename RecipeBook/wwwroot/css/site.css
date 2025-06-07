@@ -389,3 +389,10 @@ a.btn.btn-unstyled {
         background-color: var(--buttery-yellow) !important;
         color: white !important;
     }
+
+
+/* стилът на числото при like */
+.icon-button span {
+    font-size: 1.0rem;
+    color: var(--dark-charcoal); /* Или друго, съвместимо с дизайна */
+}

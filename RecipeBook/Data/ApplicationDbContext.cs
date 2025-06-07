@@ -25,6 +25,19 @@ namespace RecipeBook.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            // unique indexes
+            modelBuilder.Entity<IngredientCategory>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<RecipeCategory>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            modelBuilder.Entity<Ingredient>()
+                .HasIndex(i => new { i.Name, i.IngredientCategoryId })
+                .IsUnique();
+
             // RecipeIngredient
             modelBuilder.Entity<RecipeIngredient>()
                 .HasOne(ri => ri.Recipe)
