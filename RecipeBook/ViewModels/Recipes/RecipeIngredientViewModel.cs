@@ -2,8 +2,9 @@
 {
     public class RecipeIngredientViewModel
     {
-        public int IngredientId { get; set; }
-        public string Name { get; set; }
-        public string QuantityNeeded { get; set; }
+        public int IngredientId { get; set; }          // винаги ще е число
+        public string Name { get; set; }               // показваме го в интерфейса
+        public string QuantityNeeded { get; set; }     // количество (в текстов вид за по-голяма гъвкавост)
+        public bool IsNew { get; set; }                // маркира дали е нова съставка
     }
 }

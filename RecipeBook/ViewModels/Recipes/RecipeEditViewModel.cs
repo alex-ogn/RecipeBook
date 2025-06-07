@@ -37,11 +37,14 @@ namespace RecipeBook.ViewModels.Recipes
         public int Id { get; set; }
 
         [Required]
+        [Display(Name = "Заглавие")]
         public string Title { get; set; }
 
+        [Display(Name = "Описание")]
         public string? Description { get; set; }
 
         [Required]
+        [Display(Name = "Инструкции")]
         public string Instructions { get; set; }
         [Required]
         [Range(1, 100, ErrorMessage = "Порциите трябва да са в диапазона между 1 и 100.")]
@@ -64,11 +67,10 @@ namespace RecipeBook.ViewModels.Recipes
         public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
         [Display(Name = "Категория")]
-        public int? CategoryId { get; set; }  // Holds the selected category ID
+        public int? CategoryId { get; set; } 
 
         [Display(Name = "Категория")]
-        public SelectList Categories { get; set; }  // Used to populate the dropdown in the view
-
+        public SelectList Categories { get; set; }  
 
         [Display(Name = "Вегетарианска")]
         public bool IsVegetarian { get; set; }
