@@ -213,5 +213,29 @@ namespace RecipeBook.Controllers
         {
           return (_context.Ingredients?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var ingredients = _context.Ingredients
+                .Select(i => new { id = i.Id, name = i.Name })
+                .ToList();
+            return Json(ingredients);
+        }
+
+        [HttpPost]
+        public IActionResult CreateFromRecipe(string name)
+        {
+            var existing = _context.Ingredients.FirstOrDefault(i => i.Name == name);
+            if (existing != null)
+                return Json(new { id = existing.Id, name = existing.Name });
+
+            var ingredient = new Ingredient { Name = name };
+            _context.Ingredients.Add(ingredient);
+            _context.SaveChanges();
+
+            return Json(new { id = ingredient.Id, name = ingredient.Name });
+        }
+
     }
 }

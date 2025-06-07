@@ -1,16 +1,15 @@
 ﻿@using RecipeBook.ViewModels.Recipes;
 @model RecipeEditViewModel
-
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Създай рецепта";
 }
 
-<h1>Create Recipe</h1>
+<h2>Създай рецепта</h2>
 
-<form asp-action="Create" method="post" enctype="multipart/form-data" id="recipeForm">
-    <div class="row">
-        <div class="col">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+<form asp-action="Create" method="post" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="Title" class="control-label"></label>
                 <input asp-for="Title" class="form-control" />
@@ -60,32 +59,37 @@
                 <input asp-for="IsLactoseFree" class="form-check-input" />
                 <label asp-for="IsLactoseFree" class="form-check-label"></label>
             </div>
-        </div>
-        <div class="col">
-            <div class="form-group">
-                <label>Ingredients</label>
-                <select id="categorySelect" class="form-select">
-                    <option selected>Select Category</option>
-                    @foreach (var category in Model.IngredientsByCategory.Keys)
-                    {
-                        <option value="@category">@category</option> 
-                    }
-                </select>
-            </div>
-            <div class="form-group border p-2">
-                <div class="row" id="ingredientList">
-                </div>
-            </div>
-        </div>
+
+    <hr />
+    <h4>Съставки</h4>
+    <div class="form-group">
+        <input type="text" id="ingredient-search" class="form-control" placeholder="Търси съставка...">
+        <ul id="ingredient-results" class="list-group"></ul>
     </div>
-    <div class="form-group mt-3">
-        <input type="submit" value="Create" class="btn btn-primary" />
+
+    <button type="button" id="add-ingredient-btn" class="btn btn-secondary mt-2">Добави нова съставка</button>
+
+    <table class="table mt-3">
+        <thead>
+            <tr>
+                <th>Съставка</th>
+                <th>Количество</th>
+                <th>Премахни</th>
+            </tr>
+        </thead>
+        <tbody id="selected-ingredients-table">
+        </tbody>
+    </table>
+
+    <input type="hidden" name="SelectedIngredientsJson" id="SelectedIngredientsJson" />
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success"> Добави </button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Назад</a>
     </div>
 </form>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+
 
 @section Styles {
     <style>
@@ -98,168 +102,126 @@
 
 @section Scripts {
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.28.0/dist/trumbowyg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.28.0/dist/trumbowyg.min.js"></script>
 
-<script>
-    $(document).ready(function () {
-            $('textarea[name="Description"]').trumbowyg({
-                btns: [
-                    ['strong', 'em', 'underline'],
-                    ['unorderedList', 'orderedList'],
-                    ['removeformat']
-                ]
-            });
-    });
-</script>
+    <script>
+        $(document).ready(function () {
+                $('textarea[name="Description"]').trumbowyg({
+                    btns: [
+                        ['strong', 'em', 'underline'],
+                        ['unorderedList', 'orderedList'],
+                        ['removeformat']
+                    ]
+                });
+        });
+    </script>
         
-<script>
-    $(document).ready(function () {
-            $('textarea[name="Instructions"]').trumbowyg({
-                btns: [
-                    ['strong', 'em', 'underline'],
-                    ['unorderedList', 'orderedList'],
-                    ['removeformat']
-                ]
+    <script>
+        $(document).ready(function () {
+                $('textarea[name="Instructions"]').trumbowyg({
+                    btns: [
+                        ['strong', 'em', 'underline'],
+                        ['unorderedList', 'orderedList'],
+                        ['removeformat']
+                    ]
+                });
+        });
+    </script>
+
+    <script>
+        let ingredientsList = [];
+        let selectedIngredients = [];
+
+        $(document).ready(function () {
+            // Зареждане на съществуващи съставки от сървъра
+            $.get("/Ingredients/GetAll", function (data) {
+                ingredientsList = data;
             });
-    });
-</script>
-        
-     <script>
 
-        let ingredientQuantities = {};
-
-        function updateIngredientList(selectedCategory) {
-            var ingredientContainer = document.getElementById('ingredientList');
-            ingredientContainer.innerHTML = '';
-
-            if (selectedCategory !== 'Select Category') {
-                var ingredients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.IngredientsByCategory));
-
-                if (ingredients[selectedCategory]) {
-                    ingredients[selectedCategory].forEach(function (ingredient) {
-                        var ingredientCard = document.createElement('div');
-                        ingredientCard.className = 'col-12 col-md-6 col-lg-4 mb-3';
-
-                        var card = document.createElement('div');
-                        card.className = 'card h-100';
-                        card.style.cursor = 'pointer';
-                        card.id = 'ingredientCard-' + ingredient.IngredientId;
-
-                        var cardBody = document.createElement('div');
-                        cardBody.className = 'card-body d-flex justify-content-between align-items-center';
-
-                        var cardTitle = document.createElement('h5');
-                        cardTitle.className = 'card-title';
-                        cardTitle.innerText = ingredient.Name;
-
-                        var quantityInput = document.createElement('input');
-                        quantityInput.type = 'text';
-                        quantityInput.className = 'form-control';
-                        quantityInput.placeholder = 'Quantity';
-                        quantityInput.name = `SelectedIngredients[${ingredient.IngredientId}].QuantityNeeded`;
-                        quantityInput.style.display = 'none';
-                        quantityInput.style.maxWidth = '100px'; // Adjust width as needed
-
-                        if (ingredientQuantities[ingredient.IngredientId]) {
-                            quantityInput.value = ingredientQuantities[ingredient.IngredientId];
-                            quantityInput.style.display = 'block';
-                            card.classList.add('border-green');
-                        }
-
-                        var hiddenIdInput = document.createElement('input');
-                        hiddenIdInput.type = 'hidden';
-                        hiddenIdInput.name = `SelectedIngredients[${ingredient.IngredientId}].IngredientId`;
-                        hiddenIdInput.value = ingredient.IngredientId;
-
-                        var hiddenCheckbox = document.createElement('input');
-                        hiddenCheckbox.type = 'checkbox';
-                        hiddenCheckbox.name = `SelectedIngredients[${ingredient.IngredientId}].IsSelected`;
-                        hiddenCheckbox.value = 'true';
-                        hiddenCheckbox.style.display = 'none';
-                        hiddenCheckbox.checked = !!ingredientQuantities[ingredient.IngredientId];
-
-                        cardBody.appendChild(cardTitle);
-                        cardBody.appendChild(quantityInput);
-                        cardBody.appendChild(hiddenIdInput);
-                        cardBody.appendChild(hiddenCheckbox);
-
-                        card.appendChild(cardBody);
-                        ingredientCard.appendChild(card);
-                        ingredientContainer.appendChild(ingredientCard);
-
-                        card.addEventListener('click', function () {
-                            if (hiddenCheckbox.checked) {
-                                hiddenCheckbox.checked = false;
-                                quantityInput.style.display = 'none';
-                                card.classList.remove('border-green');
-                                delete ingredientQuantities[ingredient.IngredientId];
-                            } else {
-                                hiddenCheckbox.checked = true;
-                                quantityInput.style.display = 'block';
-                                card.classList.add('border-green');
-                                ingredientQuantities[ingredient.IngredientId] = quantityInput.value || "";
-                            }
-                        });
-
-                        quantityInput.addEventListener('click', function (event) {
-                            event.stopPropagation();
-                        });
-
-                        quantityInput.addEventListener('input', function () {
-                            if (hiddenCheckbox.checked) {
-                                ingredientQuantities[ingredient.IngredientId] = this.value;
-                            }
-                        });
-                    });
+            // Филтриране на предложенията при въвеждане
+            $('#ingredient-search').on('input', function () {
+                const query = $(this).val().toLowerCase();
+                if (query === '') {
+                    $('#ingredient-results').html('');
+                    return;
                 }
-            }
-        }
 
-        document.getElementById('categorySelect').addEventListener('change', function () {
-            var selectedCategory = this.value;
-            updateIngredientList(selectedCategory);
-        });
+                const filtered = ingredientsList.filter(i => i.name.toLowerCase().includes(query));
+                let html = '';
+                filtered.forEach(i => {
+                    html += `<li class="list-group-item" data-id="${i.id}" data-name="${i.name}">${i.name}</li>`;
+                });
+                $('#ingredient-results').html(html);
+            });
 
-        document.getElementById('recipeForm').addEventListener('submit', function () {
-            var selectedIngredients = [];
+            // При избор на съществуваща съставка
+            $('#ingredient-results').on('click', 'li', function () {
+                const id = parseInt($(this).data('id'));
+                const name = $(this).data('name');
 
-            for (var ingredientId in ingredientQuantities) {
-                if (ingredientQuantities[ingredientId]) {
-                    selectedIngredients.push({
-                        IngredientId: ingredientId,
-                        QuantityNeeded: ingredientQuantities[ingredientId]
-                    });
-                }
+                if (selectedIngredients.some(i => i.ingredientId === id)) return;
+
+                selectedIngredients.push({
+                    ingredientId: id,
+                    name: name,
+                    quantityNeeded: '',
+                    isNew: false
+                });
+                renderSelectedIngredients();
+
+                $('#ingredient-search').val('');
+                $('#ingredient-results').html('');
+            });
+
+            // Добавяне на нова съставка от потребител
+            $('#add-ingredient-btn').click(function () {
+                const name = prompt("Въведи нова съставка:");
+                if (!name) return;
+
+                selectedIngredients.push({
+                    ingredientId: 0, // <-- 0 за нови съставки
+                    name: name,
+                    quantityNeeded: '',
+                    isNew: true
+                });
+                renderSelectedIngredients();
+            });
+
+            // Промяна на количество
+            window.updateQuantity = function (index, value) {
+                selectedIngredients[index].quantityNeeded = value;
+                syncIngredients();
+            };
+
+            // Премахване на съставка
+            window.removeIngredient = function (index) {
+                selectedIngredients.splice(index, 1);
+                renderSelectedIngredients();
+            };
+
+            function renderSelectedIngredients() {
+                let html = '';
+                selectedIngredients.forEach((i, index) => {
+                    html += `
+                            <tr>
+                                <td>${i.name}</td>
+                                <td>
+                                    <input type="text" class="form-control" value="${i.quantityNeeded}"
+                                           onchange="updateQuantity(${index}, this.value)" placeholder="Количество" />
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-danger" onclick="removeIngredient(${index})">X</button>
+                                </td>
+                            </tr>`;
+                });
+                $('#selected-ingredients-table').html(html);
+                syncIngredients();
             }
 
-            var selectedIngredientsInput = document.createElement('input');
-            selectedIngredientsInput.type = 'hidden';
-            selectedIngredientsInput.name = 'SelectedIngredientsJson';
-            selectedIngredientsInput.value = JSON.stringify(selectedIngredients);
-            this.appendChild(selectedIngredientsInput);
-        });
-
-        // Initialize the ingredient list with the first category
-        document.addEventListener('DOMContentLoaded', function () {
-            var categorySelect = document.getElementById('categorySelect');
-            if (categorySelect.value !== 'Select Category') {
-                updateIngredientList(categorySelect.value);
+            function syncIngredients() {
+                $('#SelectedIngredientsJson').val(JSON.stringify(selectedIngredients));
             }
         });
-
-        // Store the existing quantities
-        document.addEventListener('DOMContentLoaded', function () {
-        @foreach (var category in Model.IngredientsByCategory)
-        {
-            foreach (var ingredient in category.Value)
-            {
-                if (!string.IsNullOrEmpty(ingredient.QuantityNeeded))
-                {
-                    @:ingredientQuantities[@ingredient.IngredientId] = "@ingredient.QuantityNeeded";
-                }
-            }
-        }
-                                });
     </script>
 }
