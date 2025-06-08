@@ -380,143 +380,120 @@ namespace RecipeBook.Controllers
         }
 
         [Authorize]
-        // POST: Recipes/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, RecipeEditViewModel model, IFormFile imageFileNew, string SelectedIngredientsJson)
         {
             if (id != model.Id)
-            {
                 return NotFound();
-            }
 
             if (model.imageFileNew == null)
-            {
                 ModelState.Remove("ImageFileNew");
-            }
 
             if (model.CategoryId == null)
-            {
                 ModelState.Remove("CategoryId");
-            }
+
             if (model.Categories == null)
-            {
                 ModelState.Remove("Categories");
+
+            if (!ModelState.IsValid)
+            {
+                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
+                ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
+                return View(model);
             }
 
-            if (ModelState.IsValid)
+            try
             {
-                try
+                var recipe = await _context.Recipies.FindAsync(model.Id);
+                if (recipe == null)
+                    return NotFound();
+
+                model.EditRecipe(recipe);
+                recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
+
+                if (imageFileNew != null && imageFileNew.Length > 0)
                 {
-                    var recipe = await _context.Recipies.FindAsync(model.Id);
-                    if (recipe == null)
+                    using (var memoryStream = new MemoryStream())
                     {
-                        return NotFound();
+                        await imageFileNew.CopyToAsync(memoryStream);
+                        recipe.Image = memoryStream.ToArray();
                     }
-
-                    model.EditRecipe(recipe);
-                    recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
-
-                    if (imageFileNew != null && imageFileNew.Length > 0)
-                    {
-                        using (var memoryStream = new MemoryStream())
-                        {
-                            await imageFileNew.CopyToAsync(memoryStream);
-                            recipe.Image = memoryStream.ToArray();  // Saving the image as a byte array
-                        }
-                    }
-
-                    // Deserialize the SelectedIngredientsJson to populate the SelectedIngredients list
-                    if (!string.IsNullOrEmpty(SelectedIngredientsJson))
-                    {
-                        model.SelectedIngredients = JsonConvert.DeserializeObject<List<RecipeIngredientViewModel>>(SelectedIngredientsJson);
-                    }
-
-                    // Update the RecipeIngredients
-                    var existingIngredients = await _context.RecipeIngredients
-                        .Where(ri => ri.RecipeId == id)
-                        .ToListAsync();
-
-                    _context.RecipeIngredients.RemoveRange(existingIngredients);
-
-                    var newIngredients = model.SelectedIngredients.Select(ingredient => new RecipeIngredient
-                    {
-                        RecipeId = id,
-                        IngredientId = ingredient.IngredientId,
-                        QuantityNeeded = ingredient.QuantityNeeded
-                    }).ToList();
-
-                    _context.RecipeIngredients.AddRange(newIngredients);
-
-                    _context.Update(recipe);
-                    await _context.SaveChangesAsync();
-
-                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+
+                var selectedIngredients = JsonConvert.DeserializeObject<List<RecipeIngredientViewModel>>(SelectedIngredientsJson);
+                var recipeIngredients = new List<RecipeIngredient>();
+
+                string adddedByUserIngredientName = "Добавена от потребител"; // todo
+
+                var defaultCategory = await _context.IngredientCategories.FirstOrDefaultAsync(u => u.Name == adddedByUserIngredientName);
+                if (defaultCategory == null)
                 {
-                    if (!RecipeExists(model.Id))
+                    return NotFound();
+                }
+
+                foreach (var item in selectedIngredients)
+                {
+                    int ingredientId;
+
+                    if (item.IsNew)
                     {
-                        return NotFound();
+                        var existingIngredient = await _context.Ingredients
+                            .FirstOrDefaultAsync(i => i.Name.ToLower() == item.Name.ToLower()
+                                                      && i.IngredientCategoryId == defaultCategory.Id);
+
+                        if (existingIngredient != null)
+                        {
+                            ingredientId = existingIngredient.Id;
+                        }
+                        else
+                        {
+                            var newIngredient = new Ingredient
+                            {
+                                Name = item.Name,
+                                IngredientCategoryId = defaultCategory.Id
+                            };
+
+                            _context.Ingredients.Add(newIngredient);
+                            await _context.SaveChangesAsync();
+                            ingredientId = newIngredient.Id;
+                        }
                     }
                     else
                     {
-                        throw;
+                        ingredientId = item.IngredientId;
                     }
-                }
-            }
 
-            foreach (var state in ModelState)
-            {
-                foreach (var error in state.Value.Errors)
-                {
-                    Console.WriteLine($"Error in {state.Key}: {error.ErrorMessage}");
-                }
-            }
-
-            var recipeUnchanged = await _context.Recipies
-               .Include(r => r.RecipeIngredients)
-               .ThenInclude(ri => ri.Ingredient)
-               .FirstOrDefaultAsync(m => m.Id == id);
-
-            var ingredients = _context.Ingredients
-               .Include(i => i.IngredientCategory)
-               .ToList();
-
-            // Group ingredients by category in memory
-            var ingredientsByCategory = ingredients
-                .GroupBy(i => i.IngredientCategory.Name)
-                .OrderBy(comparer => comparer.Key)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(i => new RecipeIngredientViewModel
+                    recipeIngredients.Add(new RecipeIngredient
                     {
-                        IngredientId = i.Id,
-                        Name = i.Name,
-                        QuantityNeeded = recipeUnchanged.RecipeIngredients
-                            .Where(ri => ri.IngredientId == i.Id)
-                            .Select(ri => ri.QuantityNeeded)
-                            .FirstOrDefault()
-                    }).OrderBy(n => n.Name).ToArray()
-                );
+                        RecipeId = recipe.Id,
+                        IngredientId = ingredientId,
+                        QuantityNeeded = item.QuantityNeeded
+                    });
+                }
 
-            var viewModel = new RecipeEditViewModel(recipeUnchanged)
+                // Изчистваме старите съставки
+                var existing = await _context.RecipeIngredients
+                    .Where(ri => ri.RecipeId == recipe.Id)
+                    .ToListAsync();
+
+                _context.RecipeIngredients.RemoveRange(existing);
+                _context.RecipeIngredients.AddRange(recipeIngredients);
+
+                _context.Update(recipe);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (DbUpdateConcurrencyException)
             {
-                IngredientsByCategory = ingredientsByCategory,
-                SelectedIngredients = recipeUnchanged.RecipeIngredients
-                    .Select(ri => new RecipeIngredientViewModel
-                    {
-                        IngredientId = ri.IngredientId,
-                        Name = ri.Ingredient.Name,
-                        QuantityNeeded = ri.QuantityNeeded
-                    }).ToList()
-            };
-
-            model.IngredientsByCategory = ingredientsByCategory;
-            model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
-            return View(viewModel);
+                if (!RecipeExists(model.Id))
+                    return NotFound();
+                else
+                    throw;
+            }
         }
+
 
         [Authorize]
         // GET: Recipes/Delete/5
