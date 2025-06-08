@@ -11,6 +11,7 @@ namespace RecipeBook.Models
 
         [Required]
         [Display(Name = "Име")]
+        [StringLength(100)]
         public string Title { get; set; }
 
         [Required]

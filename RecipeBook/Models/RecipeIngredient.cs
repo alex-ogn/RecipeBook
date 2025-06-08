@@ -19,6 +19,7 @@ namespace RecipeBook.Models
 
         public Ingredient Ingredient { get; set; }
 
+        [StringLength(100)]
         public string QuantityNeeded { get; set; }
     }
 }

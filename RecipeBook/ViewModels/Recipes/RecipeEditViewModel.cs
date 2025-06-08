@@ -38,6 +38,7 @@ namespace RecipeBook.ViewModels.Recipes
 
         [Required]
         [Display(Name = "Заглавие")]
+        [StringLength(100, MinimumLength = 1, ErrorMessage = "Заглавието трябва да е дълго между 1 и 100 символа.")]
         public string Title { get; set; }
 
         [Display(Name = "Описание")]
