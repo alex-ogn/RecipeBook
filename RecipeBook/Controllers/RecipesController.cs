@@ -19,6 +19,7 @@ using Ganss.Xss;
 using System.Text.RegularExpressions;
 using RecipeBook.ViewModels.Recipes;
 using RecipeBook.ViewModels.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace RecipeBook.Controllers
 {
@@ -269,6 +270,10 @@ namespace RecipeBook.Controllers
                 {
                     int ingredientId;
 
+                    // Валидация по модела
+                    var validationContext = new ValidationContext(item);
+                    Validator.ValidateObject(item, validationContext, validateAllProperties: true);
+
                     if (item.IsNew)
                     {
                         var existingIngredient = await _context.Ingredients
@@ -313,8 +318,9 @@ namespace RecipeBook.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                throw;
+                ModelState.AddModelError(string.Empty, ex.Message);
+                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
+                return View(model);
             }
         }
 
@@ -410,7 +416,23 @@ namespace RecipeBook.Controllers
                     return NotFound();
 
                 model.EditRecipe(recipe);
+
                 recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
+
+                var sanitizer = new HtmlSanitizer();
+                sanitizer.AllowedTags.Add("b");
+                sanitizer.AllowedTags.Add("i");
+                sanitizer.AllowedTags.Add("ul");
+                sanitizer.AllowedTags.Add("ol");
+                sanitizer.AllowedTags.Add("li");
+                sanitizer.AllowedTags.Add("p");
+                sanitizer.AllowedTags.Add("span");
+                sanitizer.AllowedTags.Add("strong");
+                sanitizer.AllowedTags.Add("em");
+                sanitizer.AllowedTags.Add("br");
+
+                recipe.Description = sanitizer.Sanitize(recipe.Description);
+                recipe.Instructions = sanitizer.Sanitize(recipe.Instructions);
 
                 if (imageFileNew != null && imageFileNew.Length > 0)
                 {
@@ -435,6 +457,10 @@ namespace RecipeBook.Controllers
                 foreach (var item in selectedIngredients)
                 {
                     int ingredientId;
+
+                    // Валидация по модела
+                    var validationContext = new ValidationContext(item);
+                    Validator.ValidateObject(item, validationContext, validateAllProperties: true);
 
                     if (item.IsNew)
                     {
@@ -485,12 +511,11 @@ namespace RecipeBook.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch (DbUpdateConcurrencyException)
+            catch (ValidationException vex)
             {
-                if (!RecipeExists(model.Id))
-                    return NotFound();
-                else
-                    throw;
+                ModelState.AddModelError(string.Empty, vex.Message);
+                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
+                return View(model);
             }
         }
 
