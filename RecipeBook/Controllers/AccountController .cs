@@ -102,6 +102,9 @@ public class AccountController : Controller
         var result = await _userManager.CreateAsync(user, model.Password);
         if (result.Succeeded)
         {
+            // Добавяме потребителя към роля "User"
+            await _userManager.AddToRoleAsync(user, "User");
+
             await _signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToLocal(returnUrl);
         }

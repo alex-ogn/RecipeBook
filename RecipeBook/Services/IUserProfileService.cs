@@ -8,5 +8,6 @@ namespace RecipeBook.Services
     {
         Task<IdentityResult> UpdateUserProfileAsync(ApplicationUser user, EditUserViewModel model, bool isAdmin = false);
         Task<IdentityResult> DeleteUserAsync(string targetUserId, string currentUserId);
+        Task<(byte[] Content, string ContentType)> GetProfilePictureAsync(string userId);
     }
 }
