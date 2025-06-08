@@ -1,0 +1,15 @@
+﻿@using RecipeBook.ViewModels.Users;
+@model ProfileImageViewModel
+
+@if (Model != null)
+{
+    <li class="nav-item">
+        <a class="nav-link d-flex align-items-center gap-2"
+       asp-controller="Users" asp-action="Edit" asp-route-id="@Model.UserId" title="Профил">
+            <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId, v = Model.ProfilePictureVersion })"
+             alt="Профил"
+             class="rounded-circle border border-light"
+             style="width: 32px; height: 32px; object-fit: cover;">
+        </a>
+    </li>
+}

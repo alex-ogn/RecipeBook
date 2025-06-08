@@ -14,19 +14,22 @@ namespace RecipeBook.Services
         private readonly IPasswordValidator<ApplicationUser> _passwordValidator;
         private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
         private readonly IRecipeService _recipeService;
+        private readonly IWebHostEnvironment _env;
 
         public UserProfileService(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IPasswordValidator<ApplicationUser> passwordValidator,
             IPasswordHasher<ApplicationUser> passwordHasher,
-            IRecipeService recipeService)
+            IRecipeService recipeService,
+            IWebHostEnvironment env)
         {
             _context = context;
             _userManager = userManager;
             _passwordValidator = passwordValidator;
             _passwordHasher = passwordHasher;
             _recipeService = recipeService;
+            _env = env;
         }
 
         public async Task<IdentityResult> UpdateUserProfileAsync(ApplicationUser user, EditUserViewModel model, bool isAdmin = false)
@@ -122,6 +125,21 @@ namespace RecipeBook.Services
             await _context.SaveChangesAsync();
 
             return await _userManager.DeleteAsync(user);
+        }
+
+        public async Task<(byte[] Content, string ContentType)> GetProfilePictureAsync(string userId)
+        {
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user != null && user.ProfilePicture != null)
+            {
+                return (user.ProfilePicture, "image/jpg");
+            }
+
+            // зареждаме default изображение от файлова система
+            var defaultPath = Path.Combine(_env.WebRootPath, "images", "default-profile.png");
+            var defaultImage = await File.ReadAllBytesAsync(defaultPath);
+            return (defaultImage, "image/png");
         }
 
     }

@@ -184,15 +184,8 @@ namespace RecipeBook.Controllers
         [HttpGet]
         public async Task<IActionResult> GetProfilePicture(string userId)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user == null) return NotFound();
-
-            if (user?.ProfilePicture != null)
-            {
-                return File(user.ProfilePicture, "image/jpg");
-            }
-
-            return File("~/images/default-profile.png", "image/png");
+            var (content, contentType) = await _userProfileService.GetProfilePictureAsync(userId);
+            return File(content, contentType);
         }
 
         [Authorize]

@@ -619,7 +619,7 @@ namespace RecipeBook.Controllers
             ViewData["IsUserAdmin"] = User.IsInRole("Admin");
             ViewData["CurrentUserId"] = userId;
             ViewData["CurrentAction"] = "SavedRecipes";
-
+                       
             return View("Index", model);
         }
         [Authorize]
@@ -634,6 +634,7 @@ namespace RecipeBook.Controllers
 
             var recipesQuery = _context.Recipies
                 .Include(r => r.RecipeCategory)
+                .Include(r => r.Likes)
                 .Where(r => savedRecipeIds.Contains(r.Id));
 
             if (categoryId.HasValue)
@@ -824,6 +825,53 @@ namespace RecipeBook.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", "Recipes", new { id = comment.RecipeId });
         }
+
+        [Authorize]
+        public async Task<IActionResult> FollowedUsersRecipes(int? categoryId)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // ID на хората, които следвам
+            var followedUserIds = await _context.UserFollowers
+                .Where(f => f.FollowerId == userId)
+                .Select(f => f.FollowedId)
+                .ToListAsync();
+
+            // Вземи рецептите на хората, които следваш
+            var recipesQuery = _context.Recipies
+                .Include(r => r.Likes)
+                .Include(r => r.User)
+                .Where(r => followedUserIds.Contains(r.UserId));
+
+            if (categoryId.HasValue)
+            {
+                recipesQuery = recipesQuery.Where(r => r.RecipeCategory.Id == categoryId.Value);
+            }
+
+            var recipes = await recipesQuery.ToListAsync();
+            var cardViewModels = MapToCardViewModels(recipes, userId);
+
+            var categories = await _context.RecipeCategories
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Name
+                }).ToListAsync();
+
+            var model = new RecipeFilterViewModel
+            {
+                Recipes = cardViewModels,
+                Categories = new SelectList(categories, "Value", "Text"),
+                SelectedCategoryId = categoryId
+            };
+
+            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["CurrentUserId"] = userId;
+            ViewData["CurrentAction"] = "SavedRecipes";
+
+            return View("Index", model);
+        }
+
 
 
     }
