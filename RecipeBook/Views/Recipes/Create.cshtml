@@ -67,7 +67,19 @@
         <ul id="ingredient-results" class="list-group"></ul>
     </div>
 
-    <button type="button" id="add-ingredient-btn" class="btn btn-secondary mt-2">Добави нова съставка</button>
+    <div class="d-flex gap-2 mb-2">
+        <button type="button" id="add-ingredient-btn" class="btn btn-secondary">Добави нова съставка</button>
+    </div>
+
+    <div id="new-ingredient-input" class="mb-3" style="display: none; max-width: 600px;">
+        <div class="input-group">
+            <input type="text" id="new-ingredient-name" class="form-control" placeholder="Име на нова съставка">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-success" id="confirm-new-ingredient">Добави</button>
+                <button type="button" class="btn btn-outline-secondary" id="cancel-new-ingredient">X</button>
+            </div>
+        </div>
+    </div>
 
     <table class="table mt-3">
         <thead>
@@ -174,18 +186,29 @@
                 $('#ingredient-results').html('');
             });
 
-            // Добавяне на нова съставка от потребител
             $('#add-ingredient-btn').click(function () {
-                const name = prompt("Въведи нова съставка:");
+                $('#new-ingredient-name').val('');
+                $('#new-ingredient-input').show();
+                $('#new-ingredient-name').focus();
+            });
+
+            $('#confirm-new-ingredient').click(function () {
+                const name = $('#new-ingredient-name').val().trim();
                 if (!name) return;
 
                 selectedIngredients.push({
-                    ingredientId: 0, // <-- 0 за нови съставки
+                    ingredientId: 0,
                     name: name,
                     quantityNeeded: '',
                     isNew: true
                 });
                 renderSelectedIngredients();
+
+                $('#new-ingredient-input').hide();
+            });
+
+            $('#cancel-new-ingredient').click(function () {
+                $('#new-ingredient-input').hide();
             });
 
             // Промяна на количество
