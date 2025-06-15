@@ -219,8 +219,11 @@ namespace RecipeBook.Controllers
 
                 if (!ModelState.IsValid)
                 {
+
                     model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
                     ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
+                    ViewData["CurrentUserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
                     return View(model);
                 }
 

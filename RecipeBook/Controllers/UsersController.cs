@@ -117,9 +117,7 @@ namespace RecipeBook.Controllers
             var result = await _userProfileService.UpdateUserProfileAsync(user, model, isAdmin);
             if (!result.Succeeded)
             {
-                foreach (var error in result.Errors)
-                    ModelState.AddModelError("", error.Description);
-
+                TempData["ErrorMessage"] = string.Join("; ", result.Errors.Select(e => e.Description));
                 return View(model);
             }
 

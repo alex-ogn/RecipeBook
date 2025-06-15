@@ -64,14 +64,14 @@ namespace RecipeBook.ViewModels.Recipes
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
 
-        public Dictionary<string, RecipeIngredientViewModel[]> IngredientsByCategory { get; set; }
+        public Dictionary<string, RecipeIngredientViewModel[]>? IngredientsByCategory { get; set; }
         public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
         [Display(Name = "Категория")]
         public int? CategoryId { get; set; } 
 
         [Display(Name = "Категория")]
-        public SelectList Categories { get; set; }  
+        public SelectList? Categories { get; set; }  
 
         [Display(Name = "Вегетарианска")]
         public bool IsVegetarian { get; set; }
