@@ -215,6 +215,7 @@ namespace RecipeBook.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public IActionResult GetAll()
         {
             var ingredients = _context.Ingredients
