@@ -129,7 +129,7 @@ namespace RecipeBook.Services
 
         public async Task<(byte[] Content, string ContentType)> GetProfilePictureAsync(string userId)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userManager.FindByIdAsync(userId);
 
             if (user != null && user.ProfilePicture != null)
             {
