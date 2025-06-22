@@ -13,10 +13,11 @@
             @foreach (var r in Model.MostCommentedRecipes)
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    @r.Title
+                    <a href="@Url.Action("Details", "Recipes", new { id = r.Id })">@r.Title</a>
                     <span class="badge bg-primary rounded-pill">@r.Count</span>
                 </li>
             }
+
         </ul>
     </div>
 
@@ -26,7 +27,7 @@
             @foreach (var r in Model.MostSavedRecipes)
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    @r.Title
+                    <a href="@Url.Action("Details", "Recipes", new { id = r.Id })">@r.Title</a>
                     <span class="badge bg-success rounded-pill">@r.Count</span>
                 </li>
             }
@@ -59,6 +60,20 @@
                     data: @Html.Raw(Json.Serialize(Model.CategoryDistribution.Values)),
                     backgroundColor: ['#E63946', '#F4A261', '#2A9D8F', '#264653', '#A8DADC']
                 }]
+            },
+            options: {
+                onClick: function (e, elements) {
+                    if (elements.length > 0) {
+                        const chart = elements[0];
+                        const categoryName = this.data.labels[chart.index];
+                        const categoryMap = @Html.Raw(Json.Serialize(Model.CategoryNameToIdMap));
+                        const categoryId = categoryMap[categoryName];
+
+                        if (categoryId !== undefined) {
+                            window.location.href = '/Recipes?categoryId=' + categoryId;
+                        }
+                    }
+                }
             }
         });
 

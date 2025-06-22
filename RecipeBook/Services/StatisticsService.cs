@@ -53,6 +53,7 @@ namespace RecipeBook.Services
                 .Take(5)
                 .Select(r => new RecipeStatEntry
                 {
+                    Id= r.Id,
                     Title = r.Title,
                     Count = r.Comments.Count
                 })
@@ -63,6 +64,7 @@ namespace RecipeBook.Services
                 .Take(5)
                 .Select(r => new RecipeStatEntry
                 {
+                    Id = r.Id,
                     Title = r.Title,
                     Count = r.SavedByUsers.Count
                 })
@@ -84,12 +86,17 @@ namespace RecipeBook.Services
                     g => g.Count()
                 );
 
+            var categoryMap = await _context.RecipeCategories
+                 .ToDictionaryAsync(c => c.Name, c => c.Id);
+
             return new RecipeAnalyticsViewModel
             {
                 MostCommentedRecipes = mostCommented,
                 MostSavedRecipes = mostSaved,
                 CategoryDistribution = categoryDistribution,
-                HourDistribution = hourlyDistribution
+                HourDistribution = hourlyDistribution,
+                CategoryNameToIdMap = categoryMap
+
             };
         }
 

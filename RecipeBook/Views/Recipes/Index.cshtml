@@ -30,7 +30,7 @@
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label">Категория:</label>
-                <select name="categoryId" asp-items="@Model.Categories" class="form-select">
+                <select asp-for="SelectedCategoryId" asp-items="Model.Categories" class="form-select">
                     <option value="">Всички</option>
                 </select>
             </div>

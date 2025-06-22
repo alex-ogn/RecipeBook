@@ -6,5 +6,6 @@
         public List<RecipeStatEntry> MostSavedRecipes { get; set; }
         public Dictionary<string, int> CategoryDistribution { get; set; } = new();
         public Dictionary<string, int> HourDistribution { get; set; } = new();
+        public Dictionary<string, int> CategoryNameToIdMap { get; set; } = new();
     }
 }

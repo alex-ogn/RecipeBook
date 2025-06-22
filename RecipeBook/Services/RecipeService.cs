@@ -48,7 +48,6 @@ namespace RecipeBook.Services
         {
             var candidates = await _context.Recipies
                 .Include(r => r.Likes)
-                .Include(r => r.User)
                 .Where(r => r.Id != referenceRecipe.Id)
                 .ToListAsync();
 
@@ -82,8 +81,6 @@ namespace RecipeBook.Services
                 Title = r.Recipe.Title,
                 DescriptionPreview = Regex.Replace(r.Recipe.Description ?? "", "<.*?>", "").Truncate(100),
                 ImageUrl = $"/Recipes/GetImage/{r.Recipe.Id}",
-                UserName = r.Recipe.User?.UserName ?? "Потребител",
-                UserId = r.Recipe.UserId,
                 LikesCount = r.Recipe.Likes.Count,
                 ViewCount = r.Recipe.ViewCount,
                 IsOwner = allowEdit && currentUserId == r.Recipe.UserId
