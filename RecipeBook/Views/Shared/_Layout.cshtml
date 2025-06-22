@@ -80,9 +80,8 @@
                     </ul>
 
                     <!-- Търсачка -->
-                    <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3 position-relative">
-                        <input id="globalSearchBox" name="searchString" class="form-control me-2" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
-
+                    <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3 position-relative" style="width: 280px;">
+                        <input id="globalSearchBox" name="searchString" class="form-control me-2 w-100" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
                         <button type="submit" class="search-icon-button" title="Търси">
                             <i class="bi bi-search"></i>
                         </button>
