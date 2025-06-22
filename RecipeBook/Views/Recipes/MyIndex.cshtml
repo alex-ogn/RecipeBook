@@ -37,7 +37,7 @@
                 <form asp-action="@(isFollowing ? "Unfollow" : "Follow")"
                   asp-controller="Users" method="post" class="m-0">
                     <input type="hidden" name="userId" value="@user.Id" />
-                    <button type="submit" class="btn btn-sm btn-primary">
+                    <button type="submit" class="btn btn-sm btn-success">
                         <i class="bi @(isFollowing ? "bi-person-dash" : "bi-person-plus")"></i>
                         @(isFollowing ? "Отследвай" : "Последвай")
                     </button>
