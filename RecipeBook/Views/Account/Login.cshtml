@@ -9,6 +9,17 @@
             <h2 class="text-center text-warm-red mb-4">Вход в акаунта</h2>
 
             <form asp-action="Login" method="post">
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="text-danger mb-3">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
                 <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
                 <div class="form-group mb-3">

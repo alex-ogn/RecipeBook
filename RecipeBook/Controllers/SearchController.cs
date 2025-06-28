@@ -5,6 +5,7 @@ using RecipeBook.Data;
 using RecipeBook.ViewModels.Recipes;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 public class SearchController : Controller
@@ -62,7 +63,8 @@ public class SearchController : Controller
                 {
                     Id = r.Id,
                     Title = r.Title,
-                    DescriptionPreview = r.Description,
+                    DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
+                    .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
                     ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
                     UserName = r.User.UserName,
                     UserId = r.UserId,

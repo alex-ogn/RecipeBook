@@ -5,12 +5,12 @@ namespace RecipeBook.ViewModels.Account
 {
     public class RegisterViewModel
     {
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Полето {0} е задължително.")]
+        [EmailAddress(ErrorMessage = "Полето {0} трябва да съдържа валиден имейл адрес.")]
         [Display(Name = "Имейл")]
         public string Email { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Полето {0} е задължително.")]
         [DataType(DataType.Password)]
         [Display(Name = "Парола")]
         public string Password { get; set; }
