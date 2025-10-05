@@ -6,8 +6,16 @@ using HtmlAgilityPack;
 
 namespace RecipeBook.Services
 {
+    /// <summary>
+    /// Class for creating PDF files
+    /// </summary>
     public class RecipePdfService : IRecipePdfService
     {
+        /// <summary>
+        /// Generates pdf recipe
+        /// </summary>
+        /// <param name="recipe"></param>
+        /// <returns></returns>
         public byte[] GenerateRecipePdf(Recipe recipe)
         {
             return Document.Create(container =>
@@ -88,6 +96,11 @@ namespace RecipeBook.Services
             }).GeneratePdf();
         }
 
+        /// <summary>
+        /// Transforms html tags to formatted text
+        /// </summary>
+        /// <param name="col"></param>
+        /// <param name="htmlText"></param>
         private void AddFormattedText(ColumnDescriptor col, string htmlText)
         {
             var htmlDoc = new HtmlDocument();
@@ -99,6 +112,9 @@ namespace RecipeBook.Services
             }
         }
 
+        /// <summary>
+        /// Transforms html tag to formatted text
+        /// </summary>
         private void ProcessHtmlNode(ColumnDescriptor col, HtmlNode node)
         {
             switch (node.Name)
@@ -145,11 +161,11 @@ namespace RecipeBook.Services
                     break;
 
                 case "br":
-                    col.Item().Text(""); // празен ред
+                    col.Item().Text(""); // empty row
                     break;
 
                 default:
-                    // Рекурсивно обработване на вложени елементи
+                    // Notes are recursive processed
                     foreach (var child in node.ChildNodes)
                         ProcessHtmlNode(col, child);
                     break;

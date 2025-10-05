@@ -41,7 +41,7 @@ public class SearchController : Controller
 
         if (category != null)
         {
-            return RedirectToAction("Index", "Recipes", new { categoryId = category.Id });
+            return RedirectToAction("Index", "Recipes", new { SelectedCategoryId = category.Id });
         }
 
         // Търсене по име на рецепта

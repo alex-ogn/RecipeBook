@@ -193,8 +193,6 @@
         <a asp-action="Index" class="btn btn-secondary">Обратно към списъка</a>
     </div>
 
-    @if (Model.SimilarRecipes?.Any() == true)
-    {
         @if (Model.SimilarRecipes?.Any() == true)
         {
             <h1>Подобни рецепти</h1>
@@ -206,6 +204,5 @@
                 }
             </div>
         }
-    }
 
 </div>

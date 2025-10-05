@@ -36,7 +36,7 @@ namespace RecipeBook.ViewModels.Recipes
 
         public int Id { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Полето {0} не може да е празно.")]
         [Display(Name = "Заглавие")]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Заглавието трябва да е дълго между 1 и 100 символа.")]
         public string Title { get; set; }
@@ -44,14 +44,14 @@ namespace RecipeBook.ViewModels.Recipes
         [Display(Name = "Описание")]
         public string? Description { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Полето {0} не може да е празно.")]
         [Display(Name = "Инструкции")]
         public string Instructions { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Полето {0} не може да е празно.")]
         [Range(1, 100, ErrorMessage = "Порциите трябва да са в диапазона между 1 и 100.")]
         [Display(Name = "Порции")]
         public int Servings { get; set; }
-        //[Required]
+
         [Range(1, 300, ErrorMessage = "Времето за готвене трябва да е между 1 и 300 минути.")]
         [Display(Name = "Време за готвене (в минути)")]
         public int CookingTime { get; set; }

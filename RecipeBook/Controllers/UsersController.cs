@@ -90,6 +90,8 @@ namespace RecipeBook.Controllers
                 ProfilePictureVersion = user.ProfilePictureVersion
             };
 
+            ViewData["IsUserAdmin"] = isAdmin;
+
             return View(model);
         }
 

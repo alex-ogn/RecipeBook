@@ -88,7 +88,7 @@ namespace Tests.Services
 
             await _context.SaveChangesAsync();
 
-            var result = await _service.GetRecipeStatsAsync();
+            var result = await _service.GetRecipeStatisticsAsync();
 
             Assert.Single(result.MostCommentedRecipes);
             Assert.Single(result.MostSavedRecipes);

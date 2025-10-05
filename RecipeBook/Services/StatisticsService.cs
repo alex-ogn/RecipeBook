@@ -46,7 +46,7 @@ namespace RecipeBook.Services
             };
         }
 
-        public async Task<RecipeAnalyticsViewModel> GetRecipeStatsAsync()
+        public async Task<RecipeAnalyticsViewModel> GetRecipeStatisticsAsync()
         {
             var mostCommented = await _context.Recipies
                 .OrderByDescending(r => r.Comments.Count)

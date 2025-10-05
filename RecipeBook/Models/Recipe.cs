@@ -39,7 +39,6 @@ namespace RecipeBook.Models
         [Required]
         public int RecipeCategoryId { get; set; }
 
-    //    [ForeignKey("RecipeCategoryId")]
         [Display(Name = "Категория")]
         public RecipeCategory? RecipeCategory { get; set; }
 

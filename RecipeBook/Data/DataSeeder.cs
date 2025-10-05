@@ -3,8 +3,15 @@ using RecipeBook.Models;
 
 namespace RecipeBook.Data
 {
+    /// <summary>
+    /// Class for creating admin profile, admin and user roles
+    /// </summary>
     public static class DataSeeder
     {
+        /// <summary>
+        /// Initializing admin profile, admin and user roles
+        /// </summary>
+        /// <param name="serviceProvider"></param>
         public static void Initialize(IServiceProvider serviceProvider)
         {
             using (var scope = serviceProvider.CreateScope())
@@ -23,7 +30,11 @@ namespace RecipeBook.Data
                 SeedUsers(userManager).Wait();
             }
         }
-
+        /// <summary>
+        /// Creating admin and user roles
+        /// </summary>
+        /// <param name="roleManager"></param>
+        /// <returns></returns>
         private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
         {
             if (!await roleManager.RoleExistsAsync("Admin"))
@@ -36,6 +47,11 @@ namespace RecipeBook.Data
             }
         }
 
+        /// <summary>
+        /// Creating admin profile
+        /// </summary>
+        /// <param name="userManager"></param>
+        /// <returns></returns>
         private static async Task SeedUsers(UserManager<ApplicationUser> userManager)
         {
             if (userManager.FindByEmailAsync("admin@example.com").Result == null)

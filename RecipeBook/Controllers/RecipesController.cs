@@ -28,6 +28,7 @@ namespace RecipeBook.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IRecipePdfService _pdfService;
         private readonly IRecipeService _recipeService;
+        private readonly string adddedByUserIngredientName = "Добавена от потребител";
 
         public RecipesController(ApplicationDbContext context, IRecipePdfService pdfService, IRecipeService recipeService)
         {
@@ -36,7 +37,7 @@ namespace RecipeBook.Controllers
             _recipeService = recipeService;
         }
 
-        public async Task<IActionResult> Index(int? categoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
+        public async Task<IActionResult> Index(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
         {
             string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             ViewData["CurrentUserId"] = currentUserId;
@@ -48,9 +49,9 @@ namespace RecipeBook.Controllers
                 .Include(r => r.Likes)
                 .AsQueryable();
 
-            if (categoryId.HasValue)
+            if (SelectedCategoryId.HasValue)
             {
-                query = query.Where(r => r.RecipeCategory.Id == categoryId);
+                query = query.Where(r => r.RecipeCategory.Id == SelectedCategoryId);
             }
 
             query = sortOrder switch
@@ -67,7 +68,7 @@ namespace RecipeBook.Controllers
             {
                 Recipes = recipeCards,
                 Categories = new SelectList(_context.RecipeCategories, "Id", "Name"),
-                SelectedCategoryId = categoryId,
+                SelectedCategoryId = SelectedCategoryId,
                 SortOrder = sortOrder
             };
 
@@ -261,8 +262,6 @@ namespace RecipeBook.Controllers
                 var selectedIngredients = JsonConvert.DeserializeObject<List<RecipeIngredientViewModel>>(SelectedIngredientsJson);
                 var recipeIngredients = new List<RecipeIngredient>();
 
-                string adddedByUserIngredientName = "Добавена от потребител"; // todo
-
                 var defaultCategory = await _context.IngredientCategories.FirstOrDefaultAsync(u => u.Name == adddedByUserIngredientName);
                 if (defaultCategory == null)
                 {
@@ -448,8 +447,6 @@ namespace RecipeBook.Controllers
 
                 var selectedIngredients = JsonConvert.DeserializeObject<List<RecipeIngredientViewModel>>(SelectedIngredientsJson);
                 var recipeIngredients = new List<RecipeIngredient>();
-
-                string adddedByUserIngredientName = "Добавена от потребител"; // todo
 
                 var defaultCategory = await _context.IngredientCategories.FirstOrDefaultAsync(u => u.Name == adddedByUserIngredientName);
                 if (defaultCategory == null)

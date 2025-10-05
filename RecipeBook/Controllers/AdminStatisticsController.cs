@@ -30,7 +30,7 @@ namespace RecipeBook.Controllers
         [HttpGet]
         public async Task<IActionResult> RecipeStats()
         {
-            var model = await _statisticsService.GetRecipeStatsAsync();
+            var model = await _statisticsService.GetRecipeStatisticsAsync();
             return View(model);
         }
     }

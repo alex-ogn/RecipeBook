@@ -2,6 +2,9 @@
 
 namespace RecipeBook.Services
 {
+    /// <summary>
+    /// Custom class for identity error messages
+    /// </summary>
     public class CustomIdentityErrorDescriber : IdentityErrorDescriber
     {
         public override IdentityError PasswordTooShort(int length)

@@ -28,7 +28,12 @@ public class AccountController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = await _userManager.FindByNameAsync(model.Identifier) ?? await _userManager.FindByEmailAsync(model.Identifier);
+        var user = await _userManager.FindByNameAsync(model.Identifier);
+
+        if (user == null)
+        {
+            user = await _userManager.FindByEmailAsync(model.Identifier);
+        }
 
         if (user == null)
         {
@@ -36,13 +41,17 @@ public class AccountController : Controller
             return View(model);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(user, model.Password, model.RememberMe, lockoutOnFailure: false);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false);
 
         if (result.Succeeded)
+        {
+            await _signInManager.SignInAsync(user, model.RememberMe);
             return RedirectToLocal(returnUrl);
+        }
 
         ModelState.AddModelError("", "Невалидна парола.");
         return View(model);
+
     }
 
     [HttpPost]
