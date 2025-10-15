@@ -1,4 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AngleSharp.Css.Values;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Localization;
+using RecipeBook.Resources;
+using System.Reflection;
 
 namespace RecipeBook.Services
 {
@@ -7,39 +11,47 @@ namespace RecipeBook.Services
     /// </summary>
     public class CustomIdentityErrorDescriber : IdentityErrorDescriber
     {
+        private readonly IStringLocalizer _localizer;
+
+        public CustomIdentityErrorDescriber(IStringLocalizerFactory factory)
+        {
+            _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name);
+        }
+
         public override IdentityError PasswordTooShort(int length)
             => new IdentityError
             {
                 Code = nameof(PasswordTooShort),
-                Description = $"Паролата трябва да бъде поне {length} символа."
+                Description = string.Format(_localizer["PasswordTooShort"], length.ToString())
             };
 
         public override IdentityError PasswordRequiresNonAlphanumeric()
             => new IdentityError
             {
                 Code = nameof(PasswordRequiresNonAlphanumeric),
-                Description = "Паролата трябва да съдържа поне един специален символ (напр. !, @, #, и т.н.)."
+                Description = _localizer["PasswordRequiresNonAlphanumeric"]
+
             };
 
         public override IdentityError PasswordRequiresDigit()
             => new IdentityError
             {
                 Code = nameof(PasswordRequiresDigit),
-                Description = "Паролата трябва да съдържа поне една цифра."
+                Description = _localizer["PasswordRequiresDigit"]
             };
 
         public override IdentityError PasswordRequiresUpper()
             => new IdentityError
             {
                 Code = nameof(PasswordRequiresUpper),
-                Description = "Паролата трябва да съдържа поне една главна буква."
+                Description = _localizer["PasswordRequiresUpper"]
             };
 
         public override IdentityError PasswordRequiresLower()
             => new IdentityError
             {
                 Code = nameof(PasswordRequiresLower),
-                Description = "Паролата трябва да съдържа поне една малка буква."
+                Description = _localizer["PasswordRequiresLower"]
             };
     }
 }

@@ -1,17 +1,20 @@
 ﻿
-using Xunit;
-using Moq;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Moq;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Services;
 using RecipeBook.ViewModels.Users;
-using System.Threading.Tasks;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace Tests.Services
 {
@@ -39,6 +42,14 @@ namespace Tests.Services
             _mockRecipeService = new Mock<IRecipeService>();
             _mockEnv = new Mock<IWebHostEnvironment>();
 
+            var localizationOptions = Options.Create(new LocalizationOptions
+            {
+                ResourcesPath = "Resources"
+            });
+
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            var factory = new ResourceManagerStringLocalizerFactory(localizationOptions, loggerFactory);
+
             var solutionRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../../../../.."));
             var realWebRoot = Path.Combine(solutionRoot, "RecipeBook", "RecipeBook", "wwwroot");
 
@@ -50,7 +61,8 @@ namespace Tests.Services
                 _mockPasswordValidator.Object,
                 _mockPasswordHasher.Object,
                 _mockRecipeService.Object,
-                _mockEnv.Object
+                _mockEnv.Object,
+                factory
             );
         }
 

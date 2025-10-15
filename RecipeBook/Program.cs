@@ -19,13 +19,19 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
-builder.Services.AddControllersWithViews();
 
- // custom services
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
+
+// custom services
 builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+
+builder.Services.AddScoped<IdentityErrorDescriber, CustomIdentityErrorDescriber>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
@@ -35,6 +41,14 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 var app = builder.Build();
+
+var supportedCultures = new[] { "bg", "en" };
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture("bg")
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

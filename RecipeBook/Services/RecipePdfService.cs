@@ -1,8 +1,11 @@
-﻿using QuestPDF.Fluent;
+﻿using HtmlAgilityPack;
+using Microsoft.Extensions.Localization;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 using RecipeBook.Models;
-using HtmlAgilityPack;
+using RecipeBook.Resources;
+using System.Reflection;
 
 namespace RecipeBook.Services
 {
@@ -11,6 +14,14 @@ namespace RecipeBook.Services
     /// </summary>
     public class RecipePdfService : IRecipePdfService
     {
+        private readonly String _recipeInfoFormat = "{0}: {1}";
+        private readonly IStringLocalizer _localizer;
+
+        public RecipePdfService(IStringLocalizerFactory factory)
+        {
+            _localizer = factory.Create("RecipePdfTexts", Assembly.GetExecutingAssembly().GetName().Name);
+        }
+
         /// <summary>
         /// Generates pdf recipe
         /// </summary>
@@ -38,18 +49,17 @@ namespace RecipeBook.Services
 
                     page.Content().PaddingVertical(20).Column(col =>
                     {
-
                         if (recipe.Image != null)
                         {
                             col.Item().Image(recipe.Image).FitArea(); // Height(200)
                             col.Item().PaddingTop(10);
                         }
-
-                        col.Item().Text($"Категория: {recipe.RecipeCategory?.Name}");
-                        col.Item().Text($"Порции: {recipe.Servings}");
-                        col.Item().Text($"Време за готвене: {recipe.CookingTime} мин.");
-
-                        col.Item().PaddingVertical(10).Text("Съставки:")
+                                            
+                        col.Item().Text(string.Format(_recipeInfoFormat, _localizer["Category"], recipe.RecipeCategory?.Name));
+                        col.Item().Text(string.Format(_recipeInfoFormat, _localizer["Servings"], recipe.Servings));
+                        col.Item().Text(string.Format(_localizer["CookingTime"], recipe.CookingTime));
+                        
+                        col.Item().PaddingVertical(10).Text(_localizer["Ingredients"])
                             .FontSize(18).SemiBold();
 
                         col.Item().Table(table =>
@@ -62,8 +72,8 @@ namespace RecipeBook.Services
 
                             table.Header(header =>
                             {
-                                header.Cell().Text("Съставка").SemiBold();
-                                header.Cell().Text("Количество").SemiBold();
+                                header.Cell().Text(_localizer["Ingredient"]).SemiBold();
+                                header.Cell().Text(_localizer["Quantity"]).SemiBold();
                             });
 
                             foreach (var ri in recipe.RecipeIngredients)
@@ -73,12 +83,12 @@ namespace RecipeBook.Services
                             }
                         });
 
-                        col.Item().PaddingVertical(10).Text("Описание:")
+                        col.Item().PaddingVertical(10).Text(_localizer["Description"])
                             .FontSize(18).SemiBold();
 
                         AddFormattedText(col, recipe.Description);
 
-                        col.Item().PaddingVertical(10).Text("Инструкции:")
+                        col.Item().PaddingVertical(10).Text(_localizer["Instructions"])
                             .FontSize(18).SemiBold();
 
                         AddFormattedText(col, recipe.Instructions);

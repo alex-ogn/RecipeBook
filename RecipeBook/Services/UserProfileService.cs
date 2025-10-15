@@ -1,12 +1,19 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AngleSharp.Css.Values;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
+using RecipeBook.Constants;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Users;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace RecipeBook.Services
 {
+    /// <summary>
+    /// Class for managing user profile
+    /// </summary>
     public class UserProfileService : IUserProfileService
     {
         private readonly ApplicationDbContext _context;
@@ -15,6 +22,7 @@ namespace RecipeBook.Services
         private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
         private readonly IRecipeService _recipeService;
         private readonly IWebHostEnvironment _env;
+        private readonly IStringLocalizer _localizer;
 
         public UserProfileService(
             ApplicationDbContext context,
@@ -22,7 +30,8 @@ namespace RecipeBook.Services
             IPasswordValidator<ApplicationUser> passwordValidator,
             IPasswordHasher<ApplicationUser> passwordHasher,
             IRecipeService recipeService,
-            IWebHostEnvironment env)
+            IWebHostEnvironment env,
+            IStringLocalizerFactory factory)
         {
             _context = context;
             _userManager = userManager;
@@ -30,23 +39,31 @@ namespace RecipeBook.Services
             _passwordHasher = passwordHasher;
             _recipeService = recipeService;
             _env = env;
+            _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name);
+
         }
 
+        /// <summary>
+        /// Updates user profile
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="model"></param>
+        /// <param name="isAdmin"></param>
+        /// <returns></returns>
         public async Task<IdentityResult> UpdateUserProfileAsync(ApplicationUser user, EditUserViewModel model, bool isAdmin = false)
         {
-            // Проверка за ново потребителско име
             if (user.UserName != model.UserName)
             {
                 var existingUser = await _userManager.FindByNameAsync(model.UserName);
                 if (existingUser != null && existingUser.Id != user.Id)
                 {
-                    var error = IdentityResult.Failed(new IdentityError { Description = "Потребителското име вече съществува." });
+                    var error = IdentityResult.Failed(new IdentityError { Description = _localizer["ExistingUserName"] });
                     return error;
                 }
 
-                if (model.UserName.Length < 2)
+                if (model.UserName.Length < UserProfileConstants.MinUserNameLength)
                 {
-                    var error = IdentityResult.Failed(new IdentityError { Description = "Потребителското име трябва да има поне два символа." });
+                    var error = IdentityResult.Failed(new IdentityError { Description = string.Format(_localizer["UserNameToShort"], UserProfileConstants.MinUserNameLength.ToString()) });
                     return error;
                 }
 
@@ -54,22 +71,22 @@ namespace RecipeBook.Services
                 if (!setUserNameResult.Succeeded) return setUserNameResult;
             }
 
-            // Имейл
+            // Email
             if (user.Email != model.Email)
             {
                 var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
                 if (!setEmailResult.Succeeded) return setEmailResult;
             }
 
-            // Телефон
+            // Phone number
             if (user.PhoneNumber != model.PhoneNumber)
             {
-                var phoneRegex = new Regex(@"^(\+359|0)?8[7-9][0-9]{7}$");
+                var phoneRegex = new Regex(UserProfileConstants.PhoneNumberRegexPattern);
                 if (!string.IsNullOrEmpty(model.PhoneNumber) && !phoneRegex.IsMatch(model.PhoneNumber))
                 {
                     return IdentityResult.Failed(new IdentityError
                     {
-                        Description = "Телефонният номер е невалиден. Моля, използвайте формат като 0888123456 или +359888123456."
+                         Description = _localizer["InvalidPhoneNumberWithSuggestions"]
                     });
                 }
 
@@ -77,7 +94,7 @@ namespace RecipeBook.Services
                 if (!setPhoneResult.Succeeded) return setPhoneResult;
             }
 
-            // Профилна снимка
+            // Profile picture
             if (model.ProfilePicture != null)
             {
                 using var ms = new MemoryStream();
@@ -86,7 +103,7 @@ namespace RecipeBook.Services
                 user.ProfilePictureVersion++;
             }
 
-            // Парола
+            // Password
             if (!string.IsNullOrWhiteSpace(model.NewPassword))
             {
                 var passwordValidation = await _passwordValidator.ValidateAsync(_userManager, user, model.NewPassword);
@@ -98,25 +115,31 @@ namespace RecipeBook.Services
             return await _userManager.UpdateAsync(user);
         }
 
+        /// <summary>
+        /// Deletes user profile
+        /// </summary>
+        /// <param name="targetUserId"></param>
+        /// <param name="currentUserId"></param>
+        /// <returns></returns>
         public async Task<IdentityResult> DeleteUserAsync(string targetUserId, string currentUserId)
-        {
+        {         
             if (targetUserId == currentUserId)
-                return IdentityResult.Failed(new IdentityError { Description = "Не може да изтриете себе си." });
+                return IdentityResult.Failed(new IdentityError { Description = _localizer["CanNotDeleteYourOwnProfile"] });
 
             var user = await _userManager.Users
                 .Include(u => u.Recipes)
                 .FirstOrDefaultAsync(u => u.Id == targetUserId);
 
             if (user == null)
-                return IdentityResult.Failed(new IdentityError { Description = "Потребителят не е намерен." });
+                return IdentityResult.Failed(new IdentityError { Description = _localizer["UserNotFound"] });
 
-            // Изтриване на рецептите и свързани записи
+            // Deletes recipes
             foreach (var recipe in user.Recipes.ToList())
             {
                 await _recipeService.DeleteRecipeAsync(recipe.Id, forceDelete: true);
             }
 
-            // Изтриване на други релации
+            // Delete related records
             _context.SavedRecipes.RemoveRange(_context.SavedRecipes.Where(x => x.UserId == targetUserId));
             _context.RecipeLikes.RemoveRange(_context.RecipeLikes.Where(x => x.UserId == targetUserId));
             _context.UserFollowers.RemoveRange(_context.UserFollowers.Where(f => f.FollowerId == targetUserId || f.FollowedId == targetUserId));
@@ -127,19 +150,23 @@ namespace RecipeBook.Services
             return await _userManager.DeleteAsync(user);
         }
 
+        /// <summary>
+        /// Load profile picture, if not available - the default picture
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
         public async Task<(byte[] Content, string ContentType)> GetProfilePictureAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user != null && user.ProfilePicture != null)
             {
-                return (user.ProfilePicture, "image/jpg");
+                return (user.ProfilePicture, UserProfileConstants.DefaultProfilePictureFormat);
             }
 
-            // зареждаме default изображение от файлова система
-            var defaultPath = Path.Combine(_env.WebRootPath, "images", "default-profile.png");
+            var defaultPath = Path.Combine(_env.WebRootPath, "images", UserProfileConstants.DefaultProfilePictureName);
             var defaultImage = await File.ReadAllBytesAsync(defaultPath);
-            return (defaultImage, "image/png");
+            return (defaultImage, UserProfileConstants.DefaultProfilePictureFormat);
         }
 
     }

@@ -7,6 +7,9 @@ using System.Text.RegularExpressions;
 
 namespace RecipeBook.Services
 {
+    /// <summary>
+    /// Class for managing recipes
+    /// </summary>
     public class RecipeService : IRecipeService
     {
         private readonly ApplicationDbContext _context;
@@ -18,6 +21,13 @@ namespace RecipeBook.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
+        /// <summary>
+        /// Delete recipes
+        /// </summary>
+        /// <param name="recipeId"></param>
+        /// <param name="currentUserId"></param>
+        /// <param name="forceDelete"></param>
+        /// <returns></returns>
         public async Task<bool> DeleteRecipeAsync(int recipeId, string? currentUserId = null, bool forceDelete = false)
         {
             var recipe = await _context.Recipies
@@ -29,7 +39,7 @@ namespace RecipeBook.Services
 
             if (recipe == null) return false;
 
-            // Ако не е админ и не е собственик
+            //only the admin and the creator of the recipe have rights for this operation
             if (!forceDelete && recipe.UserId != currentUserId)
                 return false;
 
@@ -44,6 +54,13 @@ namespace RecipeBook.Services
             return true;
         }
 
+        /// <summary>
+        /// Loads list of similar recipes
+        /// </summary>
+        /// <param name="referenceRecipe"></param>
+        /// <param name="currentUserId"></param>
+        /// <param name="allowEdit"></param>
+        /// <returns></returns>
         public async Task<List<RecipeCardViewModel>> GetSimilarRecipesAsync(Recipe referenceRecipe, string currentUserId, bool allowEdit = false)
         {
             var candidates = await _context.Recipies
@@ -57,7 +74,7 @@ namespace RecipeBook.Services
             const int categoryPoints = 1;
             const int preferencePoints = 1;
 
-            // Сортиране по брой съвпадения
+            // Sort the recipes by most similar properties
             var ranked = candidates
                 .Select(r => new
                 {
@@ -87,7 +104,12 @@ namespace RecipeBook.Services
             }).ToList();
         }
 
-
+        /// <summary>
+        /// Loads list of suggested recipes
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="allowEdit"></param>
+        /// <returns></returns>
         public async Task<List<RecipeCardViewModel>> GetSuggestedRecipesForUserAsync(string userId, bool allowEdit = false)
         {
             var recentLikedOrSavedIds = await _context.SavedRecipes
@@ -143,7 +165,7 @@ namespace RecipeBook.Services
                 Title = r.Recipe.Title,
                 DescriptionPreview = Regex.Replace(r.Recipe.Description ?? "", "<.*?>", "").Truncate(100),
                 ImageUrl = $"/Recipes/GetImage/{r.Recipe.Id}",
-                UserName = r.Recipe.User?.UserName ?? "Потребител",
+                UserName = r.Recipe.User?.UserName ?? "l",
                 UserId = r.Recipe.UserId,
                 LikesCount = r.Recipe.Likes.Count,
                 ViewCount = r.Recipe.ViewCount,

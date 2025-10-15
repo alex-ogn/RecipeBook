@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace RecipeBook.Services
 {
+    /// <summary>
+    /// Class for recipes and user statistics 
+    /// </summary>
     public class StatisticsService : IStatisticsService
     {
         private readonly ApplicationDbContext _context;
@@ -17,6 +20,10 @@ namespace RecipeBook.Services
             _context = context;
         }
 
+        /// <summary>
+        /// Return view model with user statistic
+        /// </summary>
+        /// <returns></returns>
         public async Task<AdminUserStatsViewModel> GetUserStatisticsAsync()
         {
             var users = _context.Users
@@ -46,6 +53,10 @@ namespace RecipeBook.Services
             };
         }
 
+        /// <summary>
+        /// Return view model with recipe statistic
+        /// </summary>
+        /// <returns></returns>
         public async Task<RecipeAnalyticsViewModel> GetRecipeStatisticsAsync()
         {
             var mostCommented = await _context.Recipies
