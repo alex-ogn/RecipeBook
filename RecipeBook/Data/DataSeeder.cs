@@ -1,75 +1,98 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RecipeBook.Models;
+using System;
+using System.Threading.Tasks;
 
 namespace RecipeBook.Data
 {
     /// <summary>
-    /// Class for creating admin profile, admin and user roles
+    /// Class for seeding initial roles and the administrator profile safely.
     /// </summary>
     public static class DataSeeder
     {
+        public const string AdminRole = "Admin";
+        public const string UserRole = "User";
+
         /// <summary>
-        /// Initializing admin profile, admin and user roles
+        /// Asynchronously initializes admin profile and basic roles using IConfiguration for sensitive data.
         /// </summary>
-        /// <param name="serviceProvider"></param>
-        public static void Initialize(IServiceProvider serviceProvider)
+        public static async Task InitializeAsync(IServiceProvider serviceProvider)
         {
-            using (var scope = serviceProvider.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                var context = services.GetRequiredService<ApplicationDbContext>();
-                var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-                context.Database.EnsureCreated();
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("DataSeeder");
 
-                // Seed roles
-                SeedRoles(roleManager).Wait();
-
-                // Seed users
-                SeedUsers(userManager).Wait();
-            }
-        }
-        /// <summary>
-        /// Creating admin and user roles
-        /// </summary>
-        /// <param name="roleManager"></param>
-        /// <returns></returns>
-        private static async Task SeedRoles(RoleManager<IdentityRole> roleManager)
-        {
-            if (!await roleManager.RoleExistsAsync("Admin"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("Admin"));
-            }
-            if (!await roleManager.RoleExistsAsync("User"))
-            {
-                await roleManager.CreateAsync(new IdentityRole("User"));
-            }
+            await SeedRolesAsync(roleManager, logger);
+            await SeedUsersAsync(userManager, configuration, logger);
         }
 
-        /// <summary>
-        /// Creating admin profile
-        /// </summary>
-        /// <param name="userManager"></param>
-        /// <returns></returns>
-        private static async Task SeedUsers(UserManager<ApplicationUser> userManager)
+        private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
         {
-            if (userManager.FindByEmailAsync("admin@example.com").Result == null)
+            string[] roles = { AdminRole, UserRole };
+
+            foreach (var roleName in roles)
             {
-                ApplicationUser user = new ApplicationUser
+                if (!await roleManager.RoleExistsAsync(roleName))
                 {
-                    UserName = "admin",
-                    Email = "admin@example.com"
+                    var result = await roleManager.CreateAsync(new IdentityRole(roleName));
+                    if (!result.Succeeded)
+                    {
+                        logger.LogError("Failed to create role '{RoleName}': {Errors}",
+                            roleName, string.Join(", ", result.Errors));
+                    }
+                }
+            }
+        }
+
+        private static async Task SeedUsersAsync(
+            UserManager<ApplicationUser> userManager,
+            IConfiguration configuration,
+            ILogger logger)
+        {
+            // IConfiguration (User Secrets / Environment Variables)
+            var adminEmail = configuration["AdminCredentials:Email"];
+            var adminPassword = configuration["AdminCredentials:Password"];
+
+            if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+            {
+                logger.LogWarning("Admin credentials are not set in IConfiguration. Skipping admin seeding.");
+                return;
+            }
+
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+
+            if (adminUser == null)
+            {
+                adminUser = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    EmailConfirmed = true
                 };
 
-                IdentityResult result = userManager.CreateAsync(user, "Admin123!").Result;
+                var createResult = await userManager.CreateAsync(adminUser, adminPassword);
 
-                if (result.Succeeded)
+                if (createResult.Succeeded)
                 {
-                    userManager.AddToRoleAsync(user, "Admin").Wait();
+                    var roleResult = await userManager.AddToRoleAsync(adminUser, AdminRole);
+                    if (!roleResult.Succeeded)
+                    {
+                        logger.LogError("Failed to assign '{Role}' role to user '{Email}': {Errors}",
+                            AdminRole, adminEmail, string.Join(", ", roleResult.Errors));
+                    }
+                }
+                else
+                {
+                    logger.LogError("Failed to create admin user '{Email}': {Errors}",
+                        adminEmail, string.Join(", ", createResult.Errors));
                 }
             }
         }
     }
-
 }
