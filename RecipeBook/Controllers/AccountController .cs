@@ -1,17 +1,21 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RecipeBook.Constants;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Account;
+using RecipeBook.Services;
 
 public class AccountController : Controller
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IEmailSender _emailSender;
 
-    public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager, IEmailSender emailSender)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _emailSender = emailSender;
     }
 
     [HttpGet]
@@ -111,11 +115,23 @@ public class AccountController : Controller
         var result = await _userManager.CreateAsync(user, model.Password);
         if (result.Succeeded)
         {
-            // Добавяме потребителя към роля "User"
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, UserRoles.User);
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToLocal(returnUrl);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            // Create URL link for email confirmation
+            var confirmationLink = Url.Action(
+                action: "ConfirmEmail",
+                controller: "Account",
+                values: new { userId = user.Id, token = token },
+                protocol: Request.Scheme);
+
+            await _emailSender.SendEmailAsync(
+                        user.Email,
+                        "Потвърдете вашия имейл",
+                        $"За да потвърдите профила си, <a href='{confirmationLink}'>кликнете тук</a>.");
+
+            return RedirectToAction("RegisterConfirmation");
         }
 
         foreach (var error in result.Errors)
@@ -125,6 +141,34 @@ public class AccountController : Controller
 
         return View(model);
     }
+
+    [HttpGet]
+    public IActionResult RegisterConfirmation()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ConfirmEmail(string userId, string token)
+    {
+        if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        var user = await _userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound($"Не е намерен потребител с ID '{userId}'.");
+        }
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        if (result.Succeeded)
+        {
+            return View("ConfirmEmailSuccess");
+        }
+
+        return View("Error");
+    }
 }
-
-

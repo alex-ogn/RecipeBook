@@ -13,7 +13,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
-    options.SignIn.RequireConfirmedAccount = false)
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.SignIn.RequireConfirmedEmail = true;
+    })
     .AddRoles<IdentityRole>()
     .AddErrorDescriber<CustomIdentityErrorDescriber>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -30,7 +33,6 @@ builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
-
 builder.Services.AddScoped<IdentityErrorDescriber, CustomIdentityErrorDescriber>();
 
 builder.Services.ConfigureApplicationCookie(options =>
@@ -39,6 +41,18 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Users/AccessDenied";
 });
+
+// Configure email sender based on the environment
+if (builder.Environment.IsDevelopment())
+{
+    // In development, use FileEmailSender to write emails to a file for testing
+    builder.Services.AddTransient<IEmailSender, FileEmailSender>();
+}
+else
+{
+    // In production, use EmailSender to send real emails
+    builder.Services.AddTransient<IEmailSender, EmailSender>();
+}
 
 var app = builder.Build();
 

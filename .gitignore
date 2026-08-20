@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # Ignore all .rar files
 *.rar
+
+# Ignore local generated emails
+SentEmails/

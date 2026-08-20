@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
      @RenderSection("Styles", required: false)
+
 </head>
 
 <!-- За статистиката на админа -->
@@ -24,7 +25,8 @@
                     Recipe Book
                 </a>
 
-                <!-- ☰ Бутон за мобилно меню -->
+
+                <!-- Бутон за мобилно меню -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -34,7 +36,7 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                         <!-- Администрация -->
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole(UserRoles.Admin))
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Администрация</a>
@@ -55,12 +57,11 @@
                             </li>
                         }
 
-                        @using System.Security.Claims
                         @{
                             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                         }
                         <!-- Моите -->
-                        @if (User.IsInRole("User") || User.IsInRole("Admin"))
+                        @if (User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin))
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Моите</a>

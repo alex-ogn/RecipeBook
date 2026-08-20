@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using RecipeBook.Constants;
 using RecipeBook.Models;
-using System;
-using System.Threading.Tasks;
 
 namespace RecipeBook.Data
 {
@@ -13,9 +9,6 @@ namespace RecipeBook.Data
     /// </summary>
     public static class DataSeeder
     {
-        public const string AdminRole = "Admin";
-        public const string UserRole = "User";
-
         /// <summary>
         /// Asynchronously initializes admin profile and basic roles using IConfiguration for sensitive data.
         /// </summary>
@@ -34,7 +27,7 @@ namespace RecipeBook.Data
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)
         {
-            string[] roles = { AdminRole, UserRole };
+            string[] roles = { UserRoles.Admin, UserRoles.User };
 
             foreach (var roleName in roles)
             {
@@ -80,11 +73,11 @@ namespace RecipeBook.Data
 
                 if (createResult.Succeeded)
                 {
-                    var roleResult = await userManager.AddToRoleAsync(adminUser, AdminRole);
+                    var roleResult = await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
                     if (!roleResult.Succeeded)
                     {
                         logger.LogError("Failed to assign '{Role}' role to user '{Email}': {Errors}",
-                            AdminRole, adminEmail, string.Join(", ", roleResult.Errors));
+                            UserRoles.Admin, adminEmail, string.Join(", ", roleResult.Errors));
                     }
                 }
                 else
