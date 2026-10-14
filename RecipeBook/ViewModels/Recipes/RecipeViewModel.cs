@@ -17,7 +17,7 @@ namespace RecipeBook.ViewModels.Recipes
             CookingTime = recipe.CookingTime;
             UserId = recipe.UserId;
             User = recipe.User;
-            Image = recipe.Image;
+            ImageUrl = recipe.ImageUrl;
             RecipeIngredients = recipe.RecipeIngredients;
             RecipeCategory = recipe.RecipeCategory;
             ViewCount = recipe.ViewCount;

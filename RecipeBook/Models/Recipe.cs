@@ -34,7 +34,9 @@ namespace RecipeBook.Models
         [ForeignKey("UserId")]
         public ApplicationUser? User { get; set; }
 
-        public byte[]? Image { get; set; }
+        [Display(Name = "Снимка")]
+        [StringLength(500)]
+        public string? ImageUrl { get; set; }
 
         [Required]
         public int RecipeCategoryId { get; set; }

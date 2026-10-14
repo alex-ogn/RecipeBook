@@ -367,3 +367,5 @@ FodyWeavers.xsd
 
 # Ignore local generated emails
 SentEmails/
+
+**/wwwroot/images/recipes/

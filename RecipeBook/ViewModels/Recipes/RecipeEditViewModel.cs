@@ -23,12 +23,12 @@ namespace RecipeBook.ViewModels.Recipes
             Servings = recipe.Servings;
             CookingTime = recipe.CookingTime;
             UserId = recipe.UserId;
-            imageFile = recipe.Image;
             CategoryId = recipe.RecipeCategory?.Id;
             IsVegetarian = recipe.IsVegetarian;
             IsVegan = recipe.IsVegan;
             IsGlutenFree = recipe.IsGlutenFree;
             IsLactoseFree = recipe.IsLactoseFree;
+            ImageUrl = recipe.ImageUrl;
 
             IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
             SelectedIngredients = new List<RecipeIngredientViewModel>();
@@ -58,9 +58,12 @@ namespace RecipeBook.ViewModels.Recipes
 
         public string? UserId { get; set; }
 
-        public byte[]? imageFile { get; set; }
+        // Пътят към съществуващата снимка за показване във View-то
+        public string? ImageUrl { get; set; }
 
-        public byte[]? imageFileNew { get; set; }
+        // Качването на новия файл от формата
+        [Display(Name = "Нова снимка")]
+        public IFormFile? imageFileNew { get; set; }
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
 

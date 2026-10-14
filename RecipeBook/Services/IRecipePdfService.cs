@@ -12,6 +12,6 @@ namespace RecipeBook.Services
         /// </summary>
         /// <param name="recipe"></param>
         /// <returns></returns>
-        byte[] GenerateRecipePdf(Recipe recipe);
+        byte[] GenerateRecipePdf(Recipe recipe, IWebHostEnvironment webHostEnvironment);
     }
 }

@@ -14,11 +14,13 @@ namespace RecipeBook.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public RecipeService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor)
+        public RecipeService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         /// <summary>
@@ -43,6 +45,8 @@ namespace RecipeBook.Services
             if (!forceDelete && recipe.UserId != currentUserId)
                 return false;
 
+            DeleteExistingImage(recipe.ImageUrl);
+                
             _context.RecipeComments.RemoveRange(recipe.Comments);
             _context.RecipeLikes.RemoveRange(recipe.Likes);
             _context.SavedRecipes.RemoveRange(recipe.SavedByUsers);
@@ -52,6 +56,18 @@ namespace RecipeBook.Services
             await _context.SaveChangesAsync();
 
             return true;
+        }
+
+        public void DeleteExistingImage(string? imageUrl)
+        {
+            if (!string.IsNullOrEmpty(imageUrl))
+            {
+                var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, imageUrl.TrimStart('/', '\\'));
+                if (System.IO.File.Exists(oldFilePath))
+                {
+                    System.IO.File.Delete(oldFilePath);
+                }
+            }
         }
 
         /// <summary>

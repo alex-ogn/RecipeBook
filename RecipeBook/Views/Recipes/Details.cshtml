@@ -18,8 +18,15 @@
 
     <!-- Снимка + дясна колона -->
     <div class="recipe-main">
-        <img src="@Url.Action("GetImage", "Recipes", new { id = Model.Id })" class="recipe-image" alt="@Model.Title">
-
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="recipe-image" alt="@Model.Title">
+        }
+        else
+        {
+            <!-- Снимка по подразбиране, ако няма качена -->
+            <img src="~/images/default-recipe.jpg" class="recipe-image" alt="@Model.Title">
+        }
         <div class="recipe-side-info">
             <!-- Потребителска секция -->
             <div class="white-box profile-box">

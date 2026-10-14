@@ -27,7 +27,7 @@ namespace RecipeBook.Services
         /// </summary>
         /// <param name="recipe"></param>
         /// <returns></returns>
-        public byte[] GenerateRecipePdf(Recipe recipe)
+        public byte[] GenerateRecipePdf(Recipe recipe, IWebHostEnvironment webHostEnvironment)
         {
             return Document.Create(container =>
             {
@@ -49,12 +49,19 @@ namespace RecipeBook.Services
 
                     page.Content().PaddingVertical(20).Column(col =>
                     {
-                        if (recipe.Image != null)
+                        if (!string.IsNullOrEmpty(recipe.ImageUrl))
                         {
-                            col.Item().Image(recipe.Image).FitArea(); // Height(200)
-                            col.Item().PaddingTop(10);
+                            // Превръщаме относителния път (/images/recipes/xyz.jpg) във физически
+                            var relativePath = recipe.ImageUrl.TrimStart('/', '\\');
+                            var absolutePath = Path.Combine(webHostEnvironment.WebRootPath, relativePath);
+
+                            if (File.Exists(absolutePath))
+                            {
+                                col.Item().Image(absolutePath).FitArea(); // QuestPDF приема пътя като string
+                                col.Item().PaddingTop(10);
+                            }
                         }
-                                            
+
                         col.Item().Text(string.Format(_recipeInfoFormat, _localizer["Category"], recipe.RecipeCategory?.Name));
                         col.Item().Text(string.Format(_recipeInfoFormat, _localizer["Servings"], recipe.Servings));
                         col.Item().Text(string.Format(_localizer["CookingTime"], recipe.CookingTime));
