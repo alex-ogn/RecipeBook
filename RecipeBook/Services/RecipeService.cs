@@ -57,6 +57,19 @@ namespace RecipeBook.Services
             return true;
         }
 
+        public async Task<bool> RegisterViewAsync(Recipe recipe, string? viewerId)
+        {
+            if (recipe.UserId == viewerId)
+            {
+                return false;
+            }
+
+            // The recipe is tracked, so only the ViewCount column is updated.
+            recipe.ViewCount++;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         /// <summary>
         /// Loads list of similar recipes
         /// </summary>

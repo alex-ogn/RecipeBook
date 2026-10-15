@@ -136,37 +136,6 @@ namespace RecipeBook.Controllers
 
 
 
-        [Authorize(Roles = UserRoles.Admin)]
-        public async Task<IActionResult> ChangePassword(string id)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-
-            ViewBag.UserId = user.Id;
-            ViewBag.Username = user.UserName;
-            return View();
-        }
-
-        [Authorize(Roles = UserRoles.Admin)]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ChangePassword(string id, string newPassword)
-        {
-            var user = await _userManager.FindByIdAsync(id);
-            if (user == null) return NotFound();
-
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
-
-            if (result.Succeeded)
-                return RedirectToAction(nameof(Index));
-
-            foreach (var error in result.Errors)
-                ModelState.AddModelError("", error.Description);
-
-            return View();
-        }
-
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)

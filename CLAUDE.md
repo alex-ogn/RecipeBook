@@ -21,6 +21,7 @@ Exceptions: `ViewData["Title"]` (Razor convention) and user-facing text (see bel
   - `TempDataKeys` / `ViewDataKeys` — keys passed between controllers and views
   - `ImageConstants` — image folders, URL prefixes, default images
   - `UserProfileConstants` — user/profile defaults and validation values
+  - `CookieConstants` — cookie names and lifetimes
 
   Add to an existing class when the value fits its domain; otherwise create a new `<Domain>Constants` class.
   `RecipeBook.Constants` is imported in `Views/_ViewImports.cshtml`, so views use the same constants.

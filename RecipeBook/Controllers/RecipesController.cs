@@ -142,19 +142,16 @@ namespace RecipeBook.Controllers
 
             var similarRecipes = await _recipeService.GetSimilarRecipesAsync(recipe, currentUserId);
 
-            var cookieKey = $"viewed_recipe_{id}";
-
-            // Ако потребителят не е автор и няма cookie:
-            if (recipe.UserId != currentUserId && !Request.Cookies.ContainsKey(cookieKey))
+            // Count the view once per cookie lifetime; the author's own views are not counted.
+            var viewedCookie = CookieConstants.ViewedRecipePrefix + id;
+            if (!Request.Cookies.ContainsKey(viewedCookie)
+                && await _recipeService.RegisterViewAsync(recipe, currentUserId))
             {
-                recipe.ViewCount++;
-                _context.Update(recipe);
-                await _context.SaveChangesAsync();
-
-                // cookie за 1 час
-                Response.Cookies.Append(cookieKey, "1", new CookieOptions
+                Response.Cookies.Append(viewedCookie, "1", new CookieOptions
                 {
-                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    Expires = DateTimeOffset.UtcNow.Add(CookieConstants.ViewedRecipeLifetime),
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Lax
                 });
             }
 

@@ -94,6 +94,34 @@ namespace Tests.Services
             _mockImageStorage.Verify(s => s.DeleteRecipeImage(It.IsAny<string?>()), Times.Never);
         }
 
+        [Theory]
+        [InlineData("visitor")]
+        [InlineData(null)]
+        public async Task RegisterViewAsync_IncrementsViewCount_ForOtherViewers(string? viewerId)
+        {
+            var recipe = CreateValidRecipe(105, "author");
+            _context.Recipies.Add(recipe);
+            await _context.SaveChangesAsync();
+
+            var counted = await _service.RegisterViewAsync(recipe, viewerId);
+
+            Assert.True(counted);
+            Assert.Equal(1, (await _context.Recipies.AsNoTracking().SingleAsync(r => r.Id == 105)).ViewCount);
+        }
+
+        [Fact]
+        public async Task RegisterViewAsync_DoesNotCountAuthorViews()
+        {
+            var recipe = CreateValidRecipe(106, "author");
+            _context.Recipies.Add(recipe);
+            await _context.SaveChangesAsync();
+
+            var counted = await _service.RegisterViewAsync(recipe, "author");
+
+            Assert.False(counted);
+            Assert.Equal(0, (await _context.Recipies.AsNoTracking().SingleAsync(r => r.Id == 106)).ViewCount);
+        }
+
         [Fact]
         public async Task DeleteRecipeAsync_ShouldReturnTrue_WhenForced()
         {
