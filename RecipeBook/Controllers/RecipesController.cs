@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using RecipeBook.Authorization;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Services;
@@ -30,13 +31,23 @@ namespace RecipeBook.Controllers
         private readonly IRecipePdfService _pdfService;
         private readonly IRecipeService _recipeService;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IImageStorageService _imageStorage;
+        private readonly ILogger<RecipesController> _logger;
 
-        public RecipesController(ApplicationDbContext context, IRecipePdfService pdfService, IRecipeService recipeService, IWebHostEnvironment webHostEnvironment)
+        public RecipesController(
+            ApplicationDbContext context,
+            IRecipePdfService pdfService,
+            IRecipeService recipeService,
+            IWebHostEnvironment webHostEnvironment,
+            IImageStorageService imageStorage,
+            ILogger<RecipesController> logger)
         {
             _context = context;
             _pdfService = pdfService;
             _recipeService = recipeService;
             _webHostEnvironment = webHostEnvironment;
+            _imageStorage = imageStorage;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
@@ -186,58 +197,51 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(RecipeEditViewModel model, string SelectedIngredientsJson)
         {
+            // The image URL is always set by the server, never taken from the form.
+            model.ImageUrl = null;
+            PrepareRecipeFormValidation(model);
+
+            if (!ModelState.IsValid)
+            {
+                return RecipeFormView(model);
+            }
+
+            string? savedImageUrl = null;
             try
             {
-                ModelState.Remove("ImageUrl");
-                ModelState.Remove("imageFileNew");
-
-                if (model.CategoryId == null)
-                    ModelState.Remove("CategoryId");
-                if (model.Categories == null)
-                    ModelState.Remove("Categories");
-
-                if (model.imageFileNew != null && model.imageFileNew.Length > 0)
-                {
-                    // Ако има стара качена снимка при предишен неуспешен опит, я изтриваме
-                    if (!string.IsNullOrEmpty(model.ImageUrl))
-                    {
-                        _recipeService.DeleteExistingImage(model.ImageUrl);
-                    }
-
-                    // Записваме новия файл на диска
-                    model.ImageUrl = await SaveImageAsync(model.imageFileNew);
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-                    ViewData[ViewDataKeys.CurrentUserId] = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                    return View(model);
-                }
-
                 var recipe = new Recipe();
-                string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
                 model.EditRecipe(recipe);
                 SanitizeRecipeContent(recipe);
 
-                recipe.UserId = userId;
-                recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
+                recipe.UserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+                recipe.RecipeCategory = await _context.RecipeCategories.FindAsync(model.CategoryId!.Value);
 
                 // Обработка на съставките
                 recipe.RecipeIngredients = await ProcessIngredientsAsync(SelectedIngredientsJson, recipe.Id);
+
+                if (HasUploadedFile(model.imageFileNew))
+                {
+                    savedImageUrl = await _imageStorage.SaveRecipeImageAsync(model.imageFileNew!);
+                    recipe.ImageUrl = savedImageUrl;
+                }
 
                 _context.Recipies.Add(recipe);
                 await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch (ValidationException vex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
-                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-                return View(model);
+                _imageStorage.DeleteRecipeImage(savedImageUrl);
+                ModelState.AddModelError(string.Empty, vex.Message);
+                return RecipeFormView(model);
+            }
+            catch (DbUpdateException ex)
+            {
+                _imageStorage.DeleteRecipeImage(savedImageUrl);
+                _logger.LogError(ex, "Failed to create recipe for user {UserId}", User.FindFirstValue(ClaimTypes.NameIdentifier));
+                ModelState.AddModelError(string.Empty, MessageTexts.SaveFailed);
+                return RecipeFormView(model);
             }
         }
 
@@ -260,6 +264,11 @@ namespace RecipeBook.Controllers
             if (recipe == null)
             {
                 return NotFound();
+            }
+
+            if (!RecipePermissions.CanModify(recipe.UserId, User))
+            {
+                return Forbid();
             }
 
             var ingredients = _context.Ingredients
@@ -304,36 +313,35 @@ namespace RecipeBook.Controllers
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, RecipeEditViewModel model, IFormFile imageFileNew, string SelectedIngredientsJson)
+        public async Task<IActionResult> Edit(int id, RecipeEditViewModel model, string SelectedIngredientsJson)
         {
             if (id != model.Id)
                 return NotFound();
 
-            if (model.ImageUrl == null)
-                ModelState.Remove("ImageUrl");
+            var recipe = await _context.Recipies.FindAsync(id);
+            if (recipe == null)
+                return NotFound();
 
-            if (model.CategoryId == null)
-                ModelState.Remove("CategoryId");
+            if (!RecipePermissions.CanModify(recipe.UserId, User))
+                return Forbid();
 
-            if (model.Categories == null)
-                ModelState.Remove("Categories");
+            // The image URL always comes from the database, never from the form.
+            model.ImageUrl = recipe.ImageUrl;
+            PrepareRecipeFormValidation(model);
 
             if (!ModelState.IsValid)
             {
-                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-                return View(model);
+                return RecipeFormView(model);
             }
 
+            var oldImageUrl = recipe.ImageUrl;
+            string? newImageUrl = null;
             try
             {
-                var recipe = await _context.Recipies.FindAsync(model.Id);
-                if (recipe == null)
-                    return NotFound();
-
                 model.EditRecipe(recipe);
                 SanitizeRecipeContent(recipe);
 
-                recipe.RecipeCategory = _context.RecipeCategories.Find(model.CategoryId.Value);
+                recipe.RecipeCategory = await _context.RecipeCategories.FindAsync(model.CategoryId!.Value);
 
                 // Обработка на съставките
                 var recipeIngredients = await ProcessIngredientsAsync(SelectedIngredientsJson, recipe.Id);
@@ -346,25 +354,34 @@ namespace RecipeBook.Controllers
                 _context.RecipeIngredients.RemoveRange(existing);
                 _context.RecipeIngredients.AddRange(recipeIngredients);
 
-                _context.Update(recipe);
+                if (HasUploadedFile(model.imageFileNew))
+                {
+                    newImageUrl = await _imageStorage.SaveRecipeImageAsync(model.imageFileNew!);
+                    recipe.ImageUrl = newImageUrl;
+                }
+
                 await _context.SaveChangesAsync();
 
-                if (model.imageFileNew != null && model.imageFileNew.Length > 0)
+                // The new image is saved, so the old file is no longer referenced.
+                if (newImageUrl != null)
                 {
-                    //Изтриваме старата снимка от диска, ако съществува
-                    _recipeService.DeleteExistingImage(recipe.ImageUrl);
-
-                    // Запазваме новата снимка
-                    recipe.ImageUrl = await SaveImageAsync(model.imageFileNew);
+                    _imageStorage.DeleteRecipeImage(oldImageUrl);
                 }
 
                 return RedirectToAction(nameof(Index));
             }
             catch (ValidationException vex)
             {
+                _imageStorage.DeleteRecipeImage(newImageUrl);
                 ModelState.AddModelError(string.Empty, vex.Message);
-                model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-                return View(model);
+                return RecipeFormView(model);
+            }
+            catch (DbUpdateException ex)
+            {
+                _imageStorage.DeleteRecipeImage(newImageUrl);
+                _logger.LogError(ex, "Failed to update recipe {RecipeId}", id);
+                ModelState.AddModelError(string.Empty, MessageTexts.SaveFailed);
+                return RecipeFormView(model);
             }
         }
 
@@ -385,17 +402,23 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
+            if (!RecipePermissions.CanModify(recipe.UserId, User))
+            {
+                return Forbid();
+            }
+
             return View(recipe);
         }
 
         // POST: Recipes/Delete/5
+        [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var success = await _recipeService.DeleteRecipeAsync(id, currentUserId);
+            var success = await _recipeService.DeleteRecipeAsync(id, currentUserId, forceDelete: User.IsInRole(UserRoles.Admin));
 
             if (!success)
                 return Forbid();
@@ -720,24 +743,40 @@ namespace RecipeBook.Controllers
             return View(nameof(Index), model);
         }
 
-        private async Task<string> SaveImageAsync(IFormFile file)
+        /// <summary>
+        /// Shared validation for the create and edit forms.
+        /// </summary>
+        private void PrepareRecipeFormValidation(RecipeEditViewModel model)
         {
-            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, ImageConstants.ImagesFolder, ImageConstants.RecipeImagesFolder);
-            if (!Directory.Exists(uploadsFolder))
+            // Set by the server or only used to render the form, so they must not fail validation.
+            ModelState.Remove(nameof(RecipeEditViewModel.ImageUrl));
+            ModelState.Remove(nameof(RecipeEditViewModel.imageFileNew));
+            ModelState.Remove(nameof(RecipeEditViewModel.Categories));
+
+            if (model.CategoryId == null)
             {
-                Directory.CreateDirectory(uploadsFolder);
+                ModelState.AddModelError(nameof(RecipeEditViewModel.CategoryId),
+                    string.Format(ValidationTexts.FieldRequired, DisplayTexts.Category));
             }
 
-            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            if (HasUploadedFile(model.imageFileNew))
             {
-                await file.CopyToAsync(fileStream);
+                var imageError = _imageStorage.Validate(model.imageFileNew);
+                if (imageError != null)
+                {
+                    ModelState.AddModelError(nameof(RecipeEditViewModel.imageFileNew), imageError);
+                }
             }
-
-            return $"{ImageConstants.RecipeImagesUrlPrefix}{fileName}";
         }
+
+        private IActionResult RecipeFormView(RecipeEditViewModel model)
+        {
+            model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
+            ViewData[ViewDataKeys.CurrentUserId] = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return View(model);
+        }
+
+        private static bool HasUploadedFile(IFormFile? file) => file != null && file.Length > 0;
 
         private HtmlSanitizer GetHtmlSanitizer()
         {

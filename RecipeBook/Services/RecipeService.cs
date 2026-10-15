@@ -12,13 +12,13 @@ namespace RecipeBook.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IImageStorageService _imageStorage;
 
-        public RecipeService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, IWebHostEnvironment webHostEnvironment)
+        public RecipeService(ApplicationDbContext context, IHttpContextAccessor httpContextAccessor, IImageStorageService imageStorage)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
-            _webHostEnvironment = webHostEnvironment;
+            _imageStorage = imageStorage;
         }
 
         /// <summary>
@@ -43,8 +43,6 @@ namespace RecipeBook.Services
             if (!forceDelete && recipe.UserId != currentUserId)
                 return false;
 
-            DeleteExistingImage(recipe.ImageUrl);
-                
             _context.RecipeComments.RemoveRange(recipe.Comments);
             _context.RecipeLikes.RemoveRange(recipe.Likes);
             _context.SavedRecipes.RemoveRange(recipe.SavedByUsers);
@@ -53,19 +51,10 @@ namespace RecipeBook.Services
             _context.Recipies.Remove(recipe);
             await _context.SaveChangesAsync();
 
-            return true;
-        }
+            // Remove the file only after the recipe is gone, so a failed save never leaves a recipe without its image.
+            _imageStorage.DeleteRecipeImage(recipe.ImageUrl);
 
-        public void DeleteExistingImage(string? imageUrl)
-        {
-            if (!string.IsNullOrEmpty(imageUrl))
-            {
-                var oldFilePath = Path.Combine(_webHostEnvironment.WebRootPath, imageUrl.TrimStart('/', '\\'));
-                if (System.IO.File.Exists(oldFilePath))
-                {
-                    System.IO.File.Delete(oldFilePath);
-                }
-            }
+            return true;
         }
 
         /// <summary>

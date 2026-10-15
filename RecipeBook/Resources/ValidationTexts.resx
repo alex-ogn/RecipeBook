@@ -126,6 +126,9 @@
   <data name="FieldRequired" xml:space="preserve">
     <value>Полето {0} е задължително.</value>
   </data>
+  <data name="ImageTooLarge" xml:space="preserve">
+    <value>Снимката трябва да е по-малка от {0} MB.</value>
+  </data>
   <data name="IngredientNameLength" xml:space="preserve">
     <value>Имената на съставките трябва да са дълги между {2} и {1} символа.</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="InvalidEmail" xml:space="preserve">
     <value>Полето {0} трябва да съдържа валиден имейл адрес.</value>
+  </data>
+  <data name="InvalidImageType" xml:space="preserve">
+    <value>Позволени са само изображения във формат JPG, PNG или WEBP.</value>
   </data>
   <data name="InvalidPhoneNumber" xml:space="preserve">
     <value>Моля, въведете валиден телефонен номер.</value>

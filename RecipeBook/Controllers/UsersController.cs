@@ -20,13 +20,15 @@ namespace RecipeBook.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IUserProfileService _userProfileService;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IImageStorageService _imageStorage;
 
-        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IUserProfileService userProfileService, SignInManager<ApplicationUser> signInManager)
+        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IUserProfileService userProfileService, SignInManager<ApplicationUser> signInManager, IImageStorageService imageStorage)
         {
             _context = context;
             _userManager = userManager;
             _userProfileService = userProfileService;
             _signInManager = signInManager;
+            _imageStorage = imageStorage;
         }
 
         [Authorize]
@@ -173,6 +175,13 @@ namespace RecipeBook.Controllers
 
             if (profilePicture != null && profilePicture.Length > 0)
             {
+                var imageError = _imageStorage.Validate(profilePicture);
+                if (imageError != null)
+                {
+                    TempData[TempDataKeys.ErrorMessage] = imageError;
+                    return RedirectToAction(nameof(Index));
+                }
+
                 using var memoryStream = new MemoryStream();
                 await profilePicture.CopyToAsync(memoryStream);
                 user.ProfilePicture = memoryStream.ToArray();

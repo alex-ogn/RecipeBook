@@ -62,6 +62,7 @@ namespace Tests.Services
                 _mockPasswordHasher.Object,
                 _mockRecipeService.Object,
                 _mockEnv.Object,
+                new Mock<IImageStorageService>().Object,
                 factory
             );
         }

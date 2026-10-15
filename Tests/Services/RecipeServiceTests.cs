@@ -17,6 +17,7 @@ namespace Tests.Services
     {
         private readonly RecipeService _service;
         private readonly ApplicationDbContext _context;
+        private readonly Mock<IImageStorageService> _mockImageStorage = new();
 
         public RecipeServiceTests()
         {
@@ -27,9 +28,7 @@ namespace Tests.Services
             _context = new ApplicationDbContext(options);
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
-
-            _service = new RecipeService(_context, mockHttpContextAccessor.Object, mockWebHostEnvironment.Object);
+            _service = new RecipeService(_context, mockHttpContextAccessor.Object, _mockImageStorage.Object);
         }
 
         private Recipe CreateValidRecipe(int id, string userId)
@@ -64,6 +63,35 @@ namespace Tests.Services
 
             var result = await _service.DeleteRecipeAsync(101, "user2", forceDelete: false);
             Assert.False(result);
+        }
+
+        [Fact]
+        public async Task DeleteRecipeAsync_DeletesImage_OnlyAfterRecipeIsRemoved()
+        {
+            var recipe = CreateValidRecipe(103, "user1");
+            recipe.ImageUrl = "/images/recipes/photo.jpg";
+            _context.Recipies.Add(recipe);
+            await _context.SaveChangesAsync();
+
+            var result = await _service.DeleteRecipeAsync(103, "user1");
+
+            Assert.True(result);
+            Assert.Null(await _context.Recipies.FindAsync(103));
+            _mockImageStorage.Verify(s => s.DeleteRecipeImage("/images/recipes/photo.jpg"), Times.Once);
+        }
+
+        [Fact]
+        public async Task DeleteRecipeAsync_DoesNotDeleteImage_WhenUserIsNotOwner()
+        {
+            var recipe = CreateValidRecipe(104, "user1");
+            recipe.ImageUrl = "/images/recipes/photo.jpg";
+            _context.Recipies.Add(recipe);
+            await _context.SaveChangesAsync();
+
+            var result = await _service.DeleteRecipeAsync(104, "user2");
+
+            Assert.False(result);
+            _mockImageStorage.Verify(s => s.DeleteRecipeImage(It.IsAny<string?>()), Times.Never);
         }
 
         [Fact]

@@ -22,6 +22,7 @@ namespace RecipeBook.Services
         private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
         private readonly IRecipeService _recipeService;
         private readonly IWebHostEnvironment _env;
+        private readonly IImageStorageService _imageStorage;
         private readonly IStringLocalizer _localizer;
 
         public UserProfileService(
@@ -31,6 +32,7 @@ namespace RecipeBook.Services
             IPasswordHasher<ApplicationUser> passwordHasher,
             IRecipeService recipeService,
             IWebHostEnvironment env,
+            IImageStorageService imageStorage,
             IStringLocalizerFactory factory)
         {
             _context = context;
@@ -39,6 +41,7 @@ namespace RecipeBook.Services
             _passwordHasher = passwordHasher;
             _recipeService = recipeService;
             _env = env;
+            _imageStorage = imageStorage;
             _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name);
 
         }
@@ -52,6 +55,16 @@ namespace RecipeBook.Services
         /// <returns></returns>
         public async Task<IdentityResult> UpdateUserProfileAsync(ApplicationUser user, EditUserViewModel model, bool isAdmin = false)
         {
+            // Validate the picture before anything is saved, so a bad file never leaves a half-updated profile.
+            if (model.ProfilePicture != null)
+            {
+                var imageError = _imageStorage.Validate(model.ProfilePicture);
+                if (imageError != null)
+                {
+                    return IdentityResult.Failed(new IdentityError { Description = imageError });
+                }
+            }
+
             if (user.UserName != model.UserName)
             {
                 var existingUser = await _userManager.FindByNameAsync(model.UserName);

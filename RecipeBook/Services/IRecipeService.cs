@@ -31,11 +31,5 @@ namespace RecipeBook.Services
         /// <param name="allowEdit"></param>
         /// <returns></returns>
         Task<List<RecipeCardViewModel>> GetSuggestedRecipesForUserAsync(string userId, bool allowEdit = false);
-
-        /// <summary>
-        /// Deletes existing image from the server
-        /// </summary>
-        /// <param name="imageUrl"></param>
-        void DeleteExistingImage(string? imageUrl);
     }
 }

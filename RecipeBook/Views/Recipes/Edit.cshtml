@@ -50,7 +50,7 @@
 
     <div class="form-group mb-3">
         <label asp-for="imageFileNew" class="form-label fw-bold">Качи нова снимка (по избор)</label>
-        <input type="file" asp-for="imageFileNew" class="form-control" accept="image/*" />
+        <input type="file" asp-for="imageFileNew" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
         <span asp-validation-for="imageFileNew" class="text-danger small"></span>
     </div>
 

@@ -165,6 +165,9 @@
   <data name="RecipeDeleted" xml:space="preserve">
     <value>Рецептата е изтрита успешно.</value>
   </data>
+  <data name="SaveFailed" xml:space="preserve">
+    <value>Възникна грешка при запазването. Моля, опитайте отново.</value>
+  </data>
   <data name="UserDeleted" xml:space="preserve">
     <value>Потребителят беше успешно изтрит.</value>
   </data>

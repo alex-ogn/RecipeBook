@@ -77,6 +77,18 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
 - Not user-facing, so stays as literals: log messages, exception messages for developers, and route/view names.
 - Razor views (`.cshtml`) are not covered by this rule yet.
 
+## Security
+
+- **Ownership**: any action that changes or deletes a recipe must check `RecipePermissions.CanModify(recipe.UserId, User)`
+  (author or Admin) and return `Forbid()` otherwise — on both the GET (form) and the POST.
+- **Uploads**: images go only through `IImageStorageService` (`Validate`, `SaveRecipeImageAsync`, `DeleteRecipeImage`).
+  It enforces the allowed extensions, size limit and file signature from `ImageConstants`. Never build a file path from
+  user input, and never trust an image URL posted by a form — take it from the database.
+- **Antiforgery** is validated globally (`AutoValidateAntiforgeryTokenAttribute` in `Program.cs`). Use tag-helper forms
+  (`asp-action`) so the token is added; any AJAX POST must send the `RequestVerificationToken` header.
+- **Errors**: never show `ex.Message` to users. Catch only expected exceptions (`ValidationException`,
+  `DbUpdateException`), log them with `ILogger<T>`, and show a `MessageTexts` message.
+
 ## Style
 
 - `public const string` (keyword `string`, not `String`); use `public static readonly` only for values that cannot be

@@ -205,6 +205,15 @@ namespace RecipeBook.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Възникна грешка при запазването. Моля, опитайте отново..
+        /// </summary>
+        public static string SaveFailed {
+            get {
+                return ResourceManager.GetString("SaveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Потребителят беше успешно изтрит..
         /// </summary>
         public static string UserDeleted {

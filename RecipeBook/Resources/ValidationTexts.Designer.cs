@@ -88,6 +88,15 @@ namespace RecipeBook.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Снимката трябва да е по-малка от {0} MB..
+        /// </summary>
+        public static string ImageTooLarge {
+            get {
+                return ResourceManager.GetString("ImageTooLarge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Имената на съставките трябва да са дълги между {2} и {1} символа..
         /// </summary>
         public static string IngredientNameLength {
@@ -111,6 +120,15 @@ namespace RecipeBook.Resources {
         public static string InvalidEmail {
             get {
                 return ResourceManager.GetString("InvalidEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Позволени са само изображения във формат JPG, PNG или WEBP..
+        /// </summary>
+        public static string InvalidImageType {
+            get {
+                return ResourceManager.GetString("InvalidImageType", resourceCulture);
             }
         }
         
