@@ -1,10 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
 using RecipeBook.Services;
-using RecipeBook.ViewModels.AdminStatistics;
-using System.Data;
 using RecipeBook.Constants;
 
 namespace RecipeBook.Controllers
@@ -12,12 +8,10 @@ namespace RecipeBook.Controllers
     [Authorize(Roles = UserRoles.Admin)]
     public class AdminStatisticsController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IStatisticsService _statisticsService;
 
-        public AdminStatisticsController(ApplicationDbContext context, IStatisticsService statisticsService)
+        public AdminStatisticsController(IStatisticsService statisticsService)
         {
-            _context = context;
             _statisticsService = statisticsService;
         }
 

@@ -1,52 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
-using RecipeBook.Models;
 using RecipeBook.Constants;
+using RecipeBook.Models;
 using RecipeBook.Resources;
+using RecipeBook.Services;
 
 namespace RecipeBook.Controllers
 {
     [Authorize(Roles = UserRoles.Admin)]
     public class RecipeCategoriesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IRecipeCategoryService _categoryService;
 
-        public RecipeCategoriesController(ApplicationDbContext context)
+        public RecipeCategoriesController(IRecipeCategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         // GET: RecipeCategories
         public async Task<IActionResult> Index()
         {
-              return _context.RecipeCategories != null ? 
-                          View(await _context.RecipeCategories.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.RecipeCategories'  is null.");
+            return View(await _categoryService.GetAllAsync());
         }
 
         // GET: RecipeCategories/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.RecipeCategories == null)
-            {
-                return NotFound();
-            }
-
-            var recipeCategory = await _context.RecipeCategories
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (recipeCategory == null)
-            {
-                return NotFound();
-            }
-
-            return View(recipeCategory);
+            return await CategoryViewAsync(id);
         }
 
         // GET: RecipeCategories/Create
@@ -56,45 +36,31 @@ namespace RecipeBook.Controllers
         }
 
         // POST: RecipeCategories/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] RecipeCategory recipeCategory)
         {
-            if (_context.RecipeCategories.Any(c => c.Name == recipeCategory.Name))
+            if (await _categoryService.NameExistsAsync(recipeCategory.Name))
             {
                 ModelState.AddModelError(nameof(RecipeCategory.Name), MessageTexts.CategoryNameExists);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(recipeCategory);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(recipeCategory);
             }
-            return View(recipeCategory);
+
+            await _categoryService.CreateAsync(recipeCategory);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: RecipeCategories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.RecipeCategories == null)
-            {
-                return NotFound();
-            }
-
-            var recipeCategory = await _context.RecipeCategories.FindAsync(id);
-            if (recipeCategory == null)
-            {
-                return NotFound();
-            }
-            return View(recipeCategory);
+            return await CategoryViewAsync(id);
         }
 
         // POST: RecipeCategories/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] RecipeCategory recipeCategory)
@@ -104,50 +70,28 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
-            if (_context.RecipeCategories.Any(c => c.Name == recipeCategory.Name && c.Id != recipeCategory.Id))
+            if (await _categoryService.NameExistsAsync(recipeCategory.Name, excludeId: recipeCategory.Id))
             {
                 ModelState.AddModelError(nameof(RecipeCategory.Name), MessageTexts.CategoryNameExists);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(recipeCategory);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!RecipeCategoryExists(recipeCategory.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(recipeCategory);
             }
-            return View(recipeCategory);
+
+            if (!await _categoryService.UpdateAsync(recipeCategory))
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: RecipeCategories/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.RecipeCategories == null)
-            {
-                return NotFound();
-            }
-
-            var recipeCategory = await _context.RecipeCategories
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (recipeCategory == null)
-            {
-                return NotFound();
-            }
-
-            return View(recipeCategory);
+            return await CategoryViewAsync(id);
         }
 
         // POST: RecipeCategories/Delete/5
@@ -155,35 +99,32 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.RecipeCategories
-                .Include(c => c.Recipes)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var result = await _categoryService.DeleteAsync(id);
 
-            if (category == null)
-                return NotFound();
-
-            if (category.Recipes != null && category.Recipes.Any())
+            switch (result.Status)
             {
-                var recipeTitles = category.Recipes
-                    .Select(r => r.Title)
-                    .ToList();
-
-                var usedIn = string.Join(", ", recipeTitles);
-                TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.RecipeCategoryInUse, usedIn);
-                return RedirectToAction(nameof(Index));
+                case DeleteStatus.NotFound:
+                    return NotFound();
+                case DeleteStatus.InUse:
+                    TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.RecipeCategoryInUse, string.Join(", ", result.UsedBy));
+                    break;
+                default:
+                    TempData[TempDataKeys.SuccessMessage] = MessageTexts.RecipeCategoryDeleted;
+                    break;
             }
 
-            _context.RecipeCategories.Remove(category);
-            await _context.SaveChangesAsync();
-
-            TempData[TempDataKeys.SuccessMessage] = MessageTexts.RecipeCategoryDeleted;
             return RedirectToAction(nameof(Index));
         }
 
-
-        private bool RecipeCategoryExists(int id)
+        private async Task<IActionResult> CategoryViewAsync(int? id)
         {
-          return (_context.RecipeCategories?.Any(e => e.Id == id)).GetValueOrDefault();
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var category = await _categoryService.GetByIdAsync(id.Value);
+            return category == null ? NotFound() : View(category);
         }
     }
 }

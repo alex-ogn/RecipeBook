@@ -1,7 +1,6 @@
-﻿
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
+using RecipeBook.Models;
 using RecipeBook.ViewModels.Users;
 using System.Security.Claims;
 
@@ -10,20 +9,19 @@ namespace RecipeBook.ViewComponents
 {
     public class ProfileImageViewComponent : ViewComponent
     {
-        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ProfileImageViewComponent(ApplicationDbContext context)
+        public ProfileImageViewComponent(UserManager<ApplicationUser> userManager)
         {
-            _context = context;
+            _userManager = userManager;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            if (!User.Identity.IsAuthenticated)
+            if (User.Identity?.IsAuthenticated != true)
                 return View(null);
 
-            var userId = ((ClaimsPrincipal)User).FindFirstValue(ClaimTypes.NameIdentifier);
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            var user = await _userManager.GetUserAsync((ClaimsPrincipal)User);
 
             if (user == null)
                 return View(null);

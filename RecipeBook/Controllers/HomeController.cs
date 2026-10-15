@@ -1,48 +1,42 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Services;
 using RecipeBook.ViewModels.Home;
 using RecipeBook.ViewModels.Recipes;
 using System.Diagnostics;
-using System.Reflection;
 using System.Security.Claims;
 
 namespace RecipeBook.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ApplicationDbContext _context;
         private readonly IRecipeService _recipeService;
+        private readonly UserManager<ApplicationUser> _userManager;
         private const int FeaturedRecipesCount = 6;
 
-        public HomeController(ApplicationDbContext context, IRecipeService recipeService)
+        public HomeController(IRecipeService recipeService, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
             _recipeService = recipeService;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> IndexAsync()
         {
-            var recipes = _context.Recipies
-                .Include(r => r.Likes)
-                .Include(r => r.User)
-                .OrderByDescending(r => r.Likes.Count)  // Сортиране първо по харесвания
-                .ThenByDescending(r => r.ViewCount)     // после по гледания
-                .Take(FeaturedRecipesCount)
-                .ToList();
+            // Най-харесваните, после най-гледаните
+            var recipes = await _recipeService.GetMostPopularAsync(FeaturedRecipesCount);
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var suggestions = await _recipeService.GetSuggestedRecipesForUserAsync(userId);
-
-            var cardViewModels = RecipeCardMapper.ToCards(recipes, currentUserId: null);
+            var suggestions = userId == null
+                ? new List<RecipeCardViewModel>()
+                : await _recipeService.GetSuggestedRecipesForUserAsync(userId);
 
             var model = new HomeViewModel
             {
-                CountUsers = _context.Users.Count(),
-                CountRecipes = _context.Recipies.Count(),
-                FeaturedRecipes = cardViewModels,
+                CountUsers = await _userManager.Users.CountAsync(),
+                CountRecipes = await _recipeService.CountAsync(),
+                FeaturedRecipes = RecipeCardMapper.ToCards(recipes, currentUserId: null),
                 Suggestions = suggestions
             };
 

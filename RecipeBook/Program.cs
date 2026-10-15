@@ -36,6 +36,12 @@ builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
+builder.Services.AddScoped<IRecipeCategoryService, RecipeCategoryService>();
+builder.Services.AddScoped<IIngredientCategoryService, IngredientCategoryService>();
+builder.Services.AddScoped<IIngredientService, IngredientService>();
+builder.Services.AddScoped<IFollowService, FollowService>();
+builder.Services.AddScoped<IRecipeInteractionService, RecipeInteractionService>();
+builder.Services.AddSingleton(RecipeHtmlSanitizer.Create());
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 builder.Services.AddScoped<IdentityErrorDescriber, CustomIdentityErrorDescriber>();
 

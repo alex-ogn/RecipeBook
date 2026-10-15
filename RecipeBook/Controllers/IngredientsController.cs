@@ -1,120 +1,71 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
-using RecipeBook.Models;
 using RecipeBook.Constants;
+using RecipeBook.Models;
 using RecipeBook.Resources;
+using RecipeBook.Services;
 
 namespace RecipeBook.Controllers
 {
     [Authorize(Roles = UserRoles.Admin)]
     public class IngredientsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IIngredientService _ingredientService;
+        private readonly IIngredientCategoryService _categoryService;
 
-        public IngredientsController(ApplicationDbContext context)
+        public IngredientsController(IIngredientService ingredientService, IIngredientCategoryService categoryService)
         {
-            _context = context;
+            _ingredientService = ingredientService;
+            _categoryService = categoryService;
         }
 
         public async Task<IActionResult> Index(string searchString, int? categoryId)
         {
-            var categories = await _context.IngredientCategories.ToListAsync();
-            ViewData[ViewDataKeys.Categories] = new SelectList(categories, "Id", "Name");
+            ViewData[ViewDataKeys.Categories] = new SelectList(await _categoryService.GetAllAsync(), "Id", "Name");
             ViewData[ViewDataKeys.Search] = searchString;
             ViewData[ViewDataKeys.SelectedCategoryId] = categoryId;
 
-            var ingredientsQuery = _context.Ingredients
-                .Include(i => i.IngredientCategory)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchString))
-            {
-                ingredientsQuery = ingredientsQuery
-                    .Where(i => i.Name.Contains(searchString));
-            }
-
-            if (categoryId.HasValue)
-            {
-                ingredientsQuery = ingredientsQuery
-                    .Where(i => i.IngredientCategoryId == categoryId);
-            }
-
-            var ingredients = await ingredientsQuery.ToListAsync();
-            return View(ingredients);
+            return View(await _ingredientService.SearchAsync(searchString, categoryId));
         }
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Ingredients == null)
-            {
-                return NotFound();
-            }
-
-            var ingredient = await _context.Ingredients
-                .Include(i => i.IngredientCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ingredient == null)
-            {
-                return NotFound();
-            }
-
-            return View(ingredient);
+            return await IngredientViewAsync(id);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name");
-            return View();
+            return await IngredientFormViewAsync(null);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,IngredientCategoryId")] Ingredient ingredient)
         {
-            var exists = await _context.Ingredients
-                     .AnyAsync(i => i.Name == ingredient.Name && i.IngredientCategoryId == ingredient.IngredientCategoryId );
-
-            if (exists)
+            if (await _ingredientService.ExistsInCategoryAsync(ingredient.Name, ingredient.IngredientCategoryId))
             {
                 ModelState.AddModelError(string.Empty, MessageTexts.IngredientNameExists);
-                ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
-                return View(ingredient);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(ingredient);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return await IngredientFormViewAsync(ingredient);
             }
-            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
-            return View(ingredient);
-        }
 
+            await _ingredientService.CreateAsync(ingredient);
+            return RedirectToAction(nameof(Index));
+        }
 
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Ingredients == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var ingredient = await _context.Ingredients.FindAsync(id);
-            if (ingredient == null)
-            {
-                return NotFound();
-            }
-            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
-            return View(ingredient);
+            var ingredient = await _ingredientService.GetByIdAsync(id.Value);
+            return ingredient == null ? NotFound() : await IngredientFormViewAsync(ingredient);
         }
 
         [HttpPost]
@@ -126,119 +77,76 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
-            var exists = await _context.Ingredients
-                .AnyAsync(i => i.Name == ingredient.Name && i.IngredientCategoryId == ingredient.IngredientCategoryId && i.Id != ingredient.Id);
-
-            if (exists)
+            if (await _ingredientService.ExistsInCategoryAsync(ingredient.Name, ingredient.IngredientCategoryId, excludeId: ingredient.Id))
             {
                 ModelState.AddModelError(string.Empty, MessageTexts.IngredientNameExists);
-                ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
-                return View(ingredient);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(ingredient);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!IngredientExists(ingredient.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return await IngredientFormViewAsync(ingredient);
             }
-            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
-            return View(ingredient);
-        }
 
+            if (!await _ingredientService.UpdateAsync(ingredient))
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
 
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Ingredients == null)
-            {
-                return NotFound();
-            }
-
-            var ingredient = await _context.Ingredients
-                .Include(i => i.IngredientCategory)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ingredient == null)
-            {
-                return NotFound();
-            }
-
-            return View(ingredient);
+            return await IngredientViewAsync(id);
         }
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var ingredient = await _context.Ingredients
-                .Include(i => i.RecipeIngredients)
-                .ThenInclude(ri => ri.Recipe)
-                .FirstOrDefaultAsync(i => i.Id == id);
+            var result = await _ingredientService.DeleteAsync(id);
 
-            if (ingredient == null)
-                return NotFound();
-
-            if (ingredient.RecipeIngredients.Any())
+            switch (result.Status)
             {
-                var usedInRecipes = ingredient.RecipeIngredients
-                    .Select(ri => ri.Recipe.Title)
-                    .ToList();
-
-                var recipeNames = string.Join(", ", usedInRecipes);
-
-                TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.IngredientInUse, recipeNames);
-                return RedirectToAction(nameof(Index));
+                case DeleteStatus.NotFound:
+                    return NotFound();
+                case DeleteStatus.InUse:
+                    TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.IngredientInUse, string.Join(", ", result.UsedBy));
+                    break;
+                default:
+                    TempData[TempDataKeys.SuccessMessage] = MessageTexts.IngredientDeleted;
+                    break;
             }
 
-            _context.Ingredients.Remove(ingredient);
-            await _context.SaveChangesAsync();
-
-            TempData[TempDataKeys.SuccessMessage] = MessageTexts.IngredientDeleted;
             return RedirectToAction(nameof(Index));
         }
 
-
-        private bool IngredientExists(int id)
-        {
-          return (_context.Ingredients?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-
+        /// <summary>
+        /// Ingredient list for the picker on the recipe create/edit forms.
+        /// </summary>
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var ingredients = _context.Ingredients
-                .Select(i => new { id = i.Id, name = i.Name })
-                .ToList();
-            return Json(ingredients);
+            return Json(await _ingredientService.GetOptionsAsync());
         }
 
-        [HttpPost]
-        public IActionResult CreateFromRecipe(string name)
+        private async Task<IActionResult> IngredientViewAsync(int? id)
         {
-            var existing = _context.Ingredients.FirstOrDefault(i => i.Name == name);
-            if (existing != null)
-                return Json(new { id = existing.Id, name = existing.Name });
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-            var ingredient = new Ingredient { Name = name };
-            _context.Ingredients.Add(ingredient);
-            _context.SaveChanges();
-
-            return Json(new { id = ingredient.Id, name = ingredient.Name });
+            var ingredient = await _ingredientService.GetByIdAsync(id.Value);
+            return ingredient == null ? NotFound() : View(ingredient);
         }
 
+        private async Task<IActionResult> IngredientFormViewAsync(Ingredient? ingredient)
+        {
+            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(
+                await _categoryService.GetAllAsync(), "Id", "Name", ingredient?.IngredientCategoryId);
+            return View(ingredient);
+        }
     }
 }

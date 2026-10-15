@@ -143,7 +143,7 @@
 
     <script>
         let ingredientsList = [];
-        let selectedIngredients = [];
+        let selectedIngredients = @Html.Raw(Json.Serialize(Model.SelectedIngredients));
 
         $(document).ready(function () {
             // Зареждане на съществуващи съставки от сървъра

@@ -78,6 +78,21 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
 - Not user-facing, so stays as literals: log messages, exception messages for developers, and route/view names.
 - Razor views (`.cshtml`) are not covered by this rule yet.
 
+## Architecture
+
+- **Controllers never use `ApplicationDbContext`.** All data access goes through services in `RecipeBook/Services/`
+  (`IRecipeService`, `IRecipeInteractionService`, `IRecipeCategoryService`, `IIngredientCategoryService`,
+  `IIngredientService`, `IFollowService`, `IUserProfileService`, `IStatisticsService`), registered as scoped in `Program.cs`.
+  Controllers handle input, permissions (`RecipePermissions`), `ModelState`, view models and redirects. Identity's
+  `UserManager` is fine in controllers.
+- Extend an existing service when the feature fits it; don't add a generic repository (`DbContext` is already the unit of work).
+- Recipe lists use `IRecipeService.GetRecipesAsync(RecipeListFilter)` — add a filter property instead of a new query.
+- Deletes that can be blocked by references return `DeleteResult` (`Deleted` / `NotFound` / `InUse` with the names).
+- Read-only queries use `AsNoTracking()`; a service method saves everything it changes with a single `SaveChangesAsync`.
+- Pass page data through view-model properties, not `ViewData` (keep `ViewData` for `Title` and small layout values).
+- "Go back" redirects use `this.RedirectToLocalReferer(fallbackUrl)`, never `Redirect(Request.Headers.Referer)`.
+- Rich text is sanitized by the singleton `IHtmlSanitizer` (`RecipeHtmlSanitizer.Create()`), inside the service.
+
 ## Security
 
 - **Ownership**: any action that changes or deletes a recipe must check `RecipePermissions.CanModify(recipe.UserId, User)`

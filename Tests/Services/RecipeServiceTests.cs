@@ -26,9 +26,8 @@ namespace Tests.Services
                 .Options;
 
             _context = new ApplicationDbContext(options);
-            var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            _service = new RecipeService(_context, mockHttpContextAccessor.Object, _mockImageStorage.Object);
+            _service = new RecipeService(_context, _mockImageStorage.Object, RecipeHtmlSanitizer.Create());
         }
 
         private Recipe CreateValidRecipe(int id, string userId)

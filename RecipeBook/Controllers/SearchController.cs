@@ -1,21 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using RecipeBook.Controllers;
-using RecipeBook.Data;
-using RecipeBook.ViewModels.Recipes;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using RecipeBook.Constants;
+using RecipeBook.Controllers;
+using RecipeBook.Models;
+using RecipeBook.Services;
+using RecipeBook.ViewModels.Recipes;
+using System.Security.Claims;
 
 public class SearchController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IRecipeService _recipeService;
+    private readonly IRecipeCategoryService _categoryService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public SearchController(ApplicationDbContext context)
+    public SearchController(IRecipeService recipeService, IRecipeCategoryService categoryService, UserManager<ApplicationUser> userManager)
     {
-        _context = context;
+        _recipeService = recipeService;
+        _categoryService = categoryService;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index(string searchString)
@@ -28,8 +32,8 @@ public class SearchController : Controller
         searchString = searchString.ToLower().Trim();
 
         // Търсене в потребители
-        var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.UserName.ToLower().Contains(searchString));
+        var user = await _userManager.Users
+            .FirstOrDefaultAsync(u => u.UserName!.ToLower().Contains(searchString));
 
         if (user != null)
         {
@@ -37,38 +41,25 @@ public class SearchController : Controller
         }
 
         // Търсене в категории
-        var category = await _context.RecipeCategories
-            .FirstOrDefaultAsync(c => c.Name.ToLower().Contains(searchString));
-
+        var category = await _categoryService.FindByNamePartAsync(searchString);
         if (category != null)
         {
             return RedirectToAction(nameof(RecipesController.Index), "Recipes", new { SelectedCategoryId = category.Id });
         }
 
         // Търсене по име на рецепта
-        var matchingRecipes = await _context.Recipies
-            .Include(r => r.User)
-            .Include(r => r.RecipeCategory)
-            .Include(r => r.Likes)
-            .Where(r => r.Title.ToLower().Contains(searchString))
-            .ToListAsync();
+        var matchingRecipes = await _recipeService.GetRecipesAsync(new RecipeListFilter { TitleContains = searchString });
 
-        // Създай view model и пренасочи
         TempData[TempDataKeys.SearchResults] = searchString; // по желание за съобщение
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var isUserAdmin = User.IsInRole(UserRoles.Admin);
-        ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
-        ViewData[ViewDataKeys.IsUserAdmin] = isUserAdmin;
 
         var model = new RecipeFilterViewModel
         {
-            Recipes = RecipeCardMapper.ToCards(matchingRecipes, currentUserId, isUserAdmin),
-            Categories = new SelectList(_context.RecipeCategories, "Id", "Name"),
+            Recipes = RecipeCardMapper.ToCards(matchingRecipes, currentUserId, User.IsInRole(UserRoles.Admin)),
+            Categories = new SelectList(await _categoryService.GetAllAsync(), nameof(RecipeCategory.Id), nameof(RecipeCategory.Name)),
             SelectedCategoryId = null
         };
 
         return View("~/Views/Recipes/Index.cshtml", model);
     }
-
-
 }

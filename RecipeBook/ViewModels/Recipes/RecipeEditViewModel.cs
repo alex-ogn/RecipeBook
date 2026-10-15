@@ -12,7 +12,6 @@ namespace RecipeBook.ViewModels.Recipes
     {
         public RecipeEditViewModel()
         {
-            IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
             SelectedIngredients = new List<RecipeIngredientViewModel>();
         }
         public RecipeEditViewModel(Recipe recipe)
@@ -31,7 +30,6 @@ namespace RecipeBook.ViewModels.Recipes
             IsLactoseFree = recipe.IsLactoseFree;
             ImageUrl = recipe.ImageUrl;
 
-            IngredientsByCategory = new Dictionary<string, RecipeIngredientViewModel[]>();
             SelectedIngredients = new List<RecipeIngredientViewModel>();
         }
 
@@ -68,7 +66,6 @@ namespace RecipeBook.ViewModels.Recipes
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
 
-        public Dictionary<string, RecipeIngredientViewModel[]>? IngredientsByCategory { get; set; }
         public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
         [Display(Name = nameof(DisplayTexts.Category), ResourceType = typeof(DisplayTexts))]
@@ -89,9 +86,11 @@ namespace RecipeBook.ViewModels.Recipes
         [Display(Name = nameof(DisplayTexts.IsLactoseFree), ResourceType = typeof(DisplayTexts))]
         public bool IsLactoseFree { get; set; }
 
+        /// <summary>
+        /// Copies the editable fields onto the recipe. The key, author, image and category are set by the caller.
+        /// </summary>
         public void EditRecipe(Recipe recipe)
         {
-            recipe.Id = Id;
             recipe.Title = Title;
             recipe.Description = Description;
             recipe.Instructions = Instructions;

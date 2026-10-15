@@ -31,5 +31,16 @@ namespace RecipeBook.ViewModels.Recipes
         }
 
         public List<RecipeCardViewModel> SimilarRecipes { get; set; } = new List<RecipeCardViewModel>();
+
+        public string? CurrentUserId { get; set; }
+        public bool IsUserAdmin { get; set; }
+        public bool IsLiked { get; set; }
+        public bool IsSaved { get; set; }
+        public int LikeCount { get; set; }
+
+        /// <summary>
+        /// The current user may edit or delete this recipe (author or Admin).
+        /// </summary>
+        public bool CanModify { get; set; }
     }
 }

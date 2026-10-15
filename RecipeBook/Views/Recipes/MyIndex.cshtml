@@ -1,15 +1,13 @@
 ﻿@using RecipeBook.ViewModels.Recipes;
-@model IEnumerable<RecipeCardViewModel>
+@model UserRecipesViewModel
 
 @{
     ViewData["Title"] = "Моите рецепти";
-    var user = ViewData[ViewDataKeys.User] as ApplicationUser;
-    var currentUserId = ViewData[ViewDataKeys.CurrentUserId] as string;
-    var isFollowing = ViewData[ViewDataKeys.IsFollowing] as bool? ?? false;
-    bool isOwnProfile = user?.Id == currentUserId;
-    var followersCount = ViewData[ViewDataKeys.FollowersCount] as int? ?? 0;
-    var followingCount = ViewData[ViewDataKeys.FollowingCount] as int? ?? 0;
-
+    var user = Model.User;
+    var isFollowing = Model.IsFollowing;
+    bool isOwnProfile = Model.IsOwnProfile;
+    var followersCount = Model.FollowersCount;
+    var followingCount = Model.FollowingCount;
 }
 
 @using System.Text.RegularExpressions
@@ -48,7 +46,7 @@
         <div class="d-flex flex-wrap gap-3 small">
 
             <span class="d-flex align-items-center gap-1 text-dark fw-semibold">
-                <i class="bi bi-journal-text"></i> Рецепти: @Model.Count()
+                <i class="bi bi-journal-text"></i> Рецепти: @Model.Recipes.Count
             </span>
 
             <a asp-controller="Users" asp-action="Followers" asp-route-id="@user.Id"
@@ -69,7 +67,7 @@
 <div class="container mt-4">
     <h3>Рецепти на @user.UserName</h3>
     <div class="row mt-3">       
-     @foreach (var card in @Model)
+     @foreach (var card in Model.Recipes)
     {
         @Html.Partial("_RecipeCard", card)
     }

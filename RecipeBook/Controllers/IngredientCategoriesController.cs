@@ -1,53 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
-using RecipeBook.Models;
 using RecipeBook.Constants;
+using RecipeBook.Models;
 using RecipeBook.Resources;
+using RecipeBook.Services;
 
 namespace RecipeBook.Controllers
 {
     [Authorize(Roles = UserRoles.Admin)]
     public class IngredientCategoriesController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IIngredientCategoryService _categoryService;
 
-        public IngredientCategoriesController(ApplicationDbContext context)
+        public IngredientCategoriesController(IIngredientCategoryService categoryService)
         {
-            _context = context;
+            _categoryService = categoryService;
         }
 
         // GET: IngredientCategories
         public async Task<IActionResult> Index()
         {
-              return _context.IngredientCategories != null ? 
-                          View(await _context.IngredientCategories.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.IngredientCategories'  is null.");
+            return View(await _categoryService.GetAllAsync());
         }
 
         // GET: IngredientCategories/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.IngredientCategories == null)
-            {
-                return NotFound();
-            }
-
-            var ingredientCategory = await _context.IngredientCategories
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ingredientCategory == null)
-            {
-                return NotFound();
-            }
-
-            return View(ingredientCategory);
+            return await CategoryViewAsync(id);
         }
 
         // GET: IngredientCategories/Create
@@ -57,42 +36,31 @@ namespace RecipeBook.Controllers
         }
 
         // POST: IngredientCategories/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] IngredientCategory ingredientCategory)
         {
-            if (_context.IngredientCategories.Any(c => c.Name == ingredientCategory.Name))
+            if (await _categoryService.NameExistsAsync(ingredientCategory.Name))
             {
                 ModelState.AddModelError(nameof(IngredientCategory.Name), MessageTexts.CategoryNameExists);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(ingredientCategory);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(ingredientCategory);
             }
-            return View(ingredientCategory);
+
+            await _categoryService.CreateAsync(ingredientCategory);
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: IngredientCategories/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.IngredientCategories == null)
-            {
-                return NotFound();
-            }
-
-            var ingredientCategory = await _context.IngredientCategories.FindAsync(id);
-            if (ingredientCategory == null)
-            {
-                return NotFound();
-            }
-            return View(ingredientCategory);
+            return await CategoryViewAsync(id);
         }
 
+        // POST: IngredientCategories/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] IngredientCategory ingredientCategory)
@@ -102,51 +70,28 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
-
-            if (_context.IngredientCategories.Any(c => c.Name == ingredientCategory.Name && c.Id != ingredientCategory.Id))
+            if (await _categoryService.NameExistsAsync(ingredientCategory.Name, excludeId: ingredientCategory.Id))
             {
                 ModelState.AddModelError(nameof(IngredientCategory.Name), MessageTexts.CategoryNameExists);
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(ingredientCategory);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!IngredientCategoryExists(ingredientCategory.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return View(ingredientCategory);
             }
-            return View(ingredientCategory);
+
+            if (!await _categoryService.UpdateAsync(ingredientCategory))
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: IngredientCategories/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.IngredientCategories == null)
-            {
-                return NotFound();
-            }
-
-            var ingredientCategory = await _context.IngredientCategories
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ingredientCategory == null)
-            {
-                return NotFound();
-            }
-
-            return View(ingredientCategory);
+            return await CategoryViewAsync(id);
         }
 
         // POST: IngredientCategories/Delete/5
@@ -154,33 +99,32 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var category = await _context.IngredientCategories
-                .Include(c => c.Ingredients)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var result = await _categoryService.DeleteAsync(id);
 
-            if (category == null)
+            switch (result.Status)
+            {
+                case DeleteStatus.NotFound:
+                    return NotFound();
+                case DeleteStatus.InUse:
+                    TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.IngredientCategoryInUse, string.Join(", ", result.UsedBy));
+                    break;
+                default:
+                    TempData[TempDataKeys.SuccessMessage] = MessageTexts.IngredientCategoryDeleted;
+                    break;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        private async Task<IActionResult> CategoryViewAsync(int? id)
+        {
+            if (id == null)
             {
                 return NotFound();
             }
 
-            if (category.Ingredients.Any())
-            {
-                // Връщаме грешка със списък на съставките, които използват категорията
-                var ingredientNames = category.Ingredients.Select(i => i.Name).ToList();
-                TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.IngredientCategoryInUse, string.Join(", ", ingredientNames));
-                return RedirectToAction(nameof(Index));
-            }
-
-            _context.IngredientCategories.Remove(category);
-            await _context.SaveChangesAsync();
-
-            TempData[TempDataKeys.SuccessMessage] = MessageTexts.IngredientCategoryDeleted;
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool IngredientCategoryExists(int id)
-        {
-          return (_context.IngredientCategories?.Any(e => e.Id == id)).GetValueOrDefault();
+            var category = await _categoryService.GetByIdAsync(id.Value);
+            return category == null ? NotFound() : View(category);
         }
     }
 }

@@ -2,11 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using RecipeBook.Data;
+using RecipeBook.Extensions;
 using RecipeBook.Models;
 using RecipeBook.Services;
 using RecipeBook.ViewModels.Users;
-using System.Net.NetworkInformation;
 using System.Security.Claims;
 using RecipeBook.Constants;
 using RecipeBook.Resources;
@@ -17,18 +16,23 @@ namespace RecipeBook.Controllers
     public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly ApplicationDbContext _context;
         private readonly IUserProfileService _userProfileService;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IImageStorageService _imageStorage;
+        private readonly IFollowService _followService;
 
-        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager, IUserProfileService userProfileService, SignInManager<ApplicationUser> signInManager, IImageStorageService imageStorage)
+        public UsersController(
+            UserManager<ApplicationUser> userManager,
+            IUserProfileService userProfileService,
+            SignInManager<ApplicationUser> signInManager,
+            IImageStorageService imageStorage,
+            IFollowService followService)
         {
-            _context = context;
             _userManager = userManager;
             _userProfileService = userProfileService;
             _signInManager = signInManager;
             _imageStorage = imageStorage;
+            _followService = followService;
         }
 
         [Authorize]
@@ -172,45 +176,27 @@ namespace RecipeBook.Controllers
         [HttpPost]
         public async Task<IActionResult> Follow(string userId)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-            if (currentUserId == userId) return BadRequest();
-
-            var exists = await _context.UserFollowers
-                .AnyAsync(uf => uf.FollowerId == currentUserId && uf.FollowedId == userId);
-
-            if (!exists)
+            if (!await _followService.FollowAsync(currentUserId, userId))
             {
-                _context.UserFollowers.Add(new UserFollower
-                {
-                    FollowerId = currentUserId,
-                    FollowedId = userId
-                });
-
-                await _context.SaveChangesAsync();
+                return BadRequest();
             }
 
             // върни се към страницата, от която е подадена формата
-            return Redirect(Request.Headers["Referer"].ToString());
+            return this.RedirectToLocalReferer(ProfileUrl(userId));
         }
 
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Unfollow(string userId)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
-            var follow = await _context.UserFollowers
-                .FirstOrDefaultAsync(uf => uf.FollowerId == currentUserId && uf.FollowedId == userId);
-
-            if (follow != null)
-            {
-                _context.UserFollowers.Remove(follow);
-                await _context.SaveChangesAsync();
-            }
+            await _followService.UnfollowAsync(currentUserId, userId);
 
             // върни се към страницата, от която е подадена формата
-            return Redirect(Request.Headers["Referer"].ToString());
+            return this.RedirectToLocalReferer(ProfileUrl(userId));
         }
 
         [HttpGet]
@@ -218,21 +204,10 @@ namespace RecipeBook.Controllers
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var followers = await _context.UserFollowers
-                .Where(f => f.FollowedId == id)
-                .Include(f => f.Follower)
-                .ToListAsync();
-
-            var viewModel = followers.Select(f => new FollowViewModel
-            {
-                User = f.Follower,
-                IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowerId)
-            }).ToList();
-
             ViewData[ViewDataKeys.ListTitle] = MessageTexts.FollowersTitle;
             ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
-            return View("FollowList", viewModel);
+            return View("FollowList", await _followService.GetFollowersAsync(id, currentUserId));
         }
 
         [HttpGet]
@@ -240,22 +215,14 @@ namespace RecipeBook.Controllers
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var following = await _context.UserFollowers
-                .Where(f => f.FollowerId == id)
-                .Include(f => f.Followed)
-                .ToListAsync();
-
-            var viewModel = following.Select(f => new FollowViewModel
-            {
-                User = f.Followed,
-                IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowedId)
-            }).ToList();
-
             ViewData[ViewDataKeys.ListTitle] = MessageTexts.FollowingTitle;
             ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
-            return View("FollowList", viewModel);
+            return View("FollowList", await _followService.GetFollowingAsync(id, currentUserId));
         }
+
+        private string ProfileUrl(string userId)
+            => Url.Action(nameof(RecipesController.MyIndex), "Recipes", new { id = userId })!;
 
         [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]

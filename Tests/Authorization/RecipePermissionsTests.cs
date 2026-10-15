@@ -36,6 +36,24 @@ namespace Tests.Authorization
             Assert.False(RecipePermissions.CanModify(null, new ClaimsPrincipal(new ClaimsIdentity())));
         }
 
+        [Fact]
+        public void CommentAuthorOrAdmin_CanEditComment()
+        {
+            Assert.True(RecipePermissions.CanEditComment("writer", CreateUser("writer")));
+            Assert.True(RecipePermissions.CanEditComment("writer", CreateUser("admin", UserRoles.Admin)));
+            Assert.False(RecipePermissions.CanEditComment("writer", CreateUser("recipeAuthor")));
+        }
+
+        [Fact]
+        public void RecipeAuthor_CanDeleteButNotEditComments()
+        {
+            var recipeAuthor = CreateUser("recipeAuthor");
+
+            Assert.True(RecipePermissions.CanDeleteComment("writer", "recipeAuthor", recipeAuthor));
+            Assert.False(RecipePermissions.CanEditComment("writer", recipeAuthor));
+            Assert.False(RecipePermissions.CanDeleteComment("writer", "recipeAuthor", CreateUser("stranger")));
+        }
+
         private static ClaimsPrincipal CreateUser(string userId, string? role = null)
         {
             var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, userId) };
