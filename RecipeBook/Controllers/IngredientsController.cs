@@ -26,9 +26,9 @@ namespace RecipeBook.Controllers
         public async Task<IActionResult> Index(string searchString, int? categoryId)
         {
             var categories = await _context.IngredientCategories.ToListAsync();
-            ViewData["Categories"] = new SelectList(categories, "Id", "Name");
-            ViewData["Search"] = searchString;
-            ViewData["SelectedCategoryId"] = categoryId;
+            ViewData[ViewDataKeys.Categories] = new SelectList(categories, "Id", "Name");
+            ViewData[ViewDataKeys.Search] = searchString;
+            ViewData[ViewDataKeys.SelectedCategoryId] = categoryId;
 
             var ingredientsQuery = _context.Ingredients
                 .Include(i => i.IngredientCategory)
@@ -70,7 +70,7 @@ namespace RecipeBook.Controllers
 
         public IActionResult Create()
         {
-            ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name");
+            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name");
             return View();
         }
 
@@ -85,7 +85,7 @@ namespace RecipeBook.Controllers
             if (exists)
             {
                 ModelState.AddModelError("", "Съставка с това име вече съществува в тази категория.");
-                ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+                ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
                 return View(ingredient);
             }
 
@@ -95,7 +95,7 @@ namespace RecipeBook.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
             return View(ingredient);
         }
 
@@ -112,7 +112,7 @@ namespace RecipeBook.Controllers
             {
                 return NotFound();
             }
-            ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
             return View(ingredient);
         }
 
@@ -131,7 +131,7 @@ namespace RecipeBook.Controllers
             if (exists)
             {
                 ModelState.AddModelError("", "Съставка с това име вече съществува в тази категория.");
-                ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+                ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
                 return View(ingredient);
             }
 
@@ -155,7 +155,7 @@ namespace RecipeBook.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["IngredientCategoryId"] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
+            ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
             return View(ingredient);
         }
 
@@ -198,14 +198,14 @@ namespace RecipeBook.Controllers
 
                 var recipeNames = string.Join(", ", usedInRecipes);
 
-                TempData["ErrorMessage"] = $"Съставката се използва в рецепти: {recipeNames}. Моля, първо я премахни от тях.";
+                TempData[TempDataKeys.ErrorMessage] = $"Съставката се използва в рецепти: {recipeNames}. Моля, първо я премахни от тях.";
                 return RedirectToAction(nameof(Index));
             }
 
             _context.Ingredients.Remove(ingredient);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Съставката беше изтрита успешно.";
+            TempData[TempDataKeys.SuccessMessage] = "Съставката беше изтрита успешно.";
             return RedirectToAction(nameof(Index));
         }
 

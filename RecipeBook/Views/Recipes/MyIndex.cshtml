@@ -3,12 +3,12 @@
 
 @{
     ViewData["Title"] = "Моите рецепти";
-    var user = ViewData["User"] as ApplicationUser;
-    var currentUserId = ViewData["CurrentUserId"] as string;
-    var isFollowing = ViewData["IsFollowing"] as bool? ?? false;
+    var user = ViewData[ViewDataKeys.User] as ApplicationUser;
+    var currentUserId = ViewData[ViewDataKeys.CurrentUserId] as string;
+    var isFollowing = ViewData[ViewDataKeys.IsFollowing] as bool? ?? false;
     bool isOwnProfile = user?.Id == currentUserId;
-    var followersCount = ViewData["FollowersCount"] as int? ?? 0;
-    var followingCount = ViewData["FollowingCount"] as int? ?? 0;
+    var followersCount = ViewData[ViewDataKeys.FollowersCount] as int? ?? 0;
+    var followingCount = ViewData[ViewDataKeys.FollowingCount] as int? ?? 0;
 
 }
 

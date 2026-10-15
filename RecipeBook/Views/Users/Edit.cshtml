@@ -3,16 +3,16 @@
 @{
     ViewData["Title"] = "Редакция на потребител";
 
-    bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
+    bool isUserAdmin = ViewData[ViewDataKeys.IsUserAdmin] as bool? ?? false;
 }
 
 <div class="container mt-4">
     <h1 class="mb-4">Редактирай профил</h1>
 
-    @if (TempData["ErrorMessage"] != null)
+    @if (TempData[TempDataKeys.ErrorMessage] != null)
     {
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
+            @TempData[TempDataKeys.ErrorMessage]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }

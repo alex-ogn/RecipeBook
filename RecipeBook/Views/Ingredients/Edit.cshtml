@@ -1,4 +1,5 @@
 ﻿@model RecipeBook.Models.Ingredient
+@using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
     ViewData["Title"] = "Редакция на съставка";
@@ -20,7 +21,7 @@
 
             <div class="mb-3">
                 <label asp-for="IngredientCategoryId" class="form-label">Категория</label>
-                <select asp-for="IngredientCategoryId" class="form-select" asp-items="ViewBag.IngredientCategoryId"></select>
+                <select asp-for="IngredientCategoryId" class="form-select" asp-items="@(ViewData[ViewDataKeys.IngredientCategories] as SelectList)"></select>
                 <span asp-validation-for="IngredientCategoryId" class="text-danger small"></span>
             </div>
 

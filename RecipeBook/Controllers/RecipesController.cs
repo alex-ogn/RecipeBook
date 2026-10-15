@@ -42,8 +42,7 @@ namespace RecipeBook.Controllers
         public async Task<IActionResult> Index(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
         {
             string currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            ViewData["CurrentUserId"] = currentUserId;
-            ViewData["CurrentAction"] = "Index";
+            ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
             var query = _context.Recipies
                 .Include(r => r.User)
@@ -99,11 +98,11 @@ namespace RecipeBook.Controllers
             var followersCount = _context.UserFollowers.Count(f => f.FollowedId == user.Id);
             var followingCount = _context.UserFollowers.Count(f => f.FollowerId == user.Id);
 
-            ViewData["User"] = user;
-            ViewData["CurrentUserId"] = currentUserId;
-            ViewData["IsFollowing"] = isFollowing;
-            ViewData["FollowersCount"] = followersCount;
-            ViewData["FollowingCount"] = followingCount;
+            ViewData[ViewDataKeys.User] = user;
+            ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
+            ViewData[ViewDataKeys.IsFollowing] = isFollowing;
+            ViewData[ViewDataKeys.FollowersCount] = followersCount;
+            ViewData[ViewDataKeys.FollowingCount] = followingCount;
 
             var cardViewModels = RecipeCardMapper.ToCards(recipes, currentUserId, User.IsInRole(UserRoles.Admin));
             return View(cardViewModels);
@@ -156,13 +155,13 @@ namespace RecipeBook.Controllers
             bool isLiked = await _context.RecipeLikes
                 .AnyAsync(l => l.RecipeId == id && l.UserId == currentUserId);
 
-            ViewData["IsLiked"] = isLiked;
-            ViewData["LikeCount"] = await _context.RecipeLikes.CountAsync(l => l.RecipeId == id);
+            ViewData[ViewDataKeys.IsLiked] = isLiked;
+            ViewData[ViewDataKeys.LikeCount] = await _context.RecipeLikes.CountAsync(l => l.RecipeId == id);
 
             bool isUserAdmin = User.IsInRole(UserRoles.Admin);
-            ViewData["IsUserAdmin"] = isUserAdmin;
-            ViewData["CurrentUserId"] = currentUserId;
-            ViewData["IsSaved"] = isSaved;
+            ViewData[ViewDataKeys.IsUserAdmin] = isUserAdmin;
+            ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
+            ViewData[ViewDataKeys.IsSaved] = isSaved;
 
             return View(recipeViewModel);
         }
@@ -175,9 +174,8 @@ namespace RecipeBook.Controllers
                 Categories = new SelectList(_context.RecipeCategories, "Id", "Name")
             };
 
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
-            ViewData["CurrentUserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            ViewData[ViewDataKeys.IsUserAdmin] = User.IsInRole(UserRoles.Admin);
+            ViewData[ViewDataKeys.CurrentUserId] = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             return View(viewModel);
         }
@@ -213,8 +211,7 @@ namespace RecipeBook.Controllers
                 if (!ModelState.IsValid)
                 {
                     model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-                    ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
-                    ViewData["CurrentUserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    ViewData[ViewDataKeys.CurrentUserId] = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
                     return View(model);
                 }
@@ -301,7 +298,6 @@ namespace RecipeBook.Controllers
 
             viewModel.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", recipe.RecipeCategory.Id);
 
-            ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", recipe.UserId);
             return View(viewModel);
         }
 
@@ -325,7 +321,6 @@ namespace RecipeBook.Controllers
             if (!ModelState.IsValid)
             {
                 model.Categories = new SelectList(_context.RecipeCategories, "Id", "Name", model.CategoryId);
-                ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id", model.UserId);
                 return View(model);
             }
 
@@ -390,7 +385,6 @@ namespace RecipeBook.Controllers
                 return NotFound();
             }
 
-            ViewData["Category"] = new SelectList(_context.RecipeCategories, "Id", "Name");
             return View(recipe);
         }
 
@@ -406,7 +400,7 @@ namespace RecipeBook.Controllers
             if (!success)
                 return Forbid();
 
-            TempData["SuccessMessage"] = "Рецептата е изтрита успешно.";
+            TempData[TempDataKeys.SuccessMessage] = "Рецептата е изтрита успешно.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -432,7 +426,7 @@ namespace RecipeBook.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Details", new { id });
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [HttpPost]
@@ -449,7 +443,7 @@ namespace RecipeBook.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            return RedirectToAction("Details", new { id });
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [Authorize]
@@ -489,11 +483,10 @@ namespace RecipeBook.Controllers
                 SelectedCategoryId = categoryId
             };
 
-            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
-            ViewData["CurrentUserId"] = userId;
-            ViewData["CurrentAction"] = "SavedRecipes";
+            ViewData[ViewDataKeys.IsUserAdmin] = User.IsInRole(UserRoles.Admin);
+            ViewData[ViewDataKeys.CurrentUserId] = userId;
 
-            return View("Index", model);
+            return View(nameof(Index), model);
         }
         [Authorize]
         public async Task<IActionResult> SavedRecipes(int? categoryId)
@@ -532,11 +525,10 @@ namespace RecipeBook.Controllers
                 SelectedCategoryId = categoryId
             };
 
-            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
-            ViewData["CurrentUserId"] = userId;
-            ViewData["CurrentAction"] = "SavedRecipes";
+            ViewData[ViewDataKeys.IsUserAdmin] = User.IsInRole(UserRoles.Admin);
+            ViewData[ViewDataKeys.CurrentUserId] = userId;
 
-            return View("Index", model);
+            return View(nameof(Index), model);
         }
 
         [Authorize]
@@ -594,7 +586,7 @@ namespace RecipeBook.Controllers
             // Подаваме webHostEnvironment на сервиза за PDF
             var pdf = _pdfService.GenerateRecipePdf(recipe, _webHostEnvironment);
 
-            return File(pdf, "application/pdf", $"{recipe.Title}.pdf");
+            return File(pdf, MediaTypeNames.Application.Pdf, $"{recipe.Title}.pdf");
         }
 
         [Authorize]
@@ -603,7 +595,7 @@ namespace RecipeBook.Controllers
         public async Task<IActionResult> AddComment(int recipeId, string content)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrWhiteSpace(content)) return RedirectToAction("Details", "Recipes", new { id = recipeId });
+            if (string.IsNullOrWhiteSpace(content)) return RedirectToAction(nameof(Details), new { id = recipeId });
 
             var comment = new RecipeComment
             {
@@ -616,7 +608,7 @@ namespace RecipeBook.Controllers
             _context.RecipeComments.Add(comment);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Details", "Recipes", new { id = recipeId });
+            return RedirectToAction(nameof(Details), new { id = recipeId });
         }
 
         [Authorize]
@@ -637,7 +629,7 @@ namespace RecipeBook.Controllers
             _context.RecipeComments.Remove(comment);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Details", "Recipes", new { id = comment.RecipeId });
+            return RedirectToAction(nameof(Details), new { id = comment.RecipeId });
         }
 
         [Authorize]
@@ -680,7 +672,7 @@ namespace RecipeBook.Controllers
             comment.Content = model.Content;
 
             await _context.SaveChangesAsync();
-            return RedirectToAction("Details", "Recipes", new { id = comment.RecipeId });
+            return RedirectToAction(nameof(Details), new { id = comment.RecipeId });
         }
 
         [Authorize]
@@ -722,16 +714,15 @@ namespace RecipeBook.Controllers
                 SelectedCategoryId = categoryId
             };
 
-            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
-            ViewData["CurrentUserId"] = userId;
-            ViewData["CurrentAction"] = "SavedRecipes";
+            ViewData[ViewDataKeys.IsUserAdmin] = User.IsInRole(UserRoles.Admin);
+            ViewData[ViewDataKeys.CurrentUserId] = userId;
 
-            return View("Index", model);
+            return View(nameof(Index), model);
         }
 
         private async Task<string> SaveImageAsync(IFormFile file)
         {
-            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "recipes");
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, ImageConstants.ImagesFolder, ImageConstants.RecipeImagesFolder);
             if (!Directory.Exists(uploadsFolder))
             {
                 Directory.CreateDirectory(uploadsFolder);
@@ -745,7 +736,7 @@ namespace RecipeBook.Controllers
                 await file.CopyToAsync(fileStream);
             }
 
-            return $"/images/recipes/{fileName}";
+            return $"{ImageConstants.RecipeImagesUrlPrefix}{fileName}";
         }
 
         private HtmlSanitizer GetHtmlSanitizer()

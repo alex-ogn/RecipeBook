@@ -21,7 +21,7 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
-        ViewData["ReturnUrl"] = returnUrl;
+        ViewData[ViewDataKeys.ReturnUrl] = returnUrl;
         return View();
     }
 
@@ -93,7 +93,7 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Register(string? returnUrl = null)
     {
-        ViewData["ReturnUrl"] = returnUrl;
+        ViewData[ViewDataKeys.ReturnUrl] = returnUrl;
         return View();
     }
 
@@ -131,7 +131,7 @@ public class AccountController : Controller
                         "Потвърдете вашия имейл",
                         $"За да потвърдите профила си, <a href='{confirmationLink}'>кликнете тук</a>.");
 
-            return RedirectToAction("RegisterConfirmation");
+            return RedirectToAction(nameof(RegisterConfirmation));
         }
 
         foreach (var error in result.Errors)

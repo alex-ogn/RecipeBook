@@ -1,3 +1,4 @@
+using RecipeBook.Constants;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Recipes;
 
@@ -22,7 +23,7 @@ namespace Tests.ViewModels
 
             var card = RecipeCardMapper.ToCard(recipe, currentUserId: "user1");
 
-            Assert.Equal(RecipeCardMapper.DefaultImageUrl, card.ImageUrl);
+            Assert.Equal(ImageConstants.DefaultRecipeImageUrl, card.ImageUrl);
         }
 
         [Fact]
@@ -61,7 +62,7 @@ namespace Tests.ViewModels
             var unnamed = CreateRecipe();
 
             Assert.Equal("Chef", RecipeCardMapper.ToCard(named, "user1").UserName);
-            Assert.Equal(RecipeCardMapper.DefaultUserName, RecipeCardMapper.ToCard(unnamed, "user1").UserName);
+            Assert.Equal(UserProfileConstants.DefaultUserName, RecipeCardMapper.ToCard(unnamed, "user1").UserName);
         }
 
         private static Recipe CreateRecipe(string userId = "user1", string? imageUrl = "/images/recipes/abc.jpg", string? description = "Plain text")

@@ -1,31 +1,28 @@
-﻿namespace RecipeBook.Services
+﻿using Microsoft.Extensions.Options;
+using RecipeBook.Options;
+
+namespace RecipeBook.Services
 {
     public class EmailSender : IEmailSender
     {
-        private readonly IConfiguration _configuration;
+        private readonly EmailSettings _settings;
 
-        public EmailSender(IConfiguration configuration)
+        public EmailSender(IOptions<EmailSettings> settings)
         {
-            _configuration = configuration;
+            _settings = settings.Value;
         }
 
         public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            // IConfiguration / User Secrets
-            var smtpServer = _configuration["EmailSettings:SmtpServer"];
-            var port = int.Parse(_configuration["EmailSettings:Port"] ?? "587");
-            var senderEmail = _configuration["EmailSettings:SenderEmail"];
-            var password = _configuration["EmailSettings:Password"];
-
-            using var client = new System.Net.Mail.SmtpClient(smtpServer, port)
+            using var client = new System.Net.Mail.SmtpClient(_settings.SmtpServer, _settings.Port)
             {
-                Credentials = new System.Net.NetworkCredential(senderEmail, password),
+                Credentials = new System.Net.NetworkCredential(_settings.SenderEmail, _settings.Password),
                 EnableSsl = true
             };
 
             var mailMessage = new System.Net.Mail.MailMessage
             {
-                From = new System.Net.Mail.MailAddress(senderEmail, "Recipe Book Support"),
+                From = new System.Net.Mail.MailAddress(_settings.SenderEmail, "Recipe Book Support"),
                 Subject = subject,
                 Body = htmlMessage,
                 IsBodyHtml = true

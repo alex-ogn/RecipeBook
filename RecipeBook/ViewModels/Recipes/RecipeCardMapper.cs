@@ -1,12 +1,11 @@
 using System.Text.RegularExpressions;
+using RecipeBook.Constants;
 using RecipeBook.Models;
 
 namespace RecipeBook.ViewModels.Recipes
 {
     public static class RecipeCardMapper
     {
-        public const string DefaultImageUrl = "/images/default-recipe.jpg";
-        public const string DefaultUserName = "Потребител";
         private const int PreviewLength = 100;
 
         private static readonly Regex HtmlTagRegex = new("<.*?>", RegexOptions.Compiled | RegexOptions.Singleline);
@@ -30,9 +29,9 @@ namespace RecipeBook.ViewModels.Recipes
                 Title = recipe.Title,
                 DescriptionPreview = BuildDescriptionPreview(recipe.Description),
                 ImageUrl = string.IsNullOrWhiteSpace(recipe.ImageUrl)
-                    ? DefaultImageUrl
+                    ? ImageConstants.DefaultRecipeImageUrl
                     : recipe.ImageUrl,
-                UserName = recipe.User?.UserName ?? DefaultUserName,
+                UserName = recipe.User?.UserName ?? UserProfileConstants.DefaultUserName,
                 UserId = recipe.UserId,
                 LikesCount = recipe.Likes?.Count ?? 0,
                 ViewCount = recipe.ViewCount,

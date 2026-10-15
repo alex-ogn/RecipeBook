@@ -166,14 +166,14 @@ namespace RecipeBook.Controllers
             {
                 // Връщаме грешка със списък на съставките, които използват категорията
                 var ingredientNames = category.Ingredients.Select(i => i.Name).ToList();
-                TempData["ErrorMessage"] = $"Категорията не може да бъде изтрита, защото се използва от следните съставки: {string.Join(", ", ingredientNames)}";
+                TempData[TempDataKeys.ErrorMessage] = $"Категорията не може да бъде изтрита, защото се използва от следните съставки: {string.Join(", ", ingredientNames)}";
                 return RedirectToAction(nameof(Index));
             }
 
             _context.IngredientCategories.Remove(category);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Категорията беше успешно изтрита.";
+            TempData[TempDataKeys.SuccessMessage] = "Категорията беше успешно изтрита.";
             return RedirectToAction(nameof(Index));
         }
 

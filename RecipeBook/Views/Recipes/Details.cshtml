@@ -3,11 +3,11 @@
 
 @{
     ViewData["Title"] = "Детайли за рецепта";
-    bool isUserAdmin = ViewData["IsUserAdmin"] as bool? ?? false;
-    var currentUserId = ViewData["CurrentUserId"]?.ToString().Trim().ToLower();
-    bool isSaved = ViewData["IsSaved"] as bool? ?? false;
-    bool isLiked = ViewData["IsLiked"] as bool? ?? false;
-    var likeCount = (int)(ViewData["LikeCount"] ?? 0);
+    bool isUserAdmin = ViewData[ViewDataKeys.IsUserAdmin] as bool? ?? false;
+    var currentUserId = ViewData[ViewDataKeys.CurrentUserId]?.ToString().Trim().ToLower();
+    bool isSaved = ViewData[ViewDataKeys.IsSaved] as bool? ?? false;
+    bool isLiked = ViewData[ViewDataKeys.IsLiked] as bool? ?? false;
+    var likeCount = (int)(ViewData[ViewDataKeys.LikeCount] ?? 0);
 }
 
 <!-- Връзка към CSS файла -->
@@ -25,7 +25,7 @@
         else
         {
             <!-- Снимка по подразбиране, ако няма качена -->
-            <img src="~/images/default-recipe.jpg" class="recipe-image" alt="@Model.Title">
+            <img src="@ImageConstants.DefaultRecipeImageUrl" class="recipe-image" alt="@Model.Title">
         }
         <div class="recipe-side-info">
             <!-- Потребителска секция -->
@@ -165,7 +165,7 @@
                 <p class="mb-1">@comment.Content</p>
                 <small class="text-muted">от @comment.User.UserName на @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
 
-                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == ViewData["CurrentUserId"]?.ToString()))
+                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == ViewData[ViewDataKeys.CurrentUserId]?.ToString()))
                 {
                         <form asp-action="EditComment" method="get" class="d-inline ms-2">
                             <input type="hidden" name="id" value="@comment.Id" />
@@ -173,7 +173,7 @@
                         </form>
                 }
               
-                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == ViewData["CurrentUserId"]?.ToString() || Model.UserId == currentUserId))
+                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == ViewData[ViewDataKeys.CurrentUserId]?.ToString() || Model.UserId == currentUserId))
                 {
                         <form asp-action="DeleteComment" method="post" class="d-inline ms-2">
                             <input type="hidden" name="id" value="@comment.Id" />

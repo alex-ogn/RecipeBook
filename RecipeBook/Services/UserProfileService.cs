@@ -164,7 +164,7 @@ namespace RecipeBook.Services
                 return (user.ProfilePicture, UserProfileConstants.DefaultProfilePictureFormat);
             }
 
-            var defaultPath = Path.Combine(_env.WebRootPath, "images", UserProfileConstants.DefaultProfilePictureName);
+            var defaultPath = Path.Combine(_env.WebRootPath, ImageConstants.ImagesFolder, UserProfileConstants.DefaultProfilePictureName);
             var defaultImage = await File.ReadAllBytesAsync(defaultPath);
             return (defaultImage, UserProfileConstants.DefaultProfilePictureFormat);
         }

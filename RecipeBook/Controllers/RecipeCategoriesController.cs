@@ -168,14 +168,14 @@ namespace RecipeBook.Controllers
                     .ToList();
 
                 var usedIn = string.Join(", ", recipeTitles);
-                TempData["ErrorMessage"] = $"Категорията се използва в следните рецепти: {usedIn}. Премахни я първо от тях.";
+                TempData[TempDataKeys.ErrorMessage] = $"Категорията се използва в следните рецепти: {usedIn}. Премахни я първо от тях.";
                 return RedirectToAction(nameof(Index));
             }
 
             _context.RecipeCategories.Remove(category);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "Категорията беше изтрита успешно.";
+            TempData[TempDataKeys.SuccessMessage] = "Категорията беше изтрита успешно.";
             return RedirectToAction(nameof(Index));
         }
 

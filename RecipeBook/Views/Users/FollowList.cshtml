@@ -2,11 +2,11 @@
 @model List<FollowViewModel>
 
 @{
-    ViewData["Title"] = ViewData["ListTitle"];
-    var currentUserId = ViewData["CurrentUserId"] as string;
+    ViewData["Title"] = ViewData[ViewDataKeys.ListTitle];
+    var currentUserId = ViewData[ViewDataKeys.CurrentUserId] as string;
 }
 
-<h3>@ViewData["ListTitle"]</h3>
+<h3>@ViewData[ViewDataKeys.ListTitle]</h3>
 
 <div class="row">
     @foreach (var item in Model)

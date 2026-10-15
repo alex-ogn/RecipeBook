@@ -41,7 +41,7 @@ namespace RecipeBook.Controllers
             }
 
             var users = await usersQuery.ToListAsync();
-            ViewData["Search"] = search;
+            ViewData[ViewDataKeys.Search] = search;
             return View(users);
         }
 
@@ -91,7 +91,7 @@ namespace RecipeBook.Controllers
                 ProfilePictureVersion = user.ProfilePictureVersion
             };
 
-            ViewData["IsUserAdmin"] = isAdmin;
+            ViewData[ViewDataKeys.IsUserAdmin] = isAdmin;
 
             return View(model);
         }
@@ -120,15 +120,15 @@ namespace RecipeBook.Controllers
             var result = await _userProfileService.UpdateUserProfileAsync(user, model, isAdmin);
             if (!result.Succeeded)
             {
-                TempData["ErrorMessage"] = string.Join("; ", result.Errors.Select(e => e.Description));
+                TempData[TempDataKeys.ErrorMessage] = string.Join("; ", result.Errors.Select(e => e.Description));
                 return View(model);
             }
 
             if (!isAdmin)
                 await _signInManager.RefreshSignInAsync(user); // важи само за текущия юзър
 
-            TempData["SuccessMessage"] = "Профилът е обновен.";
-            return isAdmin ? RedirectToAction("Index") : RedirectToAction("Edit");
+            TempData[TempDataKeys.SuccessMessage] = "Профилът е обновен.";
+            return isAdmin ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Edit));
         }
 
 
@@ -179,7 +179,7 @@ namespace RecipeBook.Controllers
                 await _userManager.UpdateAsync(user);
             }
 
-            return RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpGet]
@@ -250,8 +250,8 @@ namespace RecipeBook.Controllers
                 IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowerId)
             }).ToList();
 
-            ViewData["ListTitle"] = "Последователи";
-            ViewData["CurrentUserId"] = currentUserId;
+            ViewData[ViewDataKeys.ListTitle] = "Последователи";
+            ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
             return View("FollowList", viewModel);
         }
@@ -272,8 +272,8 @@ namespace RecipeBook.Controllers
                 IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowedId)
             }).ToList();
 
-            ViewData["ListTitle"] = "Следвани";
-            ViewData["CurrentUserId"] = currentUserId;
+            ViewData[ViewDataKeys.ListTitle] = "Следвани";
+            ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
             return View("FollowList", viewModel);
         }
@@ -295,12 +295,12 @@ namespace RecipeBook.Controllers
                     errorMsg += " " + error.Description;
                 }
 
-                TempData["ErrorMessage"] = errorMsg;
-                return RedirectToAction("Edit", new { id });
+                TempData[TempDataKeys.ErrorMessage] = errorMsg;
+                return RedirectToAction(nameof(Edit), new { id });
             }
 
-            TempData["SuccessMessage"] = "Потребителят беше успешно изтрит.";
-            return RedirectToAction("Index");
+            TempData[TempDataKeys.SuccessMessage] = "Потребителят беше успешно изтрит.";
+            return RedirectToAction(nameof(Index));
         }
 
 

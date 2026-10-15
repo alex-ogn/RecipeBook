@@ -3,19 +3,19 @@
 
 @{
     ViewData["Title"] = "Съставки";
-    var selectedCategoryId = ViewData["SelectedCategoryId"] as int?;
+    var selectedCategoryId = ViewData[ViewDataKeys.SelectedCategoryId] as int?;
 }
 
 <h1 class="mb-4">Съставки</h1>
 
-@if (TempData["ErrorMessage"] != null)
+@if (TempData[TempDataKeys.ErrorMessage] != null)
 {
-    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    <div class="alert alert-danger">@TempData[TempDataKeys.ErrorMessage]</div>
 }
 
-@if (TempData["SuccessMessage"] != null)
+@if (TempData[TempDataKeys.SuccessMessage] != null)
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    <div class="alert alert-success">@TempData[TempDataKeys.SuccessMessage]</div>
 }
 
 <div class="d-flex justify-content-end mb-3">
@@ -27,12 +27,12 @@
 <form method="get" class="row mb-4">
     <div class="col-md-4">
         <input type="text" name="searchString" class="form-control" placeholder="Търси по име..."
-               value="@ViewData["Search"]" />
+               value="@ViewData[ViewDataKeys.Search]" />
     </div>
     <div class="col-md-4">
         <select name="categoryId" class="form-select">
             <option value="">-- Всички категории --</option>
-            @foreach (var cat in (SelectList)ViewData["Categories"])
+            @foreach (var cat in (SelectList)ViewData[ViewDataKeys.Categories])
             {
                 <option value="@cat.Value" selected="@(selectedCategoryId == int.Parse(cat.Value))">
                     @cat.Text

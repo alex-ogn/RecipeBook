@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using RecipeBook.Constants;
 using RecipeBook.Models;
+using RecipeBook.Options;
 
 namespace RecipeBook.Data
 {
@@ -49,8 +50,9 @@ namespace RecipeBook.Data
             ILogger logger)
         {
             // IConfiguration (User Secrets / Environment Variables)
-            var adminEmail = configuration["AdminCredentials:Email"];
-            var adminPassword = configuration["AdminCredentials:Password"];
+            var credentials = configuration.GetSection(AdminCredentials.SectionName).Get<AdminCredentials>();
+            var adminEmail = credentials?.Email;
+            var adminPassword = credentials?.Password;
 
             if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
             {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using RecipeBook.Controllers;
 using RecipeBook.Data;
 using RecipeBook.ViewModels.Recipes;
 using System.Linq;
@@ -21,7 +22,7 @@ public class SearchController : Controller
     {
         if (string.IsNullOrWhiteSpace(searchString))
         {
-            return RedirectToAction("Index", "Recipes");
+            return RedirectToAction(nameof(RecipesController.Index), "Recipes");
         }
 
         searchString = searchString.ToLower().Trim();
@@ -32,7 +33,7 @@ public class SearchController : Controller
 
         if (user != null)
         {
-            return RedirectToAction("MyIndex", "Recipes", new { id = user.Id });
+            return RedirectToAction(nameof(RecipesController.MyIndex), "Recipes", new { id = user.Id });
         }
 
         // Търсене в категории
@@ -41,7 +42,7 @@ public class SearchController : Controller
 
         if (category != null)
         {
-            return RedirectToAction("Index", "Recipes", new { SelectedCategoryId = category.Id });
+            return RedirectToAction(nameof(RecipesController.Index), "Recipes", new { SelectedCategoryId = category.Id });
         }
 
         // Търсене по име на рецепта
@@ -53,11 +54,11 @@ public class SearchController : Controller
             .ToListAsync();
 
         // Създай view model и пренасочи
-        TempData["SearchResults"] = searchString; // по желание за съобщение
+        TempData[TempDataKeys.SearchResults] = searchString; // по желание за съобщение
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var isUserAdmin = User.IsInRole(UserRoles.Admin);
-        ViewData["CurrentUserId"] = currentUserId;
-        ViewData["IsUserAdmin"] = isUserAdmin;
+        ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
+        ViewData[ViewDataKeys.IsUserAdmin] = isUserAdmin;
 
         var model = new RecipeFilterViewModel
         {
