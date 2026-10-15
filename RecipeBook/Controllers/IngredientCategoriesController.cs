@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Constants;
+using RecipeBook.Resources;
 
 namespace RecipeBook.Controllers
 {
@@ -64,7 +65,7 @@ namespace RecipeBook.Controllers
         {
             if (_context.IngredientCategories.Any(c => c.Name == ingredientCategory.Name))
             {
-                ModelState.AddModelError("Name", "Категория с това име вече съществува.");
+                ModelState.AddModelError(nameof(IngredientCategory.Name), MessageTexts.CategoryNameExists);
             }
 
             if (ModelState.IsValid)
@@ -104,7 +105,7 @@ namespace RecipeBook.Controllers
 
             if (_context.IngredientCategories.Any(c => c.Name == ingredientCategory.Name && c.Id != ingredientCategory.Id))
             {
-                ModelState.AddModelError("Name", "Категория с това име вече съществува.");
+                ModelState.AddModelError(nameof(IngredientCategory.Name), MessageTexts.CategoryNameExists);
             }
 
             if (ModelState.IsValid)
@@ -166,14 +167,14 @@ namespace RecipeBook.Controllers
             {
                 // Връщаме грешка със списък на съставките, които използват категорията
                 var ingredientNames = category.Ingredients.Select(i => i.Name).ToList();
-                TempData[TempDataKeys.ErrorMessage] = $"Категорията не може да бъде изтрита, защото се използва от следните съставки: {string.Join(", ", ingredientNames)}";
+                TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.IngredientCategoryInUse, string.Join(", ", ingredientNames));
                 return RedirectToAction(nameof(Index));
             }
 
             _context.IngredientCategories.Remove(category);
             await _context.SaveChangesAsync();
 
-            TempData[TempDataKeys.SuccessMessage] = "Категорията беше успешно изтрита.";
+            TempData[TempDataKeys.SuccessMessage] = MessageTexts.IngredientCategoryDeleted;
             return RedirectToAction(nameof(Index));
         }
 

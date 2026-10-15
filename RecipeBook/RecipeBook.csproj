@@ -47,6 +47,21 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>RecipePdfTexts.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\DisplayTexts.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DisplayTexts.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\ValidationTexts.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ValidationTexts.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\MessageTexts.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>MessageTexts.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -57,6 +72,18 @@
     <EmbeddedResource Update="Resources\RecipePdfTexts.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>RecipePdfTexts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\DisplayTexts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>DisplayTexts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\ValidationTexts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>ValidationTexts.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\MessageTexts.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>MessageTexts.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

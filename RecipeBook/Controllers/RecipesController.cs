@@ -20,6 +20,7 @@ using RecipeBook.ViewModels.Recipes;
 using RecipeBook.ViewModels.Enums;
 using System.ComponentModel.DataAnnotations;
 using RecipeBook.Constants;
+using RecipeBook.Resources;
 
 namespace RecipeBook.Controllers
 {
@@ -29,7 +30,6 @@ namespace RecipeBook.Controllers
         private readonly IRecipePdfService _pdfService;
         private readonly IRecipeService _recipeService;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly string adddedByUserIngredientName = "Добавена от потребител";
 
         public RecipesController(ApplicationDbContext context, IRecipePdfService pdfService, IRecipeService recipeService, IWebHostEnvironment webHostEnvironment)
         {
@@ -400,7 +400,7 @@ namespace RecipeBook.Controllers
             if (!success)
                 return Forbid();
 
-            TempData[TempDataKeys.SuccessMessage] = "Рецептата е изтрита успешно.";
+            TempData[TempDataKeys.SuccessMessage] = MessageTexts.RecipeDeleted;
             return RedirectToAction(nameof(Index));
         }
 
@@ -771,7 +771,7 @@ namespace RecipeBook.Controllers
             var recipeIngredients = new List<RecipeIngredient>();
 
             var defaultCategory = await _context.IngredientCategories
-                .FirstOrDefaultAsync(u => u.Name == adddedByUserIngredientName);
+                .FirstOrDefaultAsync(u => u.Name == IngredientCategoryConstants.AddedByUserCategoryName);
 
             if (defaultCategory == null)
                 throw new InvalidOperationException("Default ingredient category not found.");

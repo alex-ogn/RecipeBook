@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
+using RecipeBook.Resources;
 
 namespace RecipeBook.Models
 {
@@ -10,7 +11,7 @@ namespace RecipeBook.Models
         public int Id { get; set; }
 
         [Required]
-        [Display(Name = "Име")]
+        [Display(Name = nameof(DisplayTexts.Name), ResourceType = typeof(DisplayTexts))]
         [StringLength(100)]
         public string Title { get; set; }
 
@@ -24,7 +25,7 @@ namespace RecipeBook.Models
         public int Servings { get; set; }
 
         [Required]
-        [Display(Name = "Време за готвене (в минути)")]
+        [Display(Name = nameof(DisplayTexts.CookingTimeMinutes), ResourceType = typeof(DisplayTexts))]
         public int CookingTime { get; set; }
 
         [Required]
@@ -34,14 +35,14 @@ namespace RecipeBook.Models
         [ForeignKey("UserId")]
         public ApplicationUser? User { get; set; }
 
-        [Display(Name = "Снимка")]
+        [Display(Name = nameof(DisplayTexts.Image), ResourceType = typeof(DisplayTexts))]
         [StringLength(500)]
         public string? ImageUrl { get; set; }
 
         [Required]
         public int RecipeCategoryId { get; set; }
 
-        [Display(Name = "Категория")]
+        [Display(Name = nameof(DisplayTexts.Category), ResourceType = typeof(DisplayTexts))]
         public RecipeCategory? RecipeCategory { get; set; }
 
         public int ViewCount { get; set; } = 0;
@@ -49,16 +50,16 @@ namespace RecipeBook.Models
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        [Display(Name = "Вегетарианска")]
+        [Display(Name = nameof(DisplayTexts.IsVegetarian), ResourceType = typeof(DisplayTexts))]
         public bool IsVegetarian { get; set; }
 
-        [Display(Name = "Веган")]
+        [Display(Name = nameof(DisplayTexts.IsVegan), ResourceType = typeof(DisplayTexts))]
         public bool IsVegan { get; set; }
 
-        [Display(Name = "Без глутен")]
+        [Display(Name = nameof(DisplayTexts.IsGlutenFree), ResourceType = typeof(DisplayTexts))]
         public bool IsGlutenFree { get; set; }
 
-        [Display(Name = "Без лактоза")]
+        [Display(Name = nameof(DisplayTexts.IsLactoseFree), ResourceType = typeof(DisplayTexts))]
         public bool IsLactoseFree { get; set; }
 
         public ICollection<RecipeIngredient> RecipeIngredients { get; set; } = new List<RecipeIngredient>();

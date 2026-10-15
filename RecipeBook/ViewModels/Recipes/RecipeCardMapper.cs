@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using RecipeBook.Constants;
 using RecipeBook.Models;
+using RecipeBook.Resources;
 
 namespace RecipeBook.ViewModels.Recipes
 {
@@ -31,7 +32,7 @@ namespace RecipeBook.ViewModels.Recipes
                 ImageUrl = string.IsNullOrWhiteSpace(recipe.ImageUrl)
                     ? ImageConstants.DefaultRecipeImageUrl
                     : recipe.ImageUrl,
-                UserName = recipe.User?.UserName ?? UserProfileConstants.DefaultUserName,
+                UserName = recipe.User?.UserName ?? DisplayTexts.DefaultUserName,
                 UserId = recipe.UserId,
                 LikesCount = recipe.Likes?.Count ?? 0,
                 ViewCount = recipe.ViewCount,

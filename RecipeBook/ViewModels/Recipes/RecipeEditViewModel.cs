@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using RecipeBook.Models;
+using RecipeBook.Resources;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.InteropServices;
@@ -36,24 +37,24 @@ namespace RecipeBook.ViewModels.Recipes
 
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "Полето {0} не може да е празно.")]
-        [Display(Name = "Заглавие")]
-        [StringLength(100, MinimumLength = 1, ErrorMessage = "Заглавието трябва да е дълго между 1 и 100 символа.")]
+        [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldCannotBeEmpty), ErrorMessageResourceType = typeof(ValidationTexts))]
+        [Display(Name = nameof(DisplayTexts.Title), ResourceType = typeof(DisplayTexts))]
+        [StringLength(100, MinimumLength = 1, ErrorMessageResourceName = nameof(ValidationTexts.TitleLength), ErrorMessageResourceType = typeof(ValidationTexts))]
         public string Title { get; set; }
 
-        [Display(Name = "Описание")]
+        [Display(Name = nameof(DisplayTexts.Description), ResourceType = typeof(DisplayTexts))]
         public string? Description { get; set; }
 
-        [Required(ErrorMessage = "Полето {0} не може да е празно.")]
-        [Display(Name = "Инструкции")]
+        [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldCannotBeEmpty), ErrorMessageResourceType = typeof(ValidationTexts))]
+        [Display(Name = nameof(DisplayTexts.Instructions), ResourceType = typeof(DisplayTexts))]
         public string Instructions { get; set; }
-        [Required(ErrorMessage = "Полето {0} не може да е празно.")]
-        [Range(1, 100, ErrorMessage = "Порциите трябва да са в диапазона между 1 и 100.")]
-        [Display(Name = "Порции")]
+        [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldCannotBeEmpty), ErrorMessageResourceType = typeof(ValidationTexts))]
+        [Range(1, 100, ErrorMessageResourceName = nameof(ValidationTexts.ServingsRange), ErrorMessageResourceType = typeof(ValidationTexts))]
+        [Display(Name = nameof(DisplayTexts.Servings), ResourceType = typeof(DisplayTexts))]
         public int Servings { get; set; }
 
-        [Range(1, 300, ErrorMessage = "Времето за готвене трябва да е между 1 и 300 минути.")]
-        [Display(Name = "Време за готвене (в минути)")]
+        [Range(1, 300, ErrorMessageResourceName = nameof(ValidationTexts.CookingTimeRange), ErrorMessageResourceType = typeof(ValidationTexts))]
+        [Display(Name = nameof(DisplayTexts.CookingTimeMinutes), ResourceType = typeof(DisplayTexts))]
         public int CookingTime { get; set; }
 
         public string? UserId { get; set; }
@@ -62,7 +63,7 @@ namespace RecipeBook.ViewModels.Recipes
         public string? ImageUrl { get; set; }
 
         // Качването на новия файл от формата
-        [Display(Name = "Нова снимка")]
+        [Display(Name = nameof(DisplayTexts.NewImage), ResourceType = typeof(DisplayTexts))]
         public IFormFile? imageFileNew { get; set; }
 
         public List<RecipeIngredient>? RecipeIngredients { get; set; }
@@ -70,22 +71,22 @@ namespace RecipeBook.ViewModels.Recipes
         public Dictionary<string, RecipeIngredientViewModel[]>? IngredientsByCategory { get; set; }
         public List<RecipeIngredientViewModel> SelectedIngredients { get; set; } = new List<RecipeIngredientViewModel>();
 
-        [Display(Name = "Категория")]
-        public int? CategoryId { get; set; } 
+        [Display(Name = nameof(DisplayTexts.Category), ResourceType = typeof(DisplayTexts))]
+        public int? CategoryId { get; set; }
 
-        [Display(Name = "Категория")]
-        public SelectList? Categories { get; set; }  
+        [Display(Name = nameof(DisplayTexts.Category), ResourceType = typeof(DisplayTexts))]
+        public SelectList? Categories { get; set; }
 
-        [Display(Name = "Вегетарианска")]
+        [Display(Name = nameof(DisplayTexts.IsVegetarian), ResourceType = typeof(DisplayTexts))]
         public bool IsVegetarian { get; set; }
 
-        [Display(Name = "Веган")]
+        [Display(Name = nameof(DisplayTexts.IsVegan), ResourceType = typeof(DisplayTexts))]
         public bool IsVegan { get; set; }
 
-        [Display(Name = "Без глутен")]
+        [Display(Name = nameof(DisplayTexts.IsGlutenFree), ResourceType = typeof(DisplayTexts))]
         public bool IsGlutenFree { get; set; }
 
-        [Display(Name = "Без лактоза")]
+        [Display(Name = nameof(DisplayTexts.IsLactoseFree), ResourceType = typeof(DisplayTexts))]
         public bool IsLactoseFree { get; set; }
 
         public void EditRecipe(Recipe recipe)

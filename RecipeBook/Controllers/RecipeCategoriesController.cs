@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Constants;
+using RecipeBook.Resources;
 
 namespace RecipeBook.Controllers
 {
@@ -63,7 +64,7 @@ namespace RecipeBook.Controllers
         {
             if (_context.RecipeCategories.Any(c => c.Name == recipeCategory.Name))
             {
-                ModelState.AddModelError("Name", "Категория с това име вече съществува.");
+                ModelState.AddModelError(nameof(RecipeCategory.Name), MessageTexts.CategoryNameExists);
             }
 
             if (ModelState.IsValid)
@@ -105,7 +106,7 @@ namespace RecipeBook.Controllers
 
             if (_context.RecipeCategories.Any(c => c.Name == recipeCategory.Name && c.Id != recipeCategory.Id))
             {
-                ModelState.AddModelError("Name", "Категория с това име вече съществува.");
+                ModelState.AddModelError(nameof(RecipeCategory.Name), MessageTexts.CategoryNameExists);
             }
 
             if (ModelState.IsValid)
@@ -168,14 +169,14 @@ namespace RecipeBook.Controllers
                     .ToList();
 
                 var usedIn = string.Join(", ", recipeTitles);
-                TempData[TempDataKeys.ErrorMessage] = $"Категорията се използва в следните рецепти: {usedIn}. Премахни я първо от тях.";
+                TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.RecipeCategoryInUse, usedIn);
                 return RedirectToAction(nameof(Index));
             }
 
             _context.RecipeCategories.Remove(category);
             await _context.SaveChangesAsync();
 
-            TempData[TempDataKeys.SuccessMessage] = "Категорията беше изтрита успешно.";
+            TempData[TempDataKeys.SuccessMessage] = MessageTexts.RecipeCategoryDeleted;
             return RedirectToAction(nameof(Index));
         }
 

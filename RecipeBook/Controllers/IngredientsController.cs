@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Constants;
+using RecipeBook.Resources;
 
 namespace RecipeBook.Controllers
 {
@@ -84,7 +85,7 @@ namespace RecipeBook.Controllers
 
             if (exists)
             {
-                ModelState.AddModelError("", "Съставка с това име вече съществува в тази категория.");
+                ModelState.AddModelError(string.Empty, MessageTexts.IngredientNameExists);
                 ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
                 return View(ingredient);
             }
@@ -130,7 +131,7 @@ namespace RecipeBook.Controllers
 
             if (exists)
             {
-                ModelState.AddModelError("", "Съставка с това име вече съществува в тази категория.");
+                ModelState.AddModelError(string.Empty, MessageTexts.IngredientNameExists);
                 ViewData[ViewDataKeys.IngredientCategories] = new SelectList(_context.IngredientCategories, "Id", "Name", ingredient.IngredientCategoryId);
                 return View(ingredient);
             }
@@ -198,14 +199,14 @@ namespace RecipeBook.Controllers
 
                 var recipeNames = string.Join(", ", usedInRecipes);
 
-                TempData[TempDataKeys.ErrorMessage] = $"Съставката се използва в рецепти: {recipeNames}. Моля, първо я премахни от тях.";
+                TempData[TempDataKeys.ErrorMessage] = string.Format(MessageTexts.IngredientInUse, recipeNames);
                 return RedirectToAction(nameof(Index));
             }
 
             _context.Ingredients.Remove(ingredient);
             await _context.SaveChangesAsync();
 
-            TempData[TempDataKeys.SuccessMessage] = "Съставката беше изтрита успешно.";
+            TempData[TempDataKeys.SuccessMessage] = MessageTexts.IngredientDeleted;
             return RedirectToAction(nameof(Index));
         }
 

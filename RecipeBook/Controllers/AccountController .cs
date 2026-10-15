@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using RecipeBook.Constants;
+using RecipeBook.Resources;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Account;
 using RecipeBook.Services;
@@ -41,7 +42,7 @@ public class AccountController : Controller
 
         if (user == null)
         {
-            ModelState.AddModelError("", "Невалидни данни за вход.");
+            ModelState.AddModelError(string.Empty, MessageTexts.InvalidLogin);
             return View(model);
         }
 
@@ -53,7 +54,7 @@ public class AccountController : Controller
             return RedirectToLocal(returnUrl);
         }
 
-        ModelState.AddModelError("", "Невалидна парола.");
+        ModelState.AddModelError(string.Empty, MessageTexts.InvalidPassword);
         return View(model);
 
     }
@@ -128,8 +129,8 @@ public class AccountController : Controller
 
             await _emailSender.SendEmailAsync(
                         user.Email,
-                        "Потвърдете вашия имейл",
-                        $"За да потвърдите профила си, <a href='{confirmationLink}'>кликнете тук</a>.");
+                        MessageTexts.ConfirmEmailSubject,
+                        string.Format(MessageTexts.ConfirmEmailBody, confirmationLink));
 
             return RedirectToAction(nameof(RegisterConfirmation));
         }
@@ -159,7 +160,7 @@ public class AccountController : Controller
         var user = await _userManager.FindByIdAsync(userId);
         if (user == null)
         {
-            return NotFound($"Не е намерен потребител с ID '{userId}'.");
+            return NotFound(string.Format(MessageTexts.UserNotFoundById, userId));
         }
 
         var result = await _userManager.ConfirmEmailAsync(user, token);

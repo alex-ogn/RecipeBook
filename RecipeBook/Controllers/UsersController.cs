@@ -9,6 +9,7 @@ using RecipeBook.ViewModels.Users;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
 using RecipeBook.Constants;
+using RecipeBook.Resources;
 
 namespace RecipeBook.Controllers
 {
@@ -127,7 +128,7 @@ namespace RecipeBook.Controllers
             if (!isAdmin)
                 await _signInManager.RefreshSignInAsync(user); // важи само за текущия юзър
 
-            TempData[TempDataKeys.SuccessMessage] = "Профилът е обновен.";
+            TempData[TempDataKeys.SuccessMessage] = MessageTexts.ProfileUpdated;
             return isAdmin ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Edit));
         }
 
@@ -250,7 +251,7 @@ namespace RecipeBook.Controllers
                 IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowerId)
             }).ToList();
 
-            ViewData[ViewDataKeys.ListTitle] = "Последователи";
+            ViewData[ViewDataKeys.ListTitle] = MessageTexts.FollowersTitle;
             ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
             return View("FollowList", viewModel);
@@ -272,7 +273,7 @@ namespace RecipeBook.Controllers
                 IsFollowing = _context.UserFollowers.Any(ff => ff.FollowerId == currentUserId && ff.FollowedId == f.FollowedId)
             }).ToList();
 
-            ViewData[ViewDataKeys.ListTitle] = "Следвани";
+            ViewData[ViewDataKeys.ListTitle] = MessageTexts.FollowingTitle;
             ViewData[ViewDataKeys.CurrentUserId] = currentUserId;
 
             return View("FollowList", viewModel);
@@ -288,7 +289,7 @@ namespace RecipeBook.Controllers
 
             if (!result.Succeeded)
             {
-                string errorMsg = "Потребителят не беше изтрит.";
+                string errorMsg = MessageTexts.UserNotDeleted;
 
                 foreach (var error in result.Errors)
                 {
@@ -299,7 +300,7 @@ namespace RecipeBook.Controllers
                 return RedirectToAction(nameof(Edit), new { id });
             }
 
-            TempData[TempDataKeys.SuccessMessage] = "Потребителят беше успешно изтрит.";
+            TempData[TempDataKeys.SuccessMessage] = MessageTexts.UserDeleted;
             return RedirectToAction(nameof(Index));
         }
 
