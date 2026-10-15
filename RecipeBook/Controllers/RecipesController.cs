@@ -54,13 +54,13 @@ namespace RecipeBook.Controllers
 
         private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public async Task<IActionResult> Index(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest)
+        public async Task<IActionResult> Index(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest, int page = 1)
         {
             var filter = new RecipeListFilter { CategoryId = SelectedCategoryId, Sort = sortOrder };
-            return View(await BuildRecipeListAsync(filter, SelectedCategoryId));
+            return View(await BuildRecipeListAsync(filter, page));
         }
 
-        public async Task<IActionResult> MyIndex(string? id)
+        public async Task<IActionResult> MyIndex(string? id, int page = 1)
         {
             // Ако id не е подадено, използваме текущия потребител
             var currentUserId = CurrentUserId;
@@ -73,12 +73,14 @@ namespace RecipeBook.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
-            var recipes = await _recipeService.GetRecipesAsync(new RecipeListFilter { AuthorId = userId });
+            var recipes = await _recipeService.GetRecipeCardsAsync(
+                new RecipeListFilter { AuthorId = userId }, page, PagingConstants.RecipesPageSize);
+            var isAdmin = User.IsInRole(UserRoles.Admin);
 
             var model = new UserRecipesViewModel
             {
                 User = user,
-                Recipes = RecipeCardMapper.ToCards(recipes, currentUserId, User.IsInRole(UserRoles.Admin)),
+                Recipes = recipes.Map(card => RecipeCardMapper.ToCard(card, currentUserId, isAdmin)),
                 IsOwnProfile = user.Id == currentUserId,
                 IsFollowing = await _followService.IsFollowingAsync(currentUserId, user.Id),
                 FollowersCount = await _followService.CountFollowersAsync(user.Id),
@@ -335,24 +337,24 @@ namespace RecipeBook.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> LikedRecipes(int? categoryId)
+        public async Task<IActionResult> LikedRecipes(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest, int page = 1)
         {
-            var filter = new RecipeListFilter { CategoryId = categoryId, LikedByUserId = CurrentUserId };
-            return View(nameof(Index), await BuildRecipeListAsync(filter, categoryId));
+            var filter = new RecipeListFilter { CategoryId = SelectedCategoryId, Sort = sortOrder, LikedByUserId = CurrentUserId };
+            return View(nameof(Index), await BuildRecipeListAsync(filter, page));
         }
 
         [Authorize]
-        public async Task<IActionResult> SavedRecipes(int? categoryId)
+        public async Task<IActionResult> SavedRecipes(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest, int page = 1)
         {
-            var filter = new RecipeListFilter { CategoryId = categoryId, SavedByUserId = CurrentUserId };
-            return View(nameof(Index), await BuildRecipeListAsync(filter, categoryId));
+            var filter = new RecipeListFilter { CategoryId = SelectedCategoryId, Sort = sortOrder, SavedByUserId = CurrentUserId };
+            return View(nameof(Index), await BuildRecipeListAsync(filter, page));
         }
 
         [Authorize]
-        public async Task<IActionResult> FollowedUsersRecipes(int? categoryId)
+        public async Task<IActionResult> FollowedUsersRecipes(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest, int page = 1)
         {
-            var filter = new RecipeListFilter { CategoryId = categoryId, FollowedByUserId = CurrentUserId };
-            return View(nameof(Index), await BuildRecipeListAsync(filter, categoryId));
+            var filter = new RecipeListFilter { CategoryId = SelectedCategoryId, Sort = sortOrder, FollowedByUserId = CurrentUserId };
+            return View(nameof(Index), await BuildRecipeListAsync(filter, page));
         }
 
         [Authorize]
@@ -445,15 +447,17 @@ namespace RecipeBook.Controllers
             return RedirectToAction(nameof(Details), new { id = comment.RecipeId });
         }
 
-        private async Task<RecipeFilterViewModel> BuildRecipeListAsync(RecipeListFilter filter, int? selectedCategoryId)
+        private async Task<RecipeFilterViewModel> BuildRecipeListAsync(RecipeListFilter filter, int page)
         {
-            var recipes = await _recipeService.GetRecipesAsync(filter);
+            var recipes = await _recipeService.GetRecipeCardsAsync(filter, page, PagingConstants.RecipesPageSize);
+            var currentUserId = CurrentUserId;
+            var isAdmin = User.IsInRole(UserRoles.Admin);
 
             return new RecipeFilterViewModel
             {
-                Recipes = RecipeCardMapper.ToCards(recipes, CurrentUserId, User.IsInRole(UserRoles.Admin)),
-                Categories = await CategorySelectListAsync(selectedCategoryId),
-                SelectedCategoryId = selectedCategoryId,
+                Recipes = recipes.Map(card => RecipeCardMapper.ToCard(card, currentUserId, isAdmin)),
+                Categories = await CategorySelectListAsync(filter.CategoryId),
+                SelectedCategoryId = filter.CategoryId,
                 SortOrder = filter.Sort
             };
         }

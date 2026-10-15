@@ -22,7 +22,7 @@ public class SearchController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index(string searchString)
+    public async Task<IActionResult> Index(string searchString, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(searchString))
         {
@@ -48,14 +48,16 @@ public class SearchController : Controller
         }
 
         // Търсене по име на рецепта
-        var matchingRecipes = await _recipeService.GetRecipesAsync(new RecipeListFilter { TitleContains = searchString });
+        var matchingRecipes = await _recipeService.GetRecipeCardsAsync(
+            new RecipeListFilter { TitleContains = searchString }, page, PagingConstants.RecipesPageSize);
 
         TempData[TempDataKeys.SearchResults] = searchString; // по желание за съобщение
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isAdmin = User.IsInRole(UserRoles.Admin);
 
         var model = new RecipeFilterViewModel
         {
-            Recipes = RecipeCardMapper.ToCards(matchingRecipes, currentUserId, User.IsInRole(UserRoles.Admin)),
+            Recipes = matchingRecipes.Map(card => RecipeCardMapper.ToCard(card, currentUserId, isAdmin)),
             Categories = new SelectList(await _categoryService.GetAllAsync(), nameof(RecipeCategory.Id), nameof(RecipeCategory.Name)),
             SelectedCategoryId = null
         };

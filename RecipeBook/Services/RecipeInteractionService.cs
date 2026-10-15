@@ -101,6 +101,6 @@ namespace RecipeBook.Services
             await _context.SaveChangesAsync();
         }
 
-        private Task<bool> RecipeExistsAsync(int recipeId) => _context.Recipies.AnyAsync(r => r.Id == recipeId);
+        private Task<bool> RecipeExistsAsync(int recipeId) => _context.Recipes.AnyAsync(r => r.Id == recipeId);
     }
 }

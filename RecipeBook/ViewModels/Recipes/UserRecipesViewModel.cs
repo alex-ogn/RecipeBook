@@ -1,4 +1,5 @@
 using RecipeBook.Models;
+using RecipeBook.ViewModels.Shared;
 
 namespace RecipeBook.ViewModels.Recipes
 {
@@ -8,7 +9,7 @@ namespace RecipeBook.ViewModels.Recipes
     public class UserRecipesViewModel
     {
         public required ApplicationUser User { get; init; }
-        public List<RecipeCardViewModel> Recipes { get; init; } = new();
+        public required PagedResult<RecipeCardViewModel> Recipes { get; init; }
         public bool IsOwnProfile { get; init; }
         public bool IsFollowing { get; init; }
         public int FollowersCount { get; init; }

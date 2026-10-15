@@ -19,24 +19,40 @@ namespace RecipeBook.ViewModels.Recipes
             return recipes.Select(recipe => ToCard(recipe, currentUserId, isAdmin)).ToList();
         }
 
+        public static List<RecipeCardViewModel> ToCards(
+            IEnumerable<RecipeCardSource> sources,
+            string? currentUserId,
+            bool isAdmin = false)
+        {
+            return sources.Select(source => ToCard(source, currentUserId, isAdmin)).ToList();
+        }
+
         public static RecipeCardViewModel ToCard(
             Recipe recipe,
             string? currentUserId,
             bool isAdmin = false)
         {
+            return ToCard(RecipeCardSource.FromRecipe(recipe), currentUserId, isAdmin);
+        }
+
+        public static RecipeCardViewModel ToCard(
+            RecipeCardSource source,
+            string? currentUserId,
+            bool isAdmin = false)
+        {
             return new RecipeCardViewModel
             {
-                Id = recipe.Id,
-                Title = recipe.Title,
-                DescriptionPreview = BuildDescriptionPreview(recipe.Description),
-                ImageUrl = string.IsNullOrWhiteSpace(recipe.ImageUrl)
+                Id = source.Id,
+                Title = source.Title,
+                DescriptionPreview = BuildDescriptionPreview(source.Description),
+                ImageUrl = string.IsNullOrWhiteSpace(source.ImageUrl)
                     ? ImageConstants.DefaultRecipeImageUrl
-                    : recipe.ImageUrl,
-                UserName = recipe.User?.UserName ?? DisplayTexts.DefaultUserName,
-                UserId = recipe.UserId,
-                LikesCount = recipe.Likes?.Count ?? 0,
-                ViewCount = recipe.ViewCount,
-                IsOwner = isAdmin || (!string.IsNullOrEmpty(currentUserId) && recipe.UserId == currentUserId)
+                    : source.ImageUrl,
+                UserName = source.UserName ?? DisplayTexts.DefaultUserName,
+                UserId = source.UserId,
+                LikesCount = source.LikesCount,
+                ViewCount = source.ViewCount,
+                IsOwner = isAdmin || (!string.IsNullOrEmpty(currentUserId) && source.UserId == currentUserId)
             };
         }
 

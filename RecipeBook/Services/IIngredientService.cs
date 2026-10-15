@@ -1,4 +1,5 @@
 using RecipeBook.Models;
+using RecipeBook.ViewModels.Shared;
 
 namespace RecipeBook.Services
 {
@@ -13,9 +14,10 @@ namespace RecipeBook.Services
     public interface IIngredientService
     {
         /// <summary>
-        /// Ingredients (with their category) whose name contains <paramref name="search"/>, optionally in one category.
+        /// One page of ingredients (with their category) whose name contains <paramref name="search"/>,
+        /// optionally in one category, ordered by name.
         /// </summary>
-        Task<List<Ingredient>> SearchAsync(string? search, int? categoryId);
+        Task<PagedResult<Ingredient>> SearchAsync(string? search, int? categoryId, int page, int pageSize);
         Task<Ingredient?> GetByIdAsync(int id);
         Task<List<IngredientOption>> GetOptionsAsync();
         Task<bool> ExistsInCategoryAsync(string name, int categoryId, int? excludeId = null);

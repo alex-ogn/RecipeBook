@@ -22,7 +22,7 @@ namespace Tests.Services
         {
             using var context = TestDb.Create();
             context.RecipeCategories.Add(new RecipeCategory { Id = 1, Name = "Soups" });
-            context.Recipies.Add(TestDb.Recipe(10, "u1", title: "Tomato soup", categoryId: 1));
+            context.Recipes.Add(TestDb.Recipe(10, "u1", title: "Tomato soup", categoryId: 1));
             await context.SaveChangesAsync();
             var service = new RecipeCategoryService(context);
 
@@ -89,7 +89,7 @@ namespace Tests.Services
         public async Task Ingredient_Delete_ReportsRecipesThatUseIt()
         {
             using var context = TestDb.Create();
-            context.Recipies.Add(TestDb.Recipe(10, "u1", title: "Bread"));
+            context.Recipes.Add(TestDb.Recipe(10, "u1", title: "Bread"));
             context.Ingredients.Add(new Ingredient { Id = 5, Name = "Salt", IngredientCategoryId = 1 });
             context.RecipeIngredients.Add(new RecipeIngredient { RecipeId = 10, IngredientId = 5, QuantityNeeded = "1 tsp" });
             await context.SaveChangesAsync();
@@ -115,9 +115,10 @@ namespace Tests.Services
             await context.SaveChangesAsync();
             var service = new IngredientService(context);
 
-            var result = await service.SearchAsync("alt", categoryId: 2);
+            var result = await service.SearchAsync("alt", categoryId: 2, page: 1, pageSize: 10);
 
             Assert.Equal(new[] { "Sea salt" }, result.Select(i => i.Name));
+            Assert.Equal(1, result.TotalCount);
         }
     }
 }

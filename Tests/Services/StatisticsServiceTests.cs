@@ -44,7 +44,7 @@ namespace Tests.Services
             };
 
             _context.Users.AddRange(user1, user2);
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             _context.RecipeLikes.Add(new RecipeLike { RecipeId = 1, UserId = "u1" });
             _context.SavedRecipes.Add(new SavedRecipe { RecipeId = 1, UserId = "u1" });
 
@@ -84,7 +84,7 @@ namespace Tests.Services
 
             _context.RecipeCategories.Add(category);
             _context.Users.Add(new ApplicationUser { Id = "u1", UserName = "user1" });
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
 
             await _context.SaveChangesAsync();
 

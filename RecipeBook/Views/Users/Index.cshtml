@@ -1,4 +1,4 @@
-﻿@model IEnumerable<ApplicationUser>
+﻿@model PagedResult<ApplicationUser>
 
 @{
     ViewData["Title"] = "Потребители";
@@ -57,4 +57,6 @@
             }
         </tbody>
     </table>
+
+    <partial name="_Pager" model="Model" />
 </div>

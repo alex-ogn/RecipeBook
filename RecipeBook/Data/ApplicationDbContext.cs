@@ -8,7 +8,7 @@ namespace RecipeBook.Data
     {
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientCategory> IngredientCategories { get; set; }
-        public DbSet<Recipe> Recipies { get; set; }
+        public DbSet<Recipe> Recipes { get; set; }
         public DbSet<RecipeIngredient> RecipeIngredients { get; set; }
         public DbSet<RecipeCategory> RecipeCategories { get; set; }
         public DbSet<SavedRecipe> SavedRecipes { get; set; }
@@ -24,6 +24,9 @@ namespace RecipeBook.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // The table keeps its original (misspelled) name so no migration is needed for the DbSet rename.
+            modelBuilder.Entity<Recipe>().ToTable("Recipies");
 
             // unique indexes
             modelBuilder.Entity<IngredientCategory>()

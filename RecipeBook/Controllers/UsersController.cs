@@ -37,17 +37,20 @@ namespace RecipeBook.Controllers
 
         [Authorize]
         // Показва списък с всички потребители
-        public async Task<IActionResult> Index(string search)
+        public async Task<IActionResult> Index(string search, int page = 1)
         {
-            var usersQuery = _userManager.Users.AsQueryable();
+            var usersQuery = _userManager.Users.AsNoTracking();
 
             if (!string.IsNullOrEmpty(search))
             {
                 usersQuery = usersQuery.Where(u =>
-                    u.UserName.Contains(search) || u.Email.Contains(search));
+                    u.UserName!.Contains(search) || u.Email!.Contains(search));
             }
 
-            var users = await usersQuery.ToListAsync();
+            var users = await usersQuery
+                .OrderBy(u => u.UserName)
+                .ToPagedResultAsync(page, PagingConstants.UsersPageSize);
+
             ViewData[ViewDataKeys.Search] = search;
             return View(users);
         }

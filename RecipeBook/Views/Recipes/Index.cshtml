@@ -3,11 +3,18 @@
 
 @model RecipeFilterViewModel
 
+@{
+    // Also rendered for search results (SearchController), so links always target RecipesController.
+    // The filter applies to the list being shown (all, liked, saved, followed); search results filter the main list.
+    var isRecipesController = string.Equals(ViewContext.RouteData.Values["controller"] as string, "Recipes", StringComparison.OrdinalIgnoreCase);
+    var listAction = isRecipesController ? ViewContext.RouteData.Values["action"] as string : "Index";
+}
+
 <div class="container mt-4">
 
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
         <h1 class="display-5 mb-2">Рецепти</h1>
-        <a asp-action="Create" class="btn btn-success">+ Нова рецепта</a>
+        <a asp-controller="Recipes" asp-action="Create" class="btn btn-success">+ Нова рецепта</a>
     </div>
 
     @if (TempData[TempDataKeys.SearchResults] != null)
@@ -26,7 +33,7 @@
         <div class="alert alert-success">@TempData[TempDataKeys.SuccessMessage]</div>
     }
 
-    <form asp-action="Index" method="get" class="mb-4">
+    <form asp-controller="Recipes" asp-action="@listAction" method="get" class="mb-4">
         <div class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label">Категория:</label>
@@ -59,7 +66,7 @@
             <i class="bi bi-funnel"></i> Филтрирай
         </button>
 
-        <a asp-action="Index" class="btn btn-outline-warning btn-unstyled">
+        <a asp-controller="Recipes" asp-action="@listAction" class="btn btn-outline-warning btn-unstyled">
             <i class="bi bi-x-circle"></i> Изчисти
         </a>
 
@@ -75,6 +82,8 @@
                 @Html.Partial("_RecipeCard", card)
             }
         </div>
+
+        <partial name="_Pager" model="Model.Recipes" />
     }
     else
     {

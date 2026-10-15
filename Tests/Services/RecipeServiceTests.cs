@@ -57,7 +57,7 @@ namespace Tests.Services
         public async Task DeleteRecipeAsync_ShouldReturnFalse_WhenUserNotOwnerAndNotForced()
         {
             var recipe = CreateValidRecipe(101, "user1");
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
             var result = await _service.DeleteRecipeAsync(101, "user2", forceDelete: false);
@@ -69,13 +69,13 @@ namespace Tests.Services
         {
             var recipe = CreateValidRecipe(103, "user1");
             recipe.ImageUrl = "/images/recipes/photo.jpg";
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
             var result = await _service.DeleteRecipeAsync(103, "user1");
 
             Assert.True(result);
-            Assert.Null(await _context.Recipies.FindAsync(103));
+            Assert.Null(await _context.Recipes.FindAsync(103));
             _mockImageStorage.Verify(s => s.DeleteRecipeImage("/images/recipes/photo.jpg"), Times.Once);
         }
 
@@ -84,7 +84,7 @@ namespace Tests.Services
         {
             var recipe = CreateValidRecipe(104, "user1");
             recipe.ImageUrl = "/images/recipes/photo.jpg";
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
             var result = await _service.DeleteRecipeAsync(104, "user2");
@@ -99,33 +99,33 @@ namespace Tests.Services
         public async Task RegisterViewAsync_IncrementsViewCount_ForOtherViewers(string? viewerId)
         {
             var recipe = CreateValidRecipe(105, "author");
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
             var counted = await _service.RegisterViewAsync(recipe, viewerId);
 
             Assert.True(counted);
-            Assert.Equal(1, (await _context.Recipies.AsNoTracking().SingleAsync(r => r.Id == 105)).ViewCount);
+            Assert.Equal(1, (await _context.Recipes.AsNoTracking().SingleAsync(r => r.Id == 105)).ViewCount);
         }
 
         [Fact]
         public async Task RegisterViewAsync_DoesNotCountAuthorViews()
         {
             var recipe = CreateValidRecipe(106, "author");
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
             var counted = await _service.RegisterViewAsync(recipe, "author");
 
             Assert.False(counted);
-            Assert.Equal(0, (await _context.Recipies.AsNoTracking().SingleAsync(r => r.Id == 106)).ViewCount);
+            Assert.Equal(0, (await _context.Recipes.AsNoTracking().SingleAsync(r => r.Id == 106)).ViewCount);
         }
 
         [Fact]
         public async Task DeleteRecipeAsync_ShouldReturnTrue_WhenForced()
         {
             var recipe = CreateValidRecipe(102, "user1");
-            _context.Recipies.Add(recipe);
+            _context.Recipes.Add(recipe);
             await _context.SaveChangesAsync();
 
             var result = await _service.DeleteRecipeAsync(102, "user2", forceDelete: true);
@@ -154,7 +154,7 @@ namespace Tests.Services
             other.IsVegan = false;
             other.RecipeCategoryId = 99;
 
-            _context.Recipies.AddRange(baseRecipe, similar, other);
+            _context.Recipes.AddRange(baseRecipe, similar, other);
             await _context.SaveChangesAsync();
 
             var result = await _service.GetSimilarRecipesAsync(baseRecipe, "u1");
@@ -179,7 +179,7 @@ namespace Tests.Services
             candidate.Title = "Vegan Pasta";
             candidate.IsVegan = true;
 
-            _context.Recipies.AddRange(reference, candidate);
+            _context.Recipes.AddRange(reference, candidate);
             _context.SavedRecipes.Add(new SavedRecipe { UserId = "user1", RecipeId = 301 });
             await _context.SaveChangesAsync();
 

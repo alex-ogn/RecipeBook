@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
+using RecipeBook.Extensions;
 using RecipeBook.Models;
+using RecipeBook.ViewModels.Shared;
 
 namespace RecipeBook.Services
 {
@@ -13,7 +15,7 @@ namespace RecipeBook.Services
             _context = context;
         }
 
-        public Task<List<Ingredient>> SearchAsync(string? search, int? categoryId)
+        public Task<PagedResult<Ingredient>> SearchAsync(string? search, int? categoryId, int page, int pageSize)
         {
             var query = _context.Ingredients
                 .AsNoTracking()
@@ -30,7 +32,7 @@ namespace RecipeBook.Services
                 query = query.Where(i => i.IngredientCategoryId == categoryId);
             }
 
-            return query.OrderBy(i => i.Name).ToListAsync();
+            return query.OrderBy(i => i.Name).ThenBy(i => i.Id).ToPagedResultAsync(page, pageSize);
         }
 
         public Task<Ingredient?> GetByIdAsync(int id)

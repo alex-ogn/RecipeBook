@@ -61,7 +61,7 @@ namespace RecipeBook.Services
                 return DeleteResult.NotFound();
             }
 
-            var usedBy = await _context.Recipies
+            var usedBy = await _context.Recipes
                 .Where(r => r.RecipeCategoryId == id)
                 .Select(r => r.Title)
                 .ToListAsync();

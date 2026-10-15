@@ -20,13 +20,13 @@ namespace RecipeBook.Controllers
             _categoryService = categoryService;
         }
 
-        public async Task<IActionResult> Index(string searchString, int? categoryId)
+        public async Task<IActionResult> Index(string searchString, int? categoryId, int page = 1)
         {
             ViewData[ViewDataKeys.Categories] = new SelectList(await _categoryService.GetAllAsync(), "Id", "Name");
             ViewData[ViewDataKeys.Search] = searchString;
             ViewData[ViewDataKeys.SelectedCategoryId] = categoryId;
 
-            return View(await _ingredientService.SearchAsync(searchString, categoryId));
+            return View(await _ingredientService.SearchAsync(searchString, categoryId, page, PagingConstants.IngredientsPageSize));
         }
 
         public async Task<IActionResult> Details(int? id)

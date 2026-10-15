@@ -86,9 +86,19 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
   Controllers handle input, permissions (`RecipePermissions`), `ModelState`, view models and redirects. Identity's
   `UserManager` is fine in controllers.
 - Extend an existing service when the feature fits it; don't add a generic repository (`DbContext` is already the unit of work).
-- Recipe lists use `IRecipeService.GetRecipesAsync(RecipeListFilter)` — add a filter property instead of a new query.
+- Recipe lists use `IRecipeService.GetRecipeCardsAsync(RecipeListFilter, page, pageSize)` — add a filter property
+  instead of a new query.
 - Deletes that can be blocked by references return `DeleteResult` (`Deleted` / `NotFound` / `InUse` with the names).
 - Read-only queries use `AsNoTracking()`; a service method saves everything it changes with a single `SaveChangesAsync`.
+- Every EF call is async. Do counting, grouping, scoring and sorting in the query, not after `ToList()`/`AsEnumerable()`.
+- Lists load only the columns they show: project with `Select` (recipe cards use `RecipeCardSource.Projection`)
+  instead of `Include`-ing whole collections (e.g. all likes) just to count them.
+- Lists that can grow are paged: order the query (with an `Id` tie-breaker), call `ToPagedResultAsync(page, pageSize)`
+  (`QueryableExtensions`), take an `int page = 1` action parameter, use a page size from `PagingConstants`, and render
+  `<partial name="_Pager" model="..." />` — it keeps the current filters in its links.
+- In-memory tests don't prove SQL translation: when a query does something non-trivial (aggregates over
+  subqueries, string functions, grouping), check it against SQL Server. SQL Server cannot `SUM` over a `COUNT` subquery.
+- The `Recipe` table is named `Recipies` in the database (`ToTable` in `ApplicationDbContext`); the DbSet is `Recipes`.
 - Pass page data through view-model properties, not `ViewData` (keep `ViewData` for `Title` and small layout values).
 - "Go back" redirects use `this.RedirectToLocalReferer(fallbackUrl)`, never `Redirect(Request.Headers.Referer)`.
 - Rich text is sanitized by the singleton `IHtmlSanitizer` (`RecipeHtmlSanitizer.Create()`), inside the service.

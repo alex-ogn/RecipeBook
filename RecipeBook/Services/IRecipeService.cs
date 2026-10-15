@@ -1,5 +1,6 @@
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Recipes;
+using RecipeBook.ViewModels.Shared;
 
 namespace RecipeBook.Services
 {
@@ -9,14 +10,15 @@ namespace RecipeBook.Services
     public interface IRecipeService
     {
         /// <summary>
-        /// Recipes (with author and likes) matching the filter, in the filter's sort order.
+        /// One page of recipe cards matching the filter, in the filter's sort order.
+        /// Only the columns a card needs are loaded.
         /// </summary>
-        Task<List<Recipe>> GetRecipesAsync(RecipeListFilter filter);
+        Task<PagedResult<RecipeCardSource>> GetRecipeCardsAsync(RecipeListFilter filter, int page, int pageSize);
 
         /// <summary>
-        /// The most liked recipes, then the most viewed.
+        /// Cards for the most liked recipes, then the most viewed.
         /// </summary>
-        Task<List<Recipe>> GetMostPopularAsync(int count);
+        Task<List<RecipeCardSource>> GetMostPopularAsync(int count);
 
         Task<int> CountAsync();
 

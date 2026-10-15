@@ -46,7 +46,7 @@
         <div class="d-flex flex-wrap gap-3 small">
 
             <span class="d-flex align-items-center gap-1 text-dark fw-semibold">
-                <i class="bi bi-journal-text"></i> Рецепти: @Model.Recipes.Count
+                <i class="bi bi-journal-text"></i> Рецепти: @Model.Recipes.TotalCount
             </span>
 
             <a asp-controller="Users" asp-action="Followers" asp-route-id="@user.Id"
@@ -72,4 +72,6 @@
         @Html.Partial("_RecipeCard", card)
     }
     </div>
+
+    <partial name="_Pager" model="Model.Recipes" />
 </div>

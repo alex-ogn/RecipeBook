@@ -58,7 +58,7 @@ namespace Tests.Services
         public async Task Like_ReturnsFalseForMissingRecipe_AndIsIdempotent()
         {
             using var context = TestDb.Create();
-            context.Recipies.Add(TestDb.Recipe(1, "author"));
+            context.Recipes.Add(TestDb.Recipe(1, "author"));
             await context.SaveChangesAsync();
             var service = new RecipeInteractionService(context);
 
@@ -75,7 +75,7 @@ namespace Tests.Services
         public async Task Save_IsIdempotent_AndUnsaveRemoves()
         {
             using var context = TestDb.Create();
-            context.Recipies.Add(TestDb.Recipe(1, "author"));
+            context.Recipes.Add(TestDb.Recipe(1, "author"));
             await context.SaveChangesAsync();
             var service = new RecipeInteractionService(context);
 
@@ -92,7 +92,7 @@ namespace Tests.Services
         {
             using var context = TestDb.Create();
             context.Users.Add(TestDb.User("u1"));
-            context.Recipies.Add(TestDb.Recipe(1, "author"));
+            context.Recipes.Add(TestDb.Recipe(1, "author"));
             await context.SaveChangesAsync();
             var service = new RecipeInteractionService(context);
 

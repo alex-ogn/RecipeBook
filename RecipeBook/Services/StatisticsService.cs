@@ -1,10 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.ViewModels.AdminStatistics;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace RecipeBook.Services
 {
@@ -26,21 +22,20 @@ namespace RecipeBook.Services
         /// <returns></returns>
         public async Task<AdminUserStatsViewModel> GetUserStatisticsAsync()
         {
-            var users = _context.Users
-                .Include(u => u.Recipes)
-                    .ThenInclude(r => r.Likes)
-                .Include(u => u.SavedRecipes)
-                .Include(u => u.LikedRecipes)
-                .ToList() 
+            // One query with the counts computed in the database, instead of loading every user's recipes and likes.
+            var users = await _context.Users
+                .AsNoTracking()
+                .OrderBy(u => u.UserName)
                 .Select(u => new UserStatsViewModel
                 {
                     UserName = u.UserName,
                     RecipeCount = u.Recipes.Count,
-                    LikesReceived = u.Recipes.Sum(r => r.Likes.Count),
+                    // A plain COUNT; SQL Server cannot SUM over a COUNT subquery.
+                    LikesReceived = _context.RecipeLikes.Count(l => l.Recipe.UserId == u.Id),
                     HasSaved = u.SavedRecipes.Any(),
                     HasLiked = u.LikedRecipes.Any()
                 })
-                .ToList();
+                .ToListAsync();
 
             var inactiveUsers = users
                 .Where(u => u.RecipeCount == 0 && !u.HasSaved && !u.HasLiked)
@@ -59,7 +54,7 @@ namespace RecipeBook.Services
         /// <returns></returns>
         public async Task<RecipeAnalyticsViewModel> GetRecipeStatisticsAsync()
         {
-            var mostCommented = await _context.Recipies
+            var mostCommented = await _context.Recipes
                 .OrderByDescending(r => r.Comments.Count)
                 .Take(5)
                 .Select(r => new RecipeStatEntry
@@ -70,7 +65,7 @@ namespace RecipeBook.Services
                 })
                 .ToListAsync();
 
-            var mostSaved = await _context.Recipies
+            var mostSaved = await _context.Recipes
                 .OrderByDescending(r => r.SavedByUsers.Count)
                 .Take(5)
                 .Select(r => new RecipeStatEntry
@@ -89,15 +84,18 @@ namespace RecipeBook.Services
                 })
                 .ToDictionaryAsync(c => c.Name, c => c.Count);
 
-            var hourlyDistribution = _context.Recipies
-                .AsEnumerable() 
+            // Grouped in the database; only 24 rows come back instead of every recipe.
+            var hourlyCounts = await _context.Recipes
                 .GroupBy(r => r.CreatedAt.Hour)
-                .ToDictionary(
-                    g => g.Key.ToString("00") + ":00",
-                    g => g.Count()
-                );
+                .Select(g => new { Hour = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var hourlyDistribution = hourlyCounts
+                .OrderBy(h => h.Hour)
+                .ToDictionary(h => h.Hour.ToString("00") + ":00", h => h.Count);
 
             var categoryMap = await _context.RecipeCategories
+                 .AsNoTracking()
                  .ToDictionaryAsync(c => c.Name, c => c.Id);
 
             return new RecipeAnalyticsViewModel
