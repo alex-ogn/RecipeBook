@@ -4,7 +4,6 @@ using RecipeBook.Models;
 using RecipeBook.Resources;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.InteropServices;
 
 namespace RecipeBook.ViewModels.Recipes
 {
@@ -38,14 +37,14 @@ namespace RecipeBook.ViewModels.Recipes
         [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldCannotBeEmpty), ErrorMessageResourceType = typeof(ValidationTexts))]
         [Display(Name = nameof(DisplayTexts.Title), ResourceType = typeof(DisplayTexts))]
         [StringLength(100, MinimumLength = 1, ErrorMessageResourceName = nameof(ValidationTexts.TitleLength), ErrorMessageResourceType = typeof(ValidationTexts))]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Display(Name = nameof(DisplayTexts.Description), ResourceType = typeof(DisplayTexts))]
         public string? Description { get; set; }
 
         [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldCannotBeEmpty), ErrorMessageResourceType = typeof(ValidationTexts))]
         [Display(Name = nameof(DisplayTexts.Instructions), ResourceType = typeof(DisplayTexts))]
-        public string Instructions { get; set; }
+        public string Instructions { get; set; } = string.Empty;
         [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldCannotBeEmpty), ErrorMessageResourceType = typeof(ValidationTexts))]
         [Range(1, 100, ErrorMessageResourceName = nameof(ValidationTexts.ServingsRange), ErrorMessageResourceType = typeof(ValidationTexts))]
         [Display(Name = nameof(DisplayTexts.Servings), ResourceType = typeof(DisplayTexts))]
@@ -92,7 +91,7 @@ namespace RecipeBook.ViewModels.Recipes
         public void EditRecipe(Recipe recipe)
         {
             recipe.Title = Title;
-            recipe.Description = Description;
+            recipe.Description = Description ?? string.Empty;
             recipe.Instructions = Instructions;
             recipe.Servings = Servings;
             recipe.CookingTime = CookingTime;

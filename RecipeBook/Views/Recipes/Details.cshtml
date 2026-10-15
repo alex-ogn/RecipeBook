@@ -1,4 +1,5 @@
-﻿@using RecipeBook.ViewModels.Recipes;
+﻿@using RecipeBook.Authorization
+@using RecipeBook.ViewModels.Recipes;
 @model RecipeViewModel
 
 @{
@@ -30,11 +31,11 @@
         <div class="recipe-side-info">
             <!-- Потребителска секция -->
             <div class="white-box profile-box">
-                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.User.Id">
-                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.User.Id })" class="profile-avatar" alt="Потребител" />
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId">
+                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId })" class="profile-avatar" alt="Потребител" />
                 </a>
-                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.User.Id" class="fw-bold">
-                    @Model.User.UserName
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId" class="fw-bold">
+                    @Model.User?.UserName
                 </a>
             </div>
 
@@ -108,7 +109,7 @@
             </thead>
             <tbody>
                 @foreach (var group in Model.RecipeIngredients
-                .GroupBy(i => i.Ingredient.IngredientCategory.Name)
+                .GroupBy(i => i.Ingredient.IngredientCategory?.Name ?? string.Empty)
                 .OrderBy(g => g.Key))
                 {
                     var rowspan = group.Count();
@@ -165,7 +166,7 @@
                 <p class="mb-1">@comment.Content</p>
                 <small class="text-muted">от @comment.User.UserName на @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
 
-                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == currentUserId))
+                @if (RecipePermissions.CanEditComment(comment.UserId, User))
                 {
                         <form asp-action="EditComment" method="get" class="d-inline ms-2">
                             <input type="hidden" name="id" value="@comment.Id" />
@@ -173,7 +174,7 @@
                         </form>
                 }
               
-                @if (User.Identity.IsAuthenticated && (isUserAdmin || comment.UserId == currentUserId || Model.UserId == currentUserId))
+                @if (RecipePermissions.CanDeleteComment(comment.UserId, Model.UserId, User))
                 {
                         <form asp-action="DeleteComment" method="post" class="d-inline ms-2">
                             <input type="hidden" name="id" value="@comment.Id" />
@@ -207,7 +208,7 @@
             <div class="row">
                 @foreach (var recipe in Model.SimilarRecipes)
                 {
-                    @Html.Partial("_RecipeCard", recipe)
+                    <partial name="_RecipeCard" model="recipe" />
                 }
             </div>
         }

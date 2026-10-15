@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Constants;
-using RecipeBook.Controllers;
 using RecipeBook.Models;
 using RecipeBook.Services;
 using RecipeBook.ViewModels.Recipes;
 using System.Security.Claims;
+
+namespace RecipeBook.Controllers;
 
 public class SearchController : Controller
 {

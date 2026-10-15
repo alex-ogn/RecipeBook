@@ -2,7 +2,7 @@
 {
     public class TimeDistributionEntry
     {
-        public string HourOrDay { get; set; }
+        public string HourOrDay { get; set; } = string.Empty;
         public int Count { get; set; }
     }
 }

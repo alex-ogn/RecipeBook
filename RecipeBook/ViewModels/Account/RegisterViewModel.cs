@@ -8,17 +8,17 @@ namespace RecipeBook.ViewModels.Account
         [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldRequired), ErrorMessageResourceType = typeof(ValidationTexts))]
         [EmailAddress(ErrorMessageResourceName = nameof(ValidationTexts.InvalidEmail), ErrorMessageResourceType = typeof(ValidationTexts))]
         [Display(Name = nameof(DisplayTexts.Email), ResourceType = typeof(DisplayTexts))]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessageResourceName = nameof(ValidationTexts.FieldRequired), ErrorMessageResourceType = typeof(ValidationTexts))]
         [DataType(DataType.Password)]
         [Display(Name = nameof(DisplayTexts.Password), ResourceType = typeof(DisplayTexts))]
-        public string Password { get; set; }
+        public string Password { get; set; } = string.Empty;
 
         [DataType(DataType.Password)]
         [Display(Name = nameof(DisplayTexts.ConfirmPassword), ResourceType = typeof(DisplayTexts))]
         [Compare(nameof(Password), ErrorMessageResourceName = nameof(ValidationTexts.PasswordsDoNotMatch), ErrorMessageResourceType = typeof(ValidationTexts))]
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 
 }

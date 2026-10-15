@@ -28,7 +28,7 @@ namespace RecipeBook.Services
                 .OrderBy(u => u.UserName)
                 .Select(u => new UserStatsViewModel
                 {
-                    UserName = u.UserName,
+                    UserName = u.UserName ?? string.Empty,
                     RecipeCount = u.Recipes.Count,
                     // A plain COUNT; SQL Server cannot SUM over a COUNT subquery.
                     LikesReceived = _context.RecipeLikes.Count(l => l.Recipe.UserId == u.Id),

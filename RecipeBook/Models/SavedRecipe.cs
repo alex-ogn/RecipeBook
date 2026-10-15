@@ -10,15 +10,15 @@ namespace RecipeBook.Models
 
         [Required]
         [ForeignKey("ApplicationUser")]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
-        public ApplicationUser User { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
         [Required]
         [ForeignKey("Recipe")]
         public int RecipeId { get; set; }
 
-        public Recipe Recipe { get; set; }
+        public Recipe Recipe { get; set; } = null!;
 
         [Required]
         public DateTime DateSaved { get; set; } = DateTime.UtcNow;

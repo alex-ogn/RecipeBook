@@ -11,15 +11,15 @@ namespace RecipeBook.Models
         [ForeignKey("Recipe")]
         public int RecipeId { get; set; }
 
-        public Recipe Recipe { get; set; }
+        public Recipe Recipe { get; set; } = null!;
 
         [Required]
         [ForeignKey("Ingredient")]
         public int IngredientId { get; set; }
 
-        public Ingredient Ingredient { get; set; }
+        public Ingredient Ingredient { get; set; } = null!;
 
         [StringLength(100)]
-        public string QuantityNeeded { get; set; }
+        public string QuantityNeeded { get; set; } = string.Empty;
     }
 }

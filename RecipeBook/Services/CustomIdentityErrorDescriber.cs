@@ -1,5 +1,4 @@
-﻿using AngleSharp.Css.Values;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Localization;
 using RecipeBook.Resources;
 using System.Reflection;
@@ -15,7 +14,7 @@ namespace RecipeBook.Services
 
         public CustomIdentityErrorDescriber(IStringLocalizerFactory factory)
         {
-            _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name);
+            _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name!);
         }
 
         public override IdentityError PasswordTooShort(int length)

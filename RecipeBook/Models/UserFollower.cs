@@ -9,16 +9,16 @@ namespace RecipeBook.Models
         public int Id { get; set; }
 
         [Required]
-        public string FollowerId { get; set; }
+        public string FollowerId { get; set; } = string.Empty;
 
         [ForeignKey("FollowerId")]
-        public ApplicationUser Follower { get; set; }
+        public ApplicationUser Follower { get; set; } = null!;
 
         [Required]
-        public string FollowedId { get; set; }
+        public string FollowedId { get; set; } = string.Empty;
 
         [ForeignKey("FollowedId")]
-        public ApplicationUser Followed { get; set; }
+        public ApplicationUser Followed { get; set; } = null!;
 
         public DateTime FollowedOn { get; set; } = DateTime.UtcNow;
     }

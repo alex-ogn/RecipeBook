@@ -9,16 +9,16 @@ namespace RecipeBook.Models
         public int Id { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [ForeignKey("UserId")]
-        public ApplicationUser User { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
         [Required]
         public int RecipeId { get; set; }
 
         [ForeignKey("RecipeId")]
-        public Recipe Recipe { get; set; }
+        public Recipe Recipe { get; set; } = null!;
 
         public DateTime LikedOn { get; set; } = DateTime.UtcNow;
     }

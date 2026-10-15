@@ -42,7 +42,7 @@ namespace RecipeBook.Services
             _recipeService = recipeService;
             _env = env;
             _imageStorage = imageStorage;
-            _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name);
+            _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name!);
 
         }
 

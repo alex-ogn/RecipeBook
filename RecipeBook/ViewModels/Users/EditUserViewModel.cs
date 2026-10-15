@@ -5,16 +5,16 @@ namespace RecipeBook.ViewModels.Users
 {
     public class EditUserViewModel
     {
-        public string Id { get; set; } // за админски достъп
+        public string Id { get; set; } = string.Empty; // за админски достъп
 
         [Required]
         [Display(Name = nameof(DisplayTexts.UserName), ResourceType = typeof(DisplayTexts))]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
         [Display(Name = nameof(DisplayTexts.Email), ResourceType = typeof(DisplayTexts))]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Phone(ErrorMessageResourceName = nameof(ValidationTexts.InvalidPhoneNumber), ErrorMessageResourceType = typeof(ValidationTexts))]
         [Display(Name = nameof(DisplayTexts.PhoneNumber), ResourceType = typeof(DisplayTexts))]

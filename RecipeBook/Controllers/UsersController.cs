@@ -59,19 +59,12 @@ namespace RecipeBook.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(string? id)
         {
+            if (id == null) return NotFound();
+
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
-            var model = new EditUserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                ProfilePictureVersion = user.ProfilePictureVersion
-            };
-
-            return View(model);
+            return View(ToEditModel(user));
         }
 
 
@@ -88,18 +81,11 @@ namespace RecipeBook.Controllers
                 return Forbid(); // Не е админ, но пробва да редактира чужд профил
             }
 
-            var targetId = id ?? currentUserId;
+            var targetId = id ?? currentUserId!;
             var user = await _userManager.FindByIdAsync(targetId);
             if (user == null) return NotFound();
 
-            var model = new EditUserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                ProfilePictureVersion = user.ProfilePictureVersion
-            };
+            var model = ToEditModel(user);
 
             ViewData[ViewDataKeys.IsUserAdmin] = isAdmin;
 
@@ -148,6 +134,7 @@ namespace RecipeBook.Controllers
         public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Challenge();
 
             if (profilePicture != null && profilePicture.Length > 0)
             {
@@ -224,6 +211,15 @@ namespace RecipeBook.Controllers
             return View("FollowList", await _followService.GetFollowingAsync(id, currentUserId));
         }
 
+        private static EditUserViewModel ToEditModel(ApplicationUser user) => new()
+        {
+            Id = user.Id,
+            UserName = user.UserName ?? string.Empty,
+            Email = user.Email ?? string.Empty,
+            PhoneNumber = user.PhoneNumber,
+            ProfilePictureVersion = user.ProfilePictureVersion
+        };
+
         private string ProfileUrl(string userId)
             => Url.Action(nameof(RecipesController.MyIndex), "Recipes", new { id = userId })!;
 
@@ -232,7 +228,7 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string id)
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var result = await _userProfileService.DeleteUserAsync(id, currentUserId);
 
             if (!result.Succeeded)

@@ -117,6 +117,16 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
 
 ## Style
 
+- The build must stay warning-free. Nullable warnings are errors (`<WarningsAsErrors>nullable</WarningsAsErrors>` in
+  both projects). Initialize non-nullable properties: `string` → `= string.Empty`, EF navigation → `= null!`,
+  collections → `= new()`, or mark them `required`. Don't silence a warning with `!` unless the value is guaranteed
+  (e.g. the user id inside an `[Authorize]` action).
+- Don't change a model property's nullability (`?`) without a migration — it changes the database column.
+- Style rules live in `.editorconfig`. New files use file-scoped namespaces; every type has a namespace.
+- Views render partials with `<partial name="..." model="..." />`, never `Html.Partial`.
+- Keep NuGet packages free of known vulnerabilities: check with
+  `dotnet list package --vulnerable --include-transitive`; pin a patched transitive version when needed (see the
+  `System.Security.Cryptography.Pkcs` pin in `RecipeBook.csproj`).
 - `public const string` (keyword `string`, not `String`); use `public static readonly` only for values that cannot be
   `const` (arrays, `Regex`).
 - PascalCase names, no `ALL_CAPS` or prefixes.

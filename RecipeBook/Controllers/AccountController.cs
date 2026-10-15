@@ -6,6 +6,8 @@ using RecipeBook.Models;
 using RecipeBook.ViewModels.Account;
 using RecipeBook.Services;
 
+namespace RecipeBook.Controllers;
+
 public class AccountController : Controller
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
@@ -67,7 +69,7 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    private IActionResult RedirectToLocal(string returnUrl)
+    private IActionResult RedirectToLocal(string? returnUrl)
     {
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             return Redirect(returnUrl);

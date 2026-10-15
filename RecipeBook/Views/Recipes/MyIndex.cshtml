@@ -69,7 +69,7 @@
     <div class="row mt-3">       
      @foreach (var card in Model.Recipes)
     {
-        @Html.Partial("_RecipeCard", card)
+        <partial name="_RecipeCard" model="card" />
     }
     </div>
 

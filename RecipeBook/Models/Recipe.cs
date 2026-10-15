@@ -13,13 +13,13 @@ namespace RecipeBook.Models
         [Required]
         [Display(Name = nameof(DisplayTexts.Name), ResourceType = typeof(DisplayTexts))]
         [StringLength(100)]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
         [Required]
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Required]
-        public string Instructions { get; set; }
+        public string Instructions { get; set; } = string.Empty;
 
         [Required]
         public int Servings { get; set; }
@@ -29,7 +29,7 @@ namespace RecipeBook.Models
         public int CookingTime { get; set; }
 
         [Required]
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         [Required]
         [ForeignKey("UserId")]

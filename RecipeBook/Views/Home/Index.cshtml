@@ -57,7 +57,7 @@
         <div class="row">
             @foreach (var recipe in Model.Suggestions)
             {
-                @Html.Partial("_RecipeCard", recipe)
+                <partial name="_RecipeCard" model="recipe" />
             }
         </div>
     }
@@ -67,7 +67,7 @@
     <div class="row">
     @foreach (var card in Model.FeaturedRecipes)
     {
-        @Html.Partial("_RecipeCard", card)
+        <partial name="_RecipeCard" model="card" />
     }
     </div>
 </div>

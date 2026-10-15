@@ -19,7 +19,7 @@ namespace RecipeBook.Services
 
         public RecipePdfService(IStringLocalizerFactory factory)
         {
-            _localizer = factory.Create("RecipePdfTexts", Assembly.GetExecutingAssembly().GetName().Name);
+            _localizer = factory.Create("RecipePdfTexts", Assembly.GetExecutingAssembly().GetName().Name!);
         }
 
         /// <summary>

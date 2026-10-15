@@ -6,6 +6,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using RecipeBook.Constants;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Services;
@@ -20,7 +21,6 @@ namespace Tests.Services
 {
     public class UserProfileServiceTests
     {
-        private readonly Mock<ApplicationDbContext> _mockContext;
         private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
         private readonly Mock<IPasswordValidator<ApplicationUser>> _mockPasswordValidator;
         private readonly Mock<IPasswordHasher<ApplicationUser>> _mockPasswordHasher;
@@ -70,7 +70,7 @@ namespace Tests.Services
         private Mock<UserManager<ApplicationUser>> MockUserManager()
         {
             var store = new Mock<IUserStore<ApplicationUser>>();
-            return new Mock<UserManager<ApplicationUser>>(store.Object, null, null, null, null, null, null, null, null);
+            return new Mock<UserManager<ApplicationUser>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
         }
 
         [Fact]
@@ -98,12 +98,12 @@ namespace Tests.Services
         public async Task GetProfilePictureAsync_ShouldReturnDefault_WhenNoPicture()
         {
             _mockUserManager.Setup(m => m.FindByIdAsync("non-existent-id"))
-                .ReturnsAsync((ApplicationUser)null);
+                .ReturnsAsync((ApplicationUser?)null);
 
             var (content, contentType) = await _service.GetProfilePictureAsync("non-existent-id");
 
             Assert.NotNull(content);
-            Assert.Equal("image/png", contentType);
+            Assert.Equal(UserProfileConstants.DefaultProfilePictureFormat, contentType);
         }
     }
 }
