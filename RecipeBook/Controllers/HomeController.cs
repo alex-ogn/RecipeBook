@@ -8,7 +8,6 @@ using RecipeBook.ViewModels.Recipes;
 using System.Diagnostics;
 using System.Reflection;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 
 namespace RecipeBook.Controllers
 {
@@ -17,7 +16,6 @@ namespace RecipeBook.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IRecipeService _recipeService;
         private const int FeaturedRecipesCount = 6;
-        private const string defaultUserName = "Потребител";
 
         public HomeController(ApplicationDbContext context, IRecipeService recipeService)
         {
@@ -38,19 +36,7 @@ namespace RecipeBook.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var suggestions = await _recipeService.GetSuggestedRecipesForUserAsync(userId);
 
-            var cardViewModels = recipes.Select(r => new RecipeCardViewModel
-            {
-                Id = r.Id,
-                Title = r.Title,
-                DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
-                    .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
-                ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
-                UserName = r.User?.UserName ?? defaultUserName,
-                UserId = r.UserId,
-                LikesCount = r.Likes?.Count ?? 0,
-                ViewCount = r.ViewCount,
-                IsOwner = false
-            }).ToList();
+            var cardViewModels = RecipeCardMapper.ToCards(recipes, currentUserId: null);
 
             var model = new HomeViewModel
             {

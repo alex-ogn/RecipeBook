@@ -5,10 +5,11 @@ using RecipeBook.Data;
 using RecipeBook.Services;
 using RecipeBook.ViewModels.AdminStatistics;
 using System.Data;
+using RecipeBook.Constants;
 
 namespace RecipeBook.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = UserRoles.Admin)]
     public class AdminStatisticsController : Controller
     {
         private readonly ApplicationDbContext _context;

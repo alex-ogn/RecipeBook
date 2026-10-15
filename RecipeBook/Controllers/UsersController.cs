@@ -8,6 +8,7 @@ using RecipeBook.Services;
 using RecipeBook.ViewModels.Users;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
+using RecipeBook.Constants;
 
 namespace RecipeBook.Controllers
 {
@@ -44,7 +45,7 @@ namespace RecipeBook.Controllers
             return View(users);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpGet]
         public async Task<IActionResult> Details(string? id)
         {
@@ -70,7 +71,7 @@ namespace RecipeBook.Controllers
         {
             // Ако няма ID (т.е. обикновен потребител), вземаме текущия
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole(UserRoles.Admin);
 
             if (!isAdmin && id != null && id != currentUserId)
             {
@@ -103,7 +104,7 @@ namespace RecipeBook.Controllers
         public async Task<IActionResult> Edit(EditUserViewModel model)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole(UserRoles.Admin);
 
             // Ограничение: обикновен потребител може да променя само себе си
             if (!isAdmin && model.Id != currentUserId)
@@ -132,7 +133,7 @@ namespace RecipeBook.Controllers
 
 
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRoles.Admin)]
         public async Task<IActionResult> ChangePassword(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
@@ -143,7 +144,7 @@ namespace RecipeBook.Controllers
             return View();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(string id, string newPassword)
@@ -277,7 +278,7 @@ namespace RecipeBook.Controllers
             return View("FollowList", viewModel);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRoles.Admin)]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string id)

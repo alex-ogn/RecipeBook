@@ -1,9 +1,7 @@
-﻿using Humanizer;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Recipes;
-using System.Text.RegularExpressions;
 
 namespace RecipeBook.Services
 {
@@ -80,6 +78,7 @@ namespace RecipeBook.Services
         public async Task<List<RecipeCardViewModel>> GetSimilarRecipesAsync(Recipe referenceRecipe, string currentUserId, bool allowEdit = false)
         {
             var candidates = await _context.Recipies
+                .Include(r => r.User)
                 .Include(r => r.Likes)
                 .Where(r => r.Id != referenceRecipe.Id)
                 .ToListAsync();
@@ -108,16 +107,7 @@ namespace RecipeBook.Services
                 .Take(6)
                 .ToList();
 
-            return ranked.Select(r => new RecipeCardViewModel
-            {
-                Id = r.Recipe.Id,
-                Title = r.Recipe.Title,
-                DescriptionPreview = Regex.Replace(r.Recipe.Description ?? "", "<.*?>", "").Truncate(100),
-                ImageUrl = $"/Recipes/GetImage/{r.Recipe.Id}",
-                LikesCount = r.Recipe.Likes.Count,
-                ViewCount = r.Recipe.ViewCount,
-                IsOwner = allowEdit && currentUserId == r.Recipe.UserId
-            }).ToList();
+            return RecipeCardMapper.ToCards(ranked.Select(r => r.Recipe), allowEdit ? currentUserId : null);
         }
 
         /// <summary>
@@ -175,18 +165,7 @@ namespace RecipeBook.Services
                 .Take(6)
                 .ToList();
 
-            return rankedCandidates.Select(r => new RecipeCardViewModel
-            {
-                Id = r.Recipe.Id,
-                Title = r.Recipe.Title,
-                DescriptionPreview = Regex.Replace(r.Recipe.Description ?? "", "<.*?>", "").Truncate(100),
-                ImageUrl = $"/Recipes/GetImage/{r.Recipe.Id}",
-                UserName = r.Recipe.User?.UserName ?? "l",
-                UserId = r.Recipe.UserId,
-                LikesCount = r.Recipe.Likes.Count,
-                ViewCount = r.Recipe.ViewCount,
-                IsOwner = allowEdit && userId == r.Recipe.UserId
-            }).ToList();
+            return RecipeCardMapper.ToCards(rankedCandidates.Select(r => r.Recipe), allowEdit ? userId : null);
         }
 
     }

@@ -8,10 +8,11 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.Constants;
 
 namespace RecipeBook.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = UserRoles.Admin)]
     public class RecipeCategoriesController : Controller
     {
         private readonly ApplicationDbContext _context;

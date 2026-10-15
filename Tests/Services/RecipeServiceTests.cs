@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using RecipeBook.Data;
@@ -26,7 +27,9 @@ namespace Tests.Services
             _context = new ApplicationDbContext(options);
             var mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
 
-            _service = new RecipeService(_context, mockHttpContextAccessor.Object);
+            var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
+
+            _service = new RecipeService(_context, mockHttpContextAccessor.Object, mockWebHostEnvironment.Object);
         }
 
         private Recipe CreateValidRecipe(int id, string userId)

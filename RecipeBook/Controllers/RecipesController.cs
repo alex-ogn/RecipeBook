@@ -16,10 +16,10 @@ using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Services;
 using Ganss.Xss;
-using System.Text.RegularExpressions;
 using RecipeBook.ViewModels.Recipes;
 using RecipeBook.ViewModels.Enums;
 using System.ComponentModel.DataAnnotations;
+using RecipeBook.Constants;
 
 namespace RecipeBook.Controllers
 {
@@ -64,7 +64,7 @@ namespace RecipeBook.Controllers
             };
 
             var recipes = await query.ToListAsync();
-            var recipeCards = MapToCardViewModels(recipes, currentUserId);
+            var recipeCards = RecipeCardMapper.ToCards(recipes, currentUserId, User.IsInRole(UserRoles.Admin));
 
             var viewModel = new RecipeFilterViewModel
             {
@@ -105,7 +105,7 @@ namespace RecipeBook.Controllers
             ViewData["FollowersCount"] = followersCount;
             ViewData["FollowingCount"] = followingCount;
 
-            var cardViewModels = MapToCardViewModels(recipes, currentUserId);
+            var cardViewModels = RecipeCardMapper.ToCards(recipes, currentUserId, User.IsInRole(UserRoles.Admin));
             return View(cardViewModels);
         }
 
@@ -159,7 +159,7 @@ namespace RecipeBook.Controllers
             ViewData["IsLiked"] = isLiked;
             ViewData["LikeCount"] = await _context.RecipeLikes.CountAsync(l => l.RecipeId == id);
 
-            bool isUserAdmin = User.IsInRole("Admin");
+            bool isUserAdmin = User.IsInRole(UserRoles.Admin);
             ViewData["IsUserAdmin"] = isUserAdmin;
             ViewData["CurrentUserId"] = currentUserId;
             ViewData["IsSaved"] = isSaved;
@@ -167,7 +167,7 @@ namespace RecipeBook.Controllers
             return View(recipeViewModel);
         }
 
-        [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = UserRoles.Admin + "," + UserRoles.User)]
         public IActionResult Create()
         {
             var viewModel = new RecipeEditViewModel
@@ -176,7 +176,7 @@ namespace RecipeBook.Controllers
             };
 
             ViewData["UserId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
             ViewData["CurrentUserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             return View(viewModel);
@@ -473,7 +473,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipes = await recipesQuery.ToListAsync();
-            var cardViewModels = MapToCardViewModels(recipes, userId);
+            var cardViewModels = RecipeCardMapper.ToCards(recipes, userId, User.IsInRole(UserRoles.Admin));
 
             var categories = await _context.RecipeCategories
                 .Select(c => new SelectListItem
@@ -489,7 +489,7 @@ namespace RecipeBook.Controllers
                 SelectedCategoryId = categoryId
             };
 
-            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
             ViewData["CurrentUserId"] = userId;
             ViewData["CurrentAction"] = "SavedRecipes";
 
@@ -516,7 +516,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipes = await recipesQuery.ToListAsync();
-            var cardViewModels = MapToCardViewModels(recipes, userId);
+            var cardViewModels = RecipeCardMapper.ToCards(recipes, userId, User.IsInRole(UserRoles.Admin));
 
             var categories = await _context.RecipeCategories
                 .Select(c => new SelectListItem
@@ -532,7 +532,7 @@ namespace RecipeBook.Controllers
                 SelectedCategoryId = categoryId
             };
 
-            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
             ViewData["CurrentUserId"] = userId;
             ViewData["CurrentAction"] = "SavedRecipes";
 
@@ -597,25 +597,6 @@ namespace RecipeBook.Controllers
             return File(pdf, "application/pdf", $"{recipe.Title}.pdf");
         }
 
-        private List<RecipeCardViewModel> MapToCardViewModels(IEnumerable<Recipe> recipes, string currentUserId)
-        {
-            bool isUserAdmin = User.IsInRole("Admin");
-
-            return recipes.Select(r => new RecipeCardViewModel
-            {
-                Id = r.Id,
-                Title = r.Title,
-                DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
-                    .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
-                ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
-                UserName = r.User?.UserName ?? "Потребител",
-                UserId = r.UserId,
-                LikesCount = r.Likes?.Count ?? 0,
-                ViewCount = r.ViewCount,
-                IsOwner = r.UserId == currentUserId || isUserAdmin
-            }).ToList();
-        }
-
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -646,7 +627,7 @@ namespace RecipeBook.Controllers
             if (comment == null) return NotFound();
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            bool isAdmin = User.IsInRole("Admin");
+            bool isAdmin = User.IsInRole(UserRoles.Admin);
             bool isOwner = comment.UserId == userId;
             bool isRecipeOwner = comment.Recipe.UserId == userId;
 
@@ -668,7 +649,7 @@ namespace RecipeBook.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (comment.UserId != currentUserId && !User.IsInRole("Admin"))
+            if (comment.UserId != currentUserId && !User.IsInRole(UserRoles.Admin))
                 return Forbid();
 
             var model = new CommentEditViewModel
@@ -693,7 +674,7 @@ namespace RecipeBook.Controllers
 
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (comment.UserId != currentUserId && !User.IsInRole("Admin"))
+            if (comment.UserId != currentUserId && !User.IsInRole(UserRoles.Admin))
                 return Forbid();
 
             comment.Content = model.Content;
@@ -725,7 +706,7 @@ namespace RecipeBook.Controllers
             }
 
             var recipes = await recipesQuery.ToListAsync();
-            var cardViewModels = MapToCardViewModels(recipes, userId);
+            var cardViewModels = RecipeCardMapper.ToCards(recipes, userId, User.IsInRole(UserRoles.Admin));
 
             var categories = await _context.RecipeCategories
                 .Select(c => new SelectListItem
@@ -741,7 +722,7 @@ namespace RecipeBook.Controllers
                 SelectedCategoryId = categoryId
             };
 
-            ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+            ViewData["IsUserAdmin"] = User.IsInRole(UserRoles.Admin);
             ViewData["CurrentUserId"] = userId;
             ViewData["CurrentAction"] = "SavedRecipes";
 

@@ -5,8 +5,8 @@ using RecipeBook.Data;
 using RecipeBook.ViewModels.Recipes;
 using System.Linq;
 using System.Security.Claims;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using RecipeBook.Constants;
 
 public class SearchController : Controller
 {
@@ -48,30 +48,20 @@ public class SearchController : Controller
         var matchingRecipes = await _context.Recipies
             .Include(r => r.User)
             .Include(r => r.RecipeCategory)
+            .Include(r => r.Likes)
             .Where(r => r.Title.ToLower().Contains(searchString))
             .ToListAsync();
 
         // Създай view model и пренасочи
         TempData["SearchResults"] = searchString; // по желание за съобщение
-        ViewData["CurrentUserId"] = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        ViewData["IsUserAdmin"] = User.IsInRole("Admin");
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var isUserAdmin = User.IsInRole(UserRoles.Admin);
+        ViewData["CurrentUserId"] = currentUserId;
+        ViewData["IsUserAdmin"] = isUserAdmin;
 
         var model = new RecipeFilterViewModel
         {
-            Recipes = matchingRecipes
-                .Select(r => new RecipeCardViewModel
-                {
-                    Id = r.Id,
-                    Title = r.Title,
-                    DescriptionPreview = Regex.Replace(r.Description ?? "", "<.*?>", "")
-                    .Substring(0, Math.Min(100, Regex.Replace(r.Description ?? "", "<.*?>", "").Length)) + "...",
-                    ImageUrl = Url.Action("GetImage", "Recipes", new { id = r.Id }),
-                    UserName = r.User.UserName,
-                    UserId = r.UserId,
-                    LikesCount = r.Likes?.Count ?? 0,
-                    ViewCount = r.ViewCount,
-                    IsOwner = r.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)
-                }).ToList(),
+            Recipes = RecipeCardMapper.ToCards(matchingRecipes, currentUserId, isUserAdmin),
             Categories = new SelectList(_context.RecipeCategories, "Id", "Name"),
             SelectedCategoryId = null
         };
