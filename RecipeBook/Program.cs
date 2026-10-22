@@ -126,7 +126,15 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        await context.Database.MigrateAsync();
+        if (context.Database.IsRelational())
+        {
+            await context.Database.MigrateAsync();
+        }
+        else
+        {
+            // Integration tests replace SQL Server with an in-memory database, which has no migrations.
+            await context.Database.EnsureCreatedAsync();
+        }
 
         await DataSeeder.InitializeAsync(services);
     }
@@ -138,3 +146,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.Run();
+
+/// <summary>
+/// Exposes the entry point to the integration tests (WebApplicationFactory&lt;Program&gt;).
+/// </summary>
+public partial class Program { }

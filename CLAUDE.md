@@ -115,6 +115,15 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
 - **Errors**: never show `ex.Message` to users. Catch only expected exceptions (`ValidationException`,
   `DbUpdateException`), log them with `ILogger<T>`, and show a `MessageTexts` message.
 
+## Tests
+
+- Service tests use a fresh EF in-memory database per test (`Tests/TestDb.cs`).
+- Integration tests (`Tests/Integration/`) run the real pipeline through `RecipeBookFactory`
+  (`WebApplicationFactory<Program>` + in-memory database). Act as a user with `factory.CreateClientAs(userId, roles)`;
+  get an antiforgery token with `client.GetAntiforgeryTokenAsync(url)`.
+- Any change to authorization, ownership, antiforgery, redirects or uploads needs an integration test that would fail
+  without it (owner / admin / other user / anonymous).
+
 ## Style
 
 - The build must stay warning-free. Nullable warnings are errors (`<WarningsAsErrors>nullable</WarningsAsErrors>` in
