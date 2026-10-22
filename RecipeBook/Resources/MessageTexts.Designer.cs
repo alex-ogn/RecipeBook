@@ -61,6 +61,15 @@ namespace RecipeBook.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Профилът е временно заключен след твърде много неуспешни опити за вход. Опитайте отново след {0} минути..
+        /// </summary>
+        public static string AccountLockedOut {
+            get {
+                return ResourceManager.GetString("AccountLockedOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Категория с това име вече съществува..
         /// </summary>
         public static string CategoryNameExists {
@@ -84,6 +93,15 @@ namespace RecipeBook.Resources {
         public static string ConfirmEmailSubject {
             get {
                 return ResourceManager.GetString("ConfirmEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Моля, потвърдете имейла си, преди да влезете..
+        /// </summary>
+        public static string EmailNotConfirmed {
+            get {
+                return ResourceManager.GetString("EmailNotConfirmed", resourceCulture);
             }
         }
         
@@ -160,15 +178,6 @@ namespace RecipeBook.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Невалидна парола..
-        /// </summary>
-        public static string InvalidPassword {
-            get {
-                return ResourceManager.GetString("InvalidPassword", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Профилът е обновен..
         /// </summary>
         public static string ProfileUpdated {
@@ -210,6 +219,15 @@ namespace RecipeBook.Resources {
         public static string SaveFailed {
             get {
                 return ResourceManager.GetString("SaveFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Твърде много опити. Моля, изчакайте малко и опитайте отново..
+        /// </summary>
+        public static string TooManyRequests {
+            get {
+                return ResourceManager.GetString("TooManyRequests", resourceCulture);
             }
         }
         

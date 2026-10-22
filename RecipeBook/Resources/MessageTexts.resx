@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AccountLockedOut" xml:space="preserve">
+    <value>Профилът е временно заключен след твърде много неуспешни опити за вход. Опитайте отново след {0} минути.</value>
+  </data>
   <data name="CategoryNameExists" xml:space="preserve">
     <value>Категория с това име вече съществува.</value>
   </data>
@@ -125,6 +128,9 @@
   </data>
   <data name="ConfirmEmailSubject" xml:space="preserve">
     <value>Потвърдете вашия имейл</value>
+  </data>
+  <data name="EmailNotConfirmed" xml:space="preserve">
+    <value>Моля, потвърдете имейла си, преди да влезете.</value>
   </data>
   <data name="FollowersTitle" xml:space="preserve">
     <value>Последователи</value>
@@ -150,9 +156,6 @@
   <data name="InvalidLogin" xml:space="preserve">
     <value>Невалидни данни за вход.</value>
   </data>
-  <data name="InvalidPassword" xml:space="preserve">
-    <value>Невалидна парола.</value>
-  </data>
   <data name="ProfileUpdated" xml:space="preserve">
     <value>Профилът е обновен.</value>
   </data>
@@ -167,6 +170,9 @@
   </data>
   <data name="SaveFailed" xml:space="preserve">
     <value>Възникна грешка при запазването. Моля, опитайте отново.</value>
+  </data>
+  <data name="TooManyRequests" xml:space="preserve">
+    <value>Твърде много опити. Моля, изчакайте малко и опитайте отново.</value>
   </data>
   <data name="UserDeleted" xml:space="preserve">
     <value>Потребителят беше успешно изтрит.</value>

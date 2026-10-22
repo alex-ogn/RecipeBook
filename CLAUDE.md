@@ -22,6 +22,7 @@ Exceptions: `ViewData["Title"]` (Razor convention) and user-facing text (see bel
   - `ImageConstants` — image folders, URL prefixes, default images
   - `UserProfileConstants` — user/profile defaults and validation values
   - `CookieConstants` — cookie names and lifetimes
+  - `AccountSecurityConstants` — login lockout and auth rate-limit values
 
   Add to an existing class when the value fits its domain; otherwise create a new `<Domain>Constants` class.
   `RecipeBook.Constants` is imported in `Views/_ViewImports.cshtml`, so views use the same constants.
@@ -112,6 +113,10 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
   user input, and never trust an image URL posted by a form — take it from the database.
 - **Antiforgery** is validated globally (`AutoValidateAntiforgeryTokenAttribute` in `Program.cs`). Use tag-helper forms
   (`asp-action`) so the token is added; any AJAX POST must send the `RequestVerificationToken` header.
+- **Login**: `CheckPasswordSignInAsync` always uses `lockoutOnFailure: true` (limits in `AccountSecurityConstants`).
+  Unknown user and wrong password show the same `MessageTexts.InvalidLogin`, so the form doesn't reveal which accounts
+  exist. Login, registration and any future password/email form POST carry
+  `[EnableRateLimiting(AccountSecurityConstants.AuthRateLimitPolicy)]`.
 - **Errors**: never show `ex.Message` to users. Catch only expected exceptions (`ValidationException`,
   `DbUpdateException`), log them with `ILogger<T>`, and show a `MessageTexts` message.
 

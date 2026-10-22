@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -82,6 +83,32 @@ public class RecipeBookFactory : WebApplicationFactory<Program>
         });
 
         await context.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Creates a real Identity user with a password, for tests that go through the login form.
+    /// </summary>
+    public async Task<ApplicationUser> CreateLoginUserAsync(string userName, string password, bool emailConfirmed = true)
+    {
+        using var scope = Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+        var user = new ApplicationUser { UserName = userName, Email = $"{userName}@test.local", EmailConfirmed = emailConfirmed };
+        var result = await userManager.CreateAsync(user, password);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
+        }
+
+        return user;
+    }
+
+    public async Task<bool> IsLockedOutAsync(string userName)
+    {
+        using var scope = Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = await userManager.FindByNameAsync(userName);
+        return user != null && await userManager.IsLockedOutAsync(user);
     }
 
     public async Task<T> QueryAsync<T>(Func<ApplicationDbContext, Task<T>> query)

@@ -1,9 +1,13 @@
+using System.Net.Mime;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RecipeBook.Constants;
 using RecipeBook.Data;
 using RecipeBook.Models;
 using RecipeBook.Options;
+using RecipeBook.Resources;
 using RecipeBook.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,6 +22,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = true;
         options.SignIn.RequireConfirmedEmail = true;
+
+        // Lock the account after repeated wrong passwords (brute-force protection).
+        options.Lockout.AllowedForNewUsers = true;
+        options.Lockout.MaxFailedAccessAttempts = AccountSecurityConstants.MaxFailedLoginAttempts;
+        options.Lockout.DefaultLockoutTimeSpan = AccountSecurityConstants.LockoutDuration;
     })
     .AddRoles<IdentityRole>()
     .AddErrorDescriber<CustomIdentityErrorDescriber>()
@@ -50,6 +59,27 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Users/AccessDenied";
+});
+
+// Limit how often one client can post the login and registration forms.
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy(AccountSecurityConstants.AuthRateLimitPolicy, httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = AccountSecurityConstants.AuthRequestsPerWindow,
+                Window = AccountSecurityConstants.AuthRateLimitWindow,
+                QueueLimit = 0
+            }));
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.ContentType = $"{MediaTypeNames.Text.Plain}; charset=utf-8";
+        await context.HttpContext.Response.WriteAsync(MessageTexts.TooManyRequests, cancellationToken);
+    };
 });
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
@@ -92,6 +122,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

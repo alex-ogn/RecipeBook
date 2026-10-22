@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using RecipeBook.Constants;
 using RecipeBook.Resources;
 using RecipeBook.Models;
@@ -30,25 +31,26 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(AccountSecurityConstants.AuthRateLimitPolicy)]
     public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
     {
+        ViewData[ViewDataKeys.ReturnUrl] = returnUrl;
+
         if (!ModelState.IsValid)
             return View(model);
 
-        var user = await _userManager.FindByNameAsync(model.Identifier);
+        var user = await _userManager.FindByNameAsync(model.Identifier)
+            ?? await _userManager.FindByEmailAsync(model.Identifier);
 
-        if (user == null)
-        {
-            user = await _userManager.FindByEmailAsync(model.Identifier);
-        }
-
+        // Same message for an unknown user and a wrong password, so the form doesn't reveal which accounts exist.
         if (user == null)
         {
             ModelState.AddModelError(string.Empty, MessageTexts.InvalidLogin);
             return View(model);
         }
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: false);
+        // Counts wrong passwords and locks the account after MaxFailedLoginAttempts (see Program.cs).
+        var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, lockoutOnFailure: true);
 
         if (result.Succeeded)
         {
@@ -56,9 +58,14 @@ public class AccountController : Controller
             return RedirectToLocal(returnUrl);
         }
 
-        ModelState.AddModelError(string.Empty, MessageTexts.InvalidPassword);
-        return View(model);
+        var error = result.IsLockedOut
+            ? string.Format(MessageTexts.AccountLockedOut, AccountSecurityConstants.LockoutMinutes)
+            : result.IsNotAllowed
+                ? MessageTexts.EmailNotConfirmed
+                : MessageTexts.InvalidLogin;
 
+        ModelState.AddModelError(string.Empty, error);
+        return View(model);
     }
 
     [HttpPost]
@@ -102,6 +109,7 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting(AccountSecurityConstants.AuthRateLimitPolicy)]
     public async Task<IActionResult> Register(RegisterViewModel model, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
