@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using RecipeBook.Constants;
 using RecipeBook.Models;
 using RecipeBook.Options;
@@ -6,7 +7,7 @@ using RecipeBook.Options;
 namespace RecipeBook.Data
 {
     /// <summary>
-    /// Class for seeding initial roles and the administrator profile safely.
+    /// Class for seeding initial roles, the administrator profile and required reference data safely.
     /// </summary>
     public static class DataSeeder
     {
@@ -22,8 +23,26 @@ namespace RecipeBook.Data
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("DataSeeder");
 
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
             await SeedRolesAsync(roleManager, logger);
             await SeedUsersAsync(userManager, configuration, logger);
+            await SeedReferenceDataAsync(context, logger);
+        }
+
+        /// <summary>
+        /// Data the app cannot work without. Safe to run on every start: it only adds what is missing.
+        /// </summary>
+        private static async Task SeedReferenceDataAsync(ApplicationDbContext context, ILogger logger)
+        {
+            // Recipe forms put ingredients typed by users into this category (see RecipeService).
+            var categoryName = IngredientCategoryConstants.AddedByUserCategoryName;
+            if (!await context.IngredientCategories.AnyAsync(c => c.Name == categoryName))
+            {
+                context.IngredientCategories.Add(new IngredientCategory { Name = categoryName });
+                await context.SaveChangesAsync();
+                logger.LogInformation("Created the '{Category}' ingredient category.", categoryName);
+            }
         }
 
         private static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager, ILogger logger)

@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using RecipeBook.Constants;
 using RecipeBook.Data;
 using RecipeBook.Models;
 
@@ -68,8 +67,8 @@ public class RecipeBookFactory : WebApplicationFactory<Program>
             new ApplicationUser { Id = AuthorId, UserName = AuthorId, Email = "author@test.local" },
             new ApplicationUser { Id = StrangerId, UserName = StrangerId, Email = "stranger@test.local" },
             new ApplicationUser { Id = AdminId, UserName = AdminId, Email = "admin@test.local" });
+        // The "added by user" ingredient category is not added here: the app's DataSeeder creates it on startup.
         context.RecipeCategories.Add(new RecipeCategory { Id = CategoryId, Name = "Супи" });
-        context.IngredientCategories.Add(new IngredientCategory { Id = 1, Name = IngredientCategoryConstants.AddedByUserCategoryName });
         context.Recipes.Add(new Recipe
         {
             Id = AuthorRecipeId,

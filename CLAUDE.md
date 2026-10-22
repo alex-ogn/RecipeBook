@@ -34,6 +34,8 @@ Exceptions: `ViewData["Title"]` (Razor convention) and user-facing text (see bel
 - **User-facing text** never goes in constants or inline literals. It belongs in resource files (see below).
 - **Stored data values** that happen to be Bulgarian (e.g. a seeded category name used in a query) are constants,
   not resources, because translating them would break the lookup (see `IngredientCategoryConstants`).
+  Any such row the code depends on is created by `DataSeeder` (idempotent, runs on startup), not only by
+  `Scripts/INSERT_MAIN_DATA.sql`.
 
 ### Prefer framework values
 
