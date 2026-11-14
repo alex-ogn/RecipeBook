@@ -1,77 +1,93 @@
-﻿@using RecipeBook.ViewModels.Recipes;
+﻿@*
+    Recipes/MyIndex.cshtml — A USER'S PROFILE PAGE
+    -------------------------------------------------------------------------
+    Shows any user (not only "me"): the address is /Recipes/MyIndex/{user id}.
+
+    1. Profile header: avatar, name, counters (recipes / followers / following)
+       and one button:
+         - on your own profile:      "Нова рецепта" and "Настройки"
+         - on someone else's:        "Последвай" / "Отследвай" (a POST form)
+    2. That user's recipes (_RecipeCard in a .recipe-grid) and the pager.
+
+    The look of the header is in wwwroot/css/pages.css, section 2.
+*@
+@using RecipeBook.ViewModels.Recipes;
 @model UserRecipesViewModel
 
 @{
-    ViewData["Title"] = "Моите рецепти";
     var user = Model.User;
     var isFollowing = Model.IsFollowing;
-    bool isOwnProfile = Model.IsOwnProfile;
-    var followersCount = Model.FollowersCount;
-    var followingCount = Model.FollowingCount;
+    ViewData["Title"] = user.UserName;
 }
 
-@using System.Text.RegularExpressions
+<partial name="_Alerts" />
 
-<link rel="stylesheet" href="~/css/profile.css" />
-
-<!--  Профилна секция -->
-<div class="profile-header d-flex flex-column flex-md-row align-items-start gap-3 p-3 border rounded shadow-sm" style="background-color: #fdfdfd;">
+<section class="profile-header">
     <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion })"
-         class="rounded-circle" alt="Профилна снимка"
-         style="width: 100px; height: 100px; object-fit: cover; flex-shrink: 0;" />
+         alt="Профилна снимка" class="avatar avatar--lg" />
 
-    <div class="flex-grow-1">
-        <h4 class="text-danger fw-bold mb-2">@user.UserName</h4>
+    <div class="profile-header__info">
+        <h1 class="profile-header__name">@user.UserName</h1>
 
-        <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2 mb-2">
-            @if (isOwnProfile)
+        @* Counters. Followers / following are links to the lists of people. *@
+        <div class="profile-header__stats">
+            <span class="stat">
+                <span class="stat__number">@Model.Recipes.TotalCount</span>
+                <span class="stat__label">Рецепти</span>
+            </span>
+            <a class="stat" asp-controller="Users" asp-action="Followers" asp-route-id="@user.Id">
+                <span class="stat__number">@Model.FollowersCount</span>
+                <span class="stat__label">Последователи</span>
+            </a>
+            <a class="stat" asp-controller="Users" asp-action="Following" asp-route-id="@user.Id">
+                <span class="stat__number">@Model.FollowingCount</span>
+                <span class="stat__label">Следвани</span>
+            </a>
+        </div>
+
+        <div class="button-row">
+            @if (Model.IsOwnProfile)
             {
-                <a asp-action="Create" class="btn btn-sm btn-success">
-                    <i class="bi bi-plus-circle"></i> Нова рецепта
+                <a asp-controller="Recipes" asp-action="Create" class="btn btn-sm btn-accent">
+                    <i class="bi bi-plus-lg"></i> Нова рецепта
+                </a>
+                <a asp-controller="Users" asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-gear"></i> Настройки
                 </a>
             }
             else
             {
-                <form asp-action="@(isFollowing ? "Unfollow" : "Follow")"
-                  asp-controller="Users" method="post" class="m-0">
+                @* Follow / unfollow changes data, so it is a POST form. The same form
+                   posts to "Follow" or "Unfollow" depending on the current state. *@
+                <form asp-controller="Users" asp-action="@(isFollowing ? "Unfollow" : "Follow")" method="post">
                     <input type="hidden" name="userId" value="@user.Id" />
-                    <button type="submit" class="btn btn-sm btn-success">
-                        <i class="bi @(isFollowing ? "bi-person-dash" : "bi-person-plus")"></i>
+                    <button type="submit" class="btn btn-sm @(isFollowing ? "btn-outline-primary" : "btn-primary")">
+                        <i class="bi @(isFollowing ? "bi-person-check" : "bi-person-plus")"></i>
                         @(isFollowing ? "Отследвай" : "Последвай")
                     </button>
                 </form>
             }
         </div>
-
-        <div class="d-flex flex-wrap gap-3 small">
-
-            <span class="d-flex align-items-center gap-1 text-dark fw-semibold">
-                <i class="bi bi-journal-text"></i> Рецепти: @Model.Recipes.TotalCount
-            </span>
-
-            <a asp-controller="Users" asp-action="Followers" asp-route-id="@user.Id"
-               class="text-decoration-none d-flex align-items-center gap-1 text-dark fw-semibold">
-                <i class="bi bi-people"></i> Последователи: @followersCount
-            </a>
-
-            <a asp-controller="Users" asp-action="Following" asp-route-id="@user.Id"
-               class="text-decoration-none d-flex align-items-center gap-1 text-dark fw-semibold">
-                <i class="bi bi-person-check"></i> Следвани: @followingCount
-            </a>
-        </div>
     </div>
-</div>
+</section>
 
+<h2 class="section-title">Рецепти на @user.UserName</h2>
 
-<!--  Списък с рецепти -->
-<div class="container mt-4">
-    <h3>Рецепти на @user.UserName</h3>
-    <div class="row mt-3">       
-     @foreach (var card in Model.Recipes)
-    {
-        <partial name="_RecipeCard" model="card" />
-    }
+@if (Model.Recipes.Any())
+{
+    <div class="recipe-grid">
+        @foreach (var card in Model.Recipes)
+        {
+            <partial name="_RecipeCard" model="card" />
+        }
     </div>
 
     <partial name="_Pager" model="Model.Recipes" />
-</div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="bi bi-journal-plus"></i>
+        Все още няма публикувани рецепти.
+    </div>
+}

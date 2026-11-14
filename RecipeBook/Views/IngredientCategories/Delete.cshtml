@@ -1,27 +1,28 @@
-﻿@model RecipeBook.Models.IngredientCategory
+﻿@*
+    IngredientCategories/Delete.cshtml — ADMIN: CONFIRM DELETING AN INGREDIENT CATEGORY
+    Nothing is deleted until the red button posts the form.
+*@
+@model RecipeBook.Models.IngredientCategory
 
 @{
     ViewData["Title"] = "Изтриване на категория";
 }
 
-<h1 class="mb-4 text-danger">Изтрий категория</h1>
+<section class="panel panel--narrow panel--danger">
+    <h1 class="panel__title">Изтрий категория</h1>
 
-<div class="alert alert-warning">
-    Сигурни ли сте, че искате да изтриете следната категория?
-</div>
+    <p>Сигурни ли сте, че искате да изтриете следната категория?</p>
 
-<div class="mb-3">
-    <dl class="row">
-        <dt class="col-sm-3">Име на категория</dt>
-        <dd class="col-sm-9">@Model.Name</dd>
+    <dl class="detail-list">
+        <dt>Име на категория</dt>
+        <dd>@Model.Name</dd>
     </dl>
-</div>
 
-<form asp-action="Delete" method="post">
-    <input type="hidden" asp-for="Id" />
-
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-danger">Изтрий</button>
+    <form asp-action="Delete" method="post" class="button-row">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Изтрий
+        </button>
         <a asp-action="Index" class="btn btn-outline-secondary">Назад</a>
-    </div>
-</form>
+    </form>
+</section>

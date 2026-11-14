@@ -234,4 +234,7 @@
   <data name="UserUnlocked" xml:space="preserve">
     <value>Профилът на {0} е активиран отново.</value>
   </data>
+  <data name="AccessDeniedTitle" xml:space="preserve">
+    <value>Нямаш достъп</value>
+  </data>
 </root>

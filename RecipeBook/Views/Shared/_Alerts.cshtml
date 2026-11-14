@@ -1,0 +1,35 @@
+@*
+    _Alerts.cshtml — MESSAGES AFTER AN ACTION
+    -------------------------------------------------------------------------
+    Controllers leave a one-time message in TempData before redirecting, e.g.
+        TempData[TempDataKeys.SuccessMessage] = MessageTexts.RecipeDeleted;
+    This partial shows whatever messages are waiting. Put it at the top of a page:
+        <partial name="_Alerts" />
+
+    "alert-dismissible" + the btn-close button let the user close the message
+    (Bootstrap handles the click through data-bs-dismiss, no JavaScript needed).
+*@
+
+@if (TempData[TempDataKeys.SuccessMessage] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> @TempData[TempDataKeys.SuccessMessage]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Затвори"></button>
+    </div>
+}
+
+@if (TempData[TempDataKeys.ErrorMessage] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-circle"></i> @TempData[TempDataKeys.ErrorMessage]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Затвори"></button>
+    </div>
+}
+
+@* Set by SearchController: the text the user searched for. *@
+@if (TempData[TempDataKeys.SearchResults] != null)
+{
+    <div class="alert alert-info" role="status">
+        <i class="bi bi-search"></i> Резултати от търсене за: <strong>@TempData[TempDataKeys.SearchResults]</strong>
+    </div>
+}

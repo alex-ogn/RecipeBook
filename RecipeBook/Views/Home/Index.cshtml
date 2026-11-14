@@ -1,83 +1,65 @@
-﻿@using RecipeBook.ViewModels.Home;
+﻿@*
+    Home/Index.cshtml — THE HOME PAGE
+    -------------------------------------------------------------------------
+    1. Messages (e.g. "account deleted")           _Alerts partial
+    2. Hero: welcome text, two buttons, two totals  .hero  (pages.css, section 1)
+    3. "Препоръчани за теб" — only for signed-in users who have suggestions
+    4. "Най-популярни" — the most popular recipes
+    Recipe lists use the _RecipeCard partial inside a .recipe-grid.
+*@
+@using RecipeBook.ViewModels.Home;
+@model HomeViewModel
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Начало";
 }
 
-@model HomeViewModel
+<partial name="_Alerts" />
 
-<link rel="stylesheet" href="~/css/Index.css" />
+<section class="hero">
+    <div class="hero__text">
+        <h1 class="hero__title">Открийте радостта от готвенето</h1>
+        <p class="hero__lead">Открийте нови рецепти, разгърнете креативността си и споделете кулинарните си шедьоври!</p>
 
-<div class="container mt-3">
-
-    @if (TempData[TempDataKeys.SuccessMessage] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData[TempDataKeys.SuccessMessage]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="button-row">
+            <a asp-controller="Recipes" asp-action="Create" class="btn btn-accent">
+                <i class="bi bi-plus-lg"></i> Добави рецепта
+            </a>
+            <a asp-controller="Recipes" asp-action="Index" class="btn btn-outline-primary">
+                <i class="bi bi-compass"></i> Разгледай рецепти
+            </a>
         </div>
-    }
+    </div>
 
-    <!-- Hero Section -->
-    <section class="hero-section position-relative overflow-hidden mb-5">
-        <!-- Logo background image -->
-        <img src="~/images/logo2clear.png" alt="Logo" class="hero-logo-bg">
-
-        <div class="container position-relative z-1">
-            <div class="row align-items-center">
-                <div class="col-lg-6 text-center text-lg-start">
-                    <h1 class="display-5 fw-bold mb-3 text-dark-charcoal">Открийте радостта от готвенето</h1>
-                    <p class="lead text-muted mb-4">Открийте нови рецепти, разгърнете креативността си и споделете кулинарните си шедьоври!</p>
-                    <a asp-action="Create" asp-controller="Recipes" class="btn btn-warning me-3">
-                        <i class="bi bi-plus-circle"></i> Добави рецепта
-                    </a>
-
-                    <a asp-action="Index" asp-controller="Recipes" class="btn btn-outline-dark">
-                        <i class="bi bi-search"></i> Разгледай рецепти
-                    </a>
-
-                </div>
-                <div class="col-lg-6 mt-4 mt-lg-0">
-                    <div class="row g-3 justify-content-center">
-                        <div class="col-6">
-                            <div class="stats-card text-center">
-                                <h3 class="text-warm-red fw-bold">@Model.CountRecipes</h3>
-                                <p class="mb-0 text-muted">Рецепти</p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="stats-card text-center">
-                                <h3 class="text-accent fw-bold">@Model.CountUsers</h3>
-                                <p class="mb-0 text-muted">Потребители</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    @* The two totals on the right (under the text on phones). *@
+    <div class="hero__stats">
+        <div class="hero__stat">
+            <span class="stat__number">@Model.CountRecipes</span>
+            <span class="stat__label">Рецепти</span>
         </div>
-    </section>
-
-    <br />
-
-    @if (Model.Suggestions?.Any() == true)
-    {
-        <h1>Препоръчани за теб</h1>
-
-        <div class="row">
-            @foreach (var recipe in Model.Suggestions)
-            {
-                <partial name="_RecipeCard" model="recipe" />
-            }
+        <div class="hero__stat">
+            <span class="stat__number">@Model.CountUsers</span>
+            <span class="stat__label">Потребители</span>
         </div>
-    }
+    </div>
+</section>
 
-    <h1>Най-популярни</h1>
+@if (Model.Suggestions?.Any() == true)
+{
+    <h2 class="section-title">Препоръчани за теб</h2>
 
-    <div class="row">
+    <div class="recipe-grid">
+        @foreach (var recipe in Model.Suggestions)
+        {
+            <partial name="_RecipeCard" model="recipe" />
+        }
+    </div>
+}
+
+<h2 class="section-title">Най-популярни</h2>
+
+<div class="recipe-grid">
     @foreach (var card in Model.FeaturedRecipes)
     {
         <partial name="_RecipeCard" model="card" />
     }
-    </div>
 </div>
-
-

@@ -1,252 +1,40 @@
-﻿@using RecipeBook.ViewModels.Recipes;
+﻿@*
+    Recipes/Edit.cshtml — EDIT A RECIPE
+    -------------------------------------------------------------------------
+    Same fields as Create.cshtml (the _RecipeFormFields partial), plus the
+    hidden Id of the recipe being edited.
+    enctype="multipart/form-data" is required for the photo upload to work.
+*@
+@using RecipeBook.ViewModels.Recipes;
 @model RecipeEditViewModel
 @{
     ViewData["Title"] = "Редакция на рецепта";
 }
 
-<h2>Редакция на рецепта</h2>
+<div class="page-header">
+    <h1>Редакция на рецепта</h1>
+</div>
 
-<form asp-action="Edit" method="post" enctype="multipart/form-data">
+<form asp-action="Edit" method="post" enctype="multipart/form-data" class="recipe-form">
     <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="form-group">
-        <label asp-for="Title" class="control-label"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description" class="form-control" rows="6"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Instructions"></label>
-        <textarea asp-for="Instructions" class="form-control" rows="6"></textarea>
-        <span asp-validation-for="Instructions" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="Servings" class="control-label"></label>
-        <input asp-for="Servings" class="form-control" />
-        <span asp-validation-for="Servings" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="CookingTime" class="control-label"></label>
-        <input asp-for="CookingTime" class="form-control" />
-        <span asp-validation-for="CookingTime" class="text-danger"></span>
-    </div>
-    <div class="form-group">
-        <label asp-for="CategoryId" class="control-label"></label>
-        <select asp-for="CategoryId" asp-items="@Model.Categories" class="form-control">
-        </select>
-    </div>
-    @if (!string.IsNullOrEmpty(Model.ImageUrl))
-    {
-        <div class="form-group mb-3">
-            <label class="form-label d-block fw-bold">Текуща снимка:</label>
-            <img src="@Model.ImageUrl" class="img-thumbnail rounded mb-2" style="max-height: 200px; object-fit: cover;" alt="Current Recipe Image" />
-        </div>
-    }
+    <partial name="_RecipeFormFields" model="Model" />
 
-    <div class="form-group mb-3">
-        <label asp-for="imageFileNew" class="form-label fw-bold">Качи нова снимка (по избор)</label>
-        <input type="file" asp-for="imageFileNew" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
-        <span asp-validation-for="imageFileNew" class="text-danger small"></span>
-    </div>
-
-    <div class="form-check">
-    <input asp-for="IsVegetarian" class="form-check-input" />
-    <label asp-for="IsVegetarian" class="form-check-label"></label>
-    </div>
-    <div class="form-check">
-        <input asp-for="IsVegan" class="form-check-input" />
-        <label asp-for="IsVegan" class="form-check-label"></label>
-    </div>
-    <div class="form-check">
-        <input asp-for="IsGlutenFree" class="form-check-input" />
-        <label asp-for="IsGlutenFree" class="form-check-label"></label>
-    </div>
-    <div class="form-check">
-        <input asp-for="IsLactoseFree" class="form-check-input" />
-        <label asp-for="IsLactoseFree" class="form-check-label"></label>
-    </div>
-
-
-    <hr />
-    <h4>Съставки</h4>
-    <div class="form-group">
-        <input type="text" id="ingredient-search" class="form-control" placeholder="Търси съставка...">
-        <ul id="ingredient-results" class="list-group"></ul>
-    </div>
-
-    <div class="d-flex gap-2 mb-2">
-        <button type="button" id="add-ingredient-btn" class="btn btn-secondary">Добави нова съставка</button>
-    </div>
-
-    <div id="new-ingredient-input" class="mb-3" style="display: none; max-width: 600px;">
-        <div class="input-group">
-            <input type="text" id="new-ingredient-name" class="form-control" placeholder="Име на нова съставка">
-            <div class="input-group-append">
-                <button type="button" class="btn btn-success" id="confirm-new-ingredient">Добави</button>
-                <button type="button" class="btn btn-outline-secondary" id="cancel-new-ingredient">X</button>
-            </div>
-        </div>
-    </div>
-
-    <table class="table mt-3">
-        <thead>
-            <tr>
-                <th>Съставка</th>
-                <th>Количество</th>
-                <th>Премахни</th>
-            </tr>
-        </thead>
-        <tbody id="selected-ingredients-table">
-        </tbody>
-    </table>
-
-    <input type="hidden" name="SelectedIngredientsJson" id="SelectedIngredientsJson" />
-
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success"> Запази </button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Назад</a>
+    <div class="button-row">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check-lg"></i> Запази
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Назад</a>
     </div>
 </form>
 
+@* Styles and scripts needed only on this page; _Layout.cshtml puts them in <head> / at the end of <body>. *@
 @section Styles {
-    <style>
-        .border-green {
-            border: 2px solid green;
-        }
-    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/trumbowyg@2.28.0/dist/ui/trumbowyg.min.css" />
 }
 
 @section Scripts {
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    @* Trumbowyg = the rich-text editor. It needs jQuery, which _Layout.cshtml already loaded. *@
     <script src="https://cdn.jsdelivr.net/npm/trumbowyg@2.28.0/dist/trumbowyg.min.js"></script>
-
-    <script>
-        $(document).ready(function () {
-            $('textarea[name="Description"]').trumbowyg({
-                btns: [
-                    ['strong', 'em', 'underline'],
-                    ['unorderedList', 'orderedList'],
-                    ['removeformat']
-                ]
-            });
-        });
-    </script>
-
-    <script>
-        $(document).ready(function () {
-            $('textarea[name="Instructions"]').trumbowyg({
-                btns: [
-                    ['strong', 'em', 'underline'],
-                    ['unorderedList', 'orderedList'],
-                    ['removeformat']
-                ]
-            });
-        });
-    </script>
-
-    <script>
-        let ingredientsList = [];
-        let selectedIngredients = @Html.Raw(Json.Serialize(Model.SelectedIngredients));
-
-        $(document).ready(function () {
-            $.get("/Ingredients/GetAll", function (data) {
-                ingredientsList = data;
-            });
-
-            $('#ingredient-search').on('input', function () {
-                const query = $(this).val().toLowerCase();
-                if (query === '') {
-                    $('#ingredient-results').html('');
-                    return;
-                }
-
-                const filtered = ingredientsList.filter(i => i.name.toLowerCase().includes(query));
-                let html = '';
-                filtered.forEach(i => {
-                    html += `<li class="list-group-item" data-id="${i.id}" data-name="${i.name}">${i.name}</li>`;
-                });
-                $('#ingredient-results').html(html);
-            });
-
-            $('#ingredient-results').on('click', 'li', function () {
-                const id = parseInt($(this).data('id'));
-                const name = $(this).data('name');
-
-                if (selectedIngredients.some(i => i.ingredientId === id)) return;
-
-                selectedIngredients.push({
-                    ingredientId: id,
-                    name: name,
-                    quantityNeeded: '',
-                    isNew: false
-                });
-                renderSelectedIngredients();
-
-                $('#ingredient-search').val('');
-                $('#ingredient-results').html('');
-            });
-
-            $('#add-ingredient-btn').click(function () {
-                $('#new-ingredient-name').val('');
-                $('#new-ingredient-input').show();
-                $('#new-ingredient-name').focus();
-            });
-
-            $('#confirm-new-ingredient').click(function () {
-                const name = $('#new-ingredient-name').val().trim();
-                if (!name) return;
-
-                selectedIngredients.push({
-                    ingredientId: 0,
-                    name: name,
-                    quantityNeeded: '',
-                    isNew: true
-                });
-                renderSelectedIngredients();
-                $('#new-ingredient-input').hide();
-            });
-
-            $('#cancel-new-ingredient').click(function () {
-                $('#new-ingredient-input').hide();
-            });
-
-            window.updateQuantity = function (index, value) {
-                selectedIngredients[index].quantityNeeded = value;
-                syncIngredients();
-            };
-
-            window.removeIngredient = function (index) {
-                selectedIngredients.splice(index, 1);
-                renderSelectedIngredients();
-            };
-
-            function renderSelectedIngredients() {
-                let html = '';
-                selectedIngredients.forEach((i, index) => {
-                    html += `
-                            <tr>
-                                <td>${i.name}</td>
-                                <td><input type="text" class="form-control" value="${i.quantityNeeded}"
-                                           onchange="updateQuantity(${index}, this.value)" placeholder="Количество" /></td>
-                                <td><button type="button" class="btn btn-danger" onclick="removeIngredient(${index})">X</button></td>
-                            </tr>`;
-                });
-                $('#selected-ingredients-table').html(html);
-                syncIngredients();
-            }
-
-            function syncIngredients() {
-                $('#SelectedIngredientsJson').val(JSON.stringify(selectedIngredients));
-            }
-
-            renderSelectedIngredients();
-        });
-    </script>
+    <script src="~/js/recipe-form.js" asp-append-version="true"></script>
 }

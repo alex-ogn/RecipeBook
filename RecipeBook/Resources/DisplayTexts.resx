@@ -198,4 +198,7 @@
   <data name="NewEmail" xml:space="preserve">
     <value>Нов имейл</value>
   </data>
+  <data name="Comment" xml:space="preserve">
+    <value>Коментар</value>
+  </data>
 </root>

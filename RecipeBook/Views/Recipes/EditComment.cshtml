@@ -1,18 +1,30 @@
-﻿@using RecipeBook.ViewModels.Recipes;
+﻿@*
+    Recipes/EditComment.cshtml — EDIT ONE COMMENT
+    -------------------------------------------------------------------------
+    Opened from the pencil icon next to a comment on the recipe page.
+    "Отказ" goes back to that recipe (Model.RecipeId).
+*@
+@using RecipeBook.ViewModels.Recipes;
 @model CommentEditViewModel
 @{
     ViewData["Title"] = "Редактирай коментар";
 }
 
-<h2>@ViewData["Title"]</h2>
+<section class="panel panel--narrow">
+    <h1 class="panel__title">Редактирай коментар</h1>
 
-<form asp-action="EditComment" method="post">
-    <input type="hidden" asp-for="Id" />
-    <div class="form-group">
-        <label asp-for="Content"></label>
-        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
-        <span asp-validation-for="Content" class="text-danger"></span>
-    </div>
-    <button type="submit" class="btn btn-primary mt-2">Запази промените</button>
-    <a asp-action="Details" class="btn btn-secondary mt-2">Отказ</a>
-</form>
+    <form asp-action="EditComment" method="post">
+        <input type="hidden" asp-for="Id" />
+
+        <div class="form-field">
+            <label asp-for="Content" class="form-label"></label>
+            <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Content"></span>
+        </div>
+
+        <div class="button-row">
+            <button type="submit" class="btn btn-primary">Запази промените</button>
+            <a asp-action="Details" asp-route-id="@Model.RecipeId" class="btn btn-outline-secondary">Отказ</a>
+        </div>
+    </form>
+</section>

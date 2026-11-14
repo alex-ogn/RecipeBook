@@ -18,7 +18,6 @@ namespace RecipeBook.Controllers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUserProfileService _userProfileService;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IImageStorageService _imageStorage;
         private readonly IFollowService _followService;
         private readonly IAccountEmailService _accountEmails;
 
@@ -26,14 +25,12 @@ namespace RecipeBook.Controllers
             UserManager<ApplicationUser> userManager,
             IUserProfileService userProfileService,
             SignInManager<ApplicationUser> signInManager,
-            IImageStorageService imageStorage,
             IFollowService followService,
             IAccountEmailService accountEmails)
         {
             _userManager = userManager;
             _userProfileService = userProfileService;
             _signInManager = signInManager;
-            _imageStorage = imageStorage;
             _followService = followService;
             _accountEmails = accountEmails;
         }
@@ -135,32 +132,6 @@ namespace RecipeBook.Controllers
         }
 
 
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null) return Challenge();
-
-            if (profilePicture != null && profilePicture.Length > 0)
-            {
-                var imageError = _imageStorage.Validate(profilePicture);
-                if (imageError != null)
-                {
-                    TempData[TempDataKeys.ErrorMessage] = imageError;
-                    return RedirectToAction(nameof(Index));
-                }
-
-                using var memoryStream = new MemoryStream();
-                await profilePicture.CopyToAsync(memoryStream);
-                user.ProfilePicture = memoryStream.ToArray();
-
-                await _userManager.UpdateAsync(user);
-            }
-
-            return RedirectToAction(nameof(Index));
-        }
 
         [HttpGet]
         public async Task<IActionResult> GetProfilePicture(string userId)

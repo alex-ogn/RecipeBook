@@ -1,14 +1,24 @@
-﻿@model ErrorViewModel
+﻿@*
+    Shared/Error.cshtml — THE "SOMETHING WENT WRONG" PAGE
+    Shown by the error handler (Program.cs) when a request fails unexpectedly.
+    The Request ID helps to find the failure in the server logs.
+*@
+@model ErrorViewModel
 @{
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+<div class="empty-state">
+    <i class="bi bi-emoji-frown"></i>
+    <h1>Error.</h1>
+    <p>An error occurred while processing your request.</p>
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+    @if (Model.ShowRequestId)
+    {
+        <p>
+            <strong>Request ID:</strong> <code>@Model.RequestId</code>
+        </p>
+    }
+
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Към началната страница</a>
+</div>

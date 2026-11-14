@@ -194,5 +194,14 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("ConfirmationRequired", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Коментарът трябва да е дълъг между {2} и {1} символа..
+        /// </summary>
+        public static string CommentLength {
+            get {
+                return ResourceManager.GetString("CommentLength", resourceCulture);
+            }
+        }
     }
 }

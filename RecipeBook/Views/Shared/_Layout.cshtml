@@ -1,116 +1,124 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@*
+    _Layout.cshtml — THE FRAME AROUND EVERY PAGE
+    -------------------------------------------------------------------------
+    Every view is rendered inside this file, at the place marked @RenderBody().
+    (Views/_ViewStart.cshtml says "Layout = _Layout" for all views.)
+
+    What it contains:
+      <head>            page title, fonts, icons and our CSS files
+      .app-sidebar      the left menu on desktop            (_NavLinks partial)
+      .app-topbar       menu button, search box, avatar     (_LoginPartial)
+      .app-content      the current page                    (@RenderBody)
+      .app-bottomnav    the tab bar on phones               (_BottomNav partial)
+      #mobileMenu       the slide-in menu on phones         (_NavLinks partial again)
+      scripts           jQuery, Bootstrap, site.js + the page's own scripts
+
+    Two optional "sections" let a page add things here:
+      @section Styles  { ... }   extra <link> tags, placed in <head>
+      @section Scripts { ... }   extra <script> tags, placed at the end of <body>
+
+    The look is in wwwroot/css/layout.css.
+*@
+<!DOCTYPE html>
+<html lang="bg">
 <head>
     <meta charset="utf-8" />
+    @* Makes the page use the real width of a phone screen instead of a zoomed-out desktop page. *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - RecipeBook</title>
+
+    @* Fonts (Lora for titles, Nunito for text) from Google Fonts. "preconnect" only speeds up the download. *@
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Nunito:wght@400;600;700&display=swap" />
+
+    @* Icons: <i class="bi bi-heart"></i>. Full list: https://icons.getbootstrap.com *@
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    @* Bootstrap first, then our files in this order (later files can override earlier ones).
+       asp-append-version adds a version number to the address, so browsers reload the file after it changes. *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/RecipeBook.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/base.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pages.css" asp-append-version="true" />
 
-     @RenderSection("Styles", required: false)
-
+    @RenderSection("Styles", required: false)
 </head>
-
-<!-- За статистиката на админа -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm fixed-top navbar-custom">
-            <div class="container-fluid">
-                <a class="navbar-brand image-swap" href="/" alt="Homepage">
-                    Recipe Book
-                </a>
+    <div class="app">
 
+        @* ---------- Left menu (desktop only; hidden on phones by layout.css) ---------- *@
+        <aside class="app-sidebar">
+            <a class="app-logo" asp-controller="Home" asp-action="Index" aria-label="RecipeBook - начало">
+                <img src="~/images/logo1clear.png" alt="RecipeBook" />
+            </a>
+            <partial name="_NavLinks" />
+        </aside>
 
-                <!-- Бутон за мобилно меню -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+        <div class="app-main">
+
+            @* ---------- Top bar ---------- *@
+            <header class="app-topbar">
+                @* ☰ opens the slide-in menu (#mobileMenu below). "d-lg-none" = hidden on desktop.
+                   data-bs-toggle / data-bs-target are Bootstrap attributes: no JavaScript needed. *@
+                <button type="button" class="btn-icon app-menu-button d-lg-none"
+                        data-bs-toggle="offcanvas" data-bs-target="#mobileMenu"
+                        aria-controls="mobileMenu" aria-label="Меню">
+                    <i class="bi bi-list"></i>
                 </button>
 
-                <!-- Основно меню -->
-                <div class="collapse navbar-collapse" id="mainNavbar">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                @* Search: a GET form, so the text ends up in the address (/Search?searchString=...). *@
+                <form asp-controller="Search" asp-action="Index" method="get" class="app-search" role="search">
+                    <button type="submit" class="app-search__button" title="Търси" aria-label="Търси">
+                        <i class="bi bi-search"></i>
+                    </button>
+                    <input id="globalSearchBox" name="searchString" type="search" class="app-search__input"
+                           placeholder="Търси рецепта или потребител..." autocomplete="off" />
+                </form>
 
-                        <!-- Администрация -->
-                        @if (User.IsInRole(UserRoles.Admin))
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Администрация</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="IngredientCategories" asp-action="Index">Категории на съставки</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Ingredients" asp-action="Index">Съставки</a></li>
-                                    <li><a class="dropdown-item" asp-controller="RecipeCategories" asp-action="Index">Категории на рецепти</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Потребители</a></li>
-                                </ul>
-                            </li>
-
-                                <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Статистика</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="AdminStatistics" asp-action="UserStats">Потребители</a></li>
-                                    <li><a class="dropdown-item" asp-controller="AdminStatistics" asp-action="RecipeStats">Рецепти</a></li>
-                                </ul>
-                            </li>
-                        }
-
-                        @{
-                            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                        }
-                        <!-- Моите -->
-                        @if (User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin))
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Моите</a>
-                                <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@userId">Моите рецепти</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="SavedRecipes">Запазени</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="LikedRecipes">Харесани</a></li>
-                                    <li><a class="dropdown-item" asp-controller="Recipes" asp-action="FollowedUsersRecipes">Следвани рецепти</a></li>
-                                </ul>
-                            </li>
-                        }
-
-                        <!-- Общи -->
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Recipes" asp-action="Index">Всички рецепти</a>
-                        </li>
-                    </ul>
-
-                    <!-- Търсачка -->
-                    <form asp-controller="Search" asp-action="Index" method="get" class="d-flex me-3 position-relative" style="width: 280px;">
-                        <input id="globalSearchBox" name="searchString" class="form-control me-2 w-100" type="search" placeholder="Търси рецепта или потребител..." autocomplete="off" />
-                        <button type="submit" class="search-icon-button" title="Търси">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </form>
-
-
+                @* Avatar when signed in, otherwise Login / Register buttons. *@
+                <div class="app-topbar__account">
                     <partial name="_LoginPartial" />
                 </div>
-            </div>
-        </nav>
+            </header>
 
-    </header>
+            @* ---------- The current page ---------- *@
+            <main role="main" class="app-content">
+                @RenderBody()
+            </main>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+            <footer class="app-footer">
+                &copy; RecipeBook &middot;
+                <a asp-controller="Home" asp-action="About">За нас</a> &middot;
+                <a asp-controller="Home" asp-action="Privacy">Поверителност</a>
+            </footer>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="footer">
-            &copy; RecipeBook - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    @* ---------- Tab bar at the bottom (phones and tablets) ---------- *@
+    <partial name="_BottomNav" />
+
+    @* ---------- Slide-in menu (phones and tablets) ----------
+       "offcanvas" is a Bootstrap component: a panel that slides in from the side.
+       It shows the same links as the desktop sidebar. *@
+    <div class="offcanvas offcanvas-start app-offcanvas" tabindex="-1" id="mobileMenu" aria-label="Меню">
+        <div class="offcanvas-header">
+            <a class="app-logo mb-0" asp-controller="Home" asp-action="Index" aria-label="RecipeBook - начало">
+                <img src="~/images/logo1clear.png" alt="RecipeBook" />
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Затвори"></button>
         </div>
-    </footer>
+        <div class="offcanvas-body">
+            <partial name="_NavLinks" />
+        </div>
+    </div>
+
+    @* jQuery is needed by form validation and by the recipe editor; Bootstrap's script powers menus and alerts. *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-

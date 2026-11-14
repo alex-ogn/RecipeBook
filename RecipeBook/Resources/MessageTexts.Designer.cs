@@ -410,5 +410,14 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("UserUnlocked", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Нямаш достъп.
+        /// </summary>
+        public static string AccessDeniedTitle {
+            get {
+                return ResourceManager.GetString("AccessDeniedTitle", resourceCulture);
+            }
+        }
     }
 }

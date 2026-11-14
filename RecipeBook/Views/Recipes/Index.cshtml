@@ -1,6 +1,18 @@
-﻿@using RecipeBook.ViewModels.Enums;
-@using RecipeBook.ViewModels.Recipes;
+﻿@*
+    Recipes/Index.cshtml — A LIST OF RECIPES WITH FILTERS
+    -------------------------------------------------------------------------
+    One view, used by five pages:
+      Recipes/Index                 all recipes
+      Recipes/LikedRecipes          recipes the user liked
+      Recipes/SavedRecipes          recipes the user saved
+      Recipes/FollowedUsersRecipes  recipes from people the user follows
+      Search/Index                  search results
 
+    Parts: page header, messages, filter bar (category + sort order),
+    the cards (_RecipeCard in a .recipe-grid) and the page numbers (_Pager).
+*@
+@using RecipeBook.ViewModels.Enums;
+@using RecipeBook.ViewModels.Recipes;
 @model RecipeFilterViewModel
 
 @{
@@ -8,87 +20,81 @@
     // The filter applies to the list being shown (all, liked, saved, followed); search results filter the main list.
     var isRecipesController = string.Equals(ViewContext.RouteData.Values["controller"] as string, "Recipes", StringComparison.OrdinalIgnoreCase);
     var listAction = isRecipesController ? ViewContext.RouteData.Values["action"] as string : "Index";
+
+    // The heading depends on which of the lists is shown.
+    var heading = listAction switch
+    {
+        "LikedRecipes" => "Харесани рецепти",
+        "SavedRecipes" => "Запазени рецепти",
+        "FollowedUsersRecipes" => "Рецепти от следвани",
+        _ => "Рецепти"
+    };
+    ViewData["Title"] = heading;
 }
 
-<div class="container mt-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
-        <h1 class="display-5 mb-2">Рецепти</h1>
-        <a asp-controller="Recipes" asp-action="Create" class="btn btn-success">+ Нова рецепта</a>
-    </div>
-
-    @if (TempData[TempDataKeys.SearchResults] != null)
-{
-    <div class="alert alert-info mt-3">
-        Резултати от търсене за: <strong>@TempData[TempDataKeys.SearchResults]</strong>
-    </div>
-}
-    @if (TempData[TempDataKeys.ErrorMessage] != null)
-    {
-        <div class="alert alert-danger">@TempData[TempDataKeys.ErrorMessage]</div>
-    }
-
-    @if (TempData[TempDataKeys.SuccessMessage] != null)
-    {
-        <div class="alert alert-success">@TempData[TempDataKeys.SuccessMessage]</div>
-    }
-
-    <form asp-controller="Recipes" asp-action="@listAction" method="get" class="mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label">Категория:</label>
-                <select asp-for="SelectedCategoryId" asp-items="Model.Categories" class="form-select">
-                    <option value="">Всички</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Сортирай по:</label>
-                <select name="sortOrder" class="form-select">
-                    @foreach (RecipeSortOption option in Enum.GetValues(typeof(RecipeSortOption)))
-                    {
-                        var label = option switch
-                        {
-                            RecipeSortOption.Newest => "Най-нови",
-                            RecipeSortOption.MostLiked => "Най-харесвани",
-                            RecipeSortOption.MostViewed => "Най-гледани",
-                            _ => option.ToString()
-                        };
-
-                        <option value="@option" selected="@(Model.SortOrder == option)">
-                            @label
-                        </option>
-                    }
-                </select>
-            </div>
-    <div class="col-md-4 d-flex gap-2">
-
-        <button type="submit" class="btn btn-outline-accent me-2">
-            <i class="bi bi-funnel"></i> Филтрирай
-        </button>
-
-        <a asp-controller="Recipes" asp-action="@listAction" class="btn btn-outline-warning btn-unstyled">
-            <i class="bi bi-x-circle"></i> Изчисти
-        </a>
-
-    </div>
-        </div>
-    </form>
-
-    @if (Model.Recipes.Any())
-    {
-        <div class="row">
-            @foreach (var card in Model.Recipes)
-            {
-                <partial name="_RecipeCard" model="card" />
-            }
-        </div>
-
-        <partial name="_Pager" model="Model.Recipes" />
-    }
-    else
-    {
-        <div class="alert alert-info mt-4">Няма рецепти по избрания филтър.</div>
-    }
+<div class="page-header">
+    <h1>@heading</h1>
+    <a asp-controller="Recipes" asp-action="Create" class="btn btn-accent">
+        <i class="bi bi-plus-lg"></i> Нова рецепта
+    </a>
 </div>
 
+<partial name="_Alerts" />
 
+@* The filter is a GET form: the chosen values go into the address
+   (?SelectedCategoryId=3&sortOrder=MostLiked), so the result can be bookmarked
+   and the pager can keep them when changing pages. *@
+<form asp-controller="Recipes" asp-action="@listAction" method="get" class="filter-bar">
+    <div class="filter-bar__field">
+        <label asp-for="SelectedCategoryId" class="form-label">Категория</label>
+        <select asp-for="SelectedCategoryId" asp-items="Model.Categories" class="form-select">
+            <option value="">Всички</option>
+        </select>
+    </div>
+
+    <div class="filter-bar__field">
+        <label for="sortOrder" class="form-label">Сортирай по</label>
+        <select id="sortOrder" name="sortOrder" class="form-select">
+            @foreach (RecipeSortOption option in Enum.GetValues(typeof(RecipeSortOption)))
+            {
+                var label = option switch
+                {
+                    RecipeSortOption.Newest => "Най-нови",
+                    RecipeSortOption.MostLiked => "Най-харесвани",
+                    RecipeSortOption.MostViewed => "Най-гледани",
+                    _ => option.ToString()
+                };
+
+                <option value="@option" selected="@(Model.SortOrder == option)">@label</option>
+            }
+        </select>
+    </div>
+
+    <div class="filter-bar__actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-funnel"></i> Филтрирай
+        </button>
+        <a asp-controller="Recipes" asp-action="@listAction" class="btn btn-outline-secondary">
+            <i class="bi bi-x-lg"></i> Изчисти
+        </a>
+    </div>
+</form>
+
+@if (Model.Recipes.Any())
+{
+    <div class="recipe-grid">
+        @foreach (var card in Model.Recipes)
+        {
+            <partial name="_RecipeCard" model="card" />
+        }
+    </div>
+
+    <partial name="_Pager" model="Model.Recipes" />
+}
+else
+{
+    <div class="empty-state">
+        <i class="bi bi-egg-fried"></i>
+        Няма рецепти по избрания филтър.
+    </div>
+}

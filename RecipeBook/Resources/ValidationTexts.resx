@@ -162,4 +162,7 @@
   <data name="ConfirmationRequired" xml:space="preserve">
     <value>Моля, потвърдете.</value>
   </data>
+  <data name="CommentLength" xml:space="preserve">
+    <value>Коментарът трябва да е дълъг между {2} и {1} символа.</value>
+  </data>
 </root>

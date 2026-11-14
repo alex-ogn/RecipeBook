@@ -1,51 +1,70 @@
-﻿@using RecipeBook.ViewModels.AdminStatistics;
+﻿@*
+    AdminStatistics/UserStats.cshtml — ADMIN: USER STATISTICS
+    -------------------------------------------------------------------------
+    Two bar charts (recipes per user, likes received per user) and the list
+    of users without any activity.
+
+    The charts are drawn by wwwroot/js/admin-charts.js with the Chart.js
+    library. This page only provides an empty <canvas> for each chart and the
+    numbers, as JSON, in the <script id="stats-data"> block.
+
+    The look (.stats-grid, .chart-box) is in pages.css, section 7.
+*@
+@using RecipeBook.ViewModels.AdminStatistics;
 @model AdminUserStatsViewModel
 @{
     ViewData["Title"] = "Статистика за потребители";
 }
 
-<h2>Потребители</h2>
+<div class="page-header">
+    <h1>Статистика за потребители</h1>
+</div>
 
-<canvas id="recipesChart" height="100"></canvas>
-<canvas id="likesChart" height="100" class="mt-4"></canvas>
+<div class="stats-grid">
+    <section class="panel">
+        <h2 class="panel__title">Брой рецепти</h2>
+        <div class="chart-box">
+            <canvas id="recipesChart"></canvas>
+        </div>
+    </section>
 
-<h3 class="mt-5">Потребители без активност</h3>
-<ul>
-@foreach (var u in Model.InactiveUsers)
-{
-    <li>@u.UserName</li>
-}
-</ul>
+    <section class="panel">
+        <h2 class="panel__title">Харесвания на рецепти</h2>
+        <div class="chart-box">
+            <canvas id="likesChart"></canvas>
+        </div>
+    </section>
+</div>
+
+<section class="panel">
+    <h2 class="panel__title">Потребители без активност</h2>
+
+    @if (Model.InactiveUsers.Any())
+    {
+        <div class="chip-list">
+            @foreach (var u in Model.InactiveUsers)
+            {
+                <span class="chip">@u.UserName</span>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted mb-0">Всички потребители са активни.</p>
+    }
+</section>
+
+@* The numbers for the charts. type="application/json" = the browser does not run this, the script reads it. *@
+<script type="application/json" id="stats-data">
+    @Html.Raw(Json.Serialize(new
+    {
+        userNames = Model.AllUsers.Select(u => u.UserName),
+        recipeCounts = Model.AllUsers.Select(u => u.RecipeCount),
+        likesReceived = Model.AllUsers.Select(u => u.LikesReceived)
+    }))
+</script>
 
 @section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const recipeData = {
-        labels: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.UserName))),
-        datasets: [{
-            label: 'Брой рецепти',
-            data: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.RecipeCount))),
-            backgroundColor: '#1a6158'
-        }]
-    };
-
-    const likesData = {
-        labels: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.UserName))),
-        datasets: [{
-            label: 'Харесвания на рецепти',
-            data: @Html.Raw(Json.Serialize(Model.AllUsers.Select(u => u.LikesReceived))),
-            backgroundColor: '#f4a261'
-        }]
-    };
-
-    new Chart(document.getElementById('recipesChart'), {
-        type: 'bar',
-        data: recipeData,
-    });
-
-    new Chart(document.getElementById('likesChart'), {
-        type: 'bar',
-        data: likesData,
-    });
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="~/js/admin-charts.js" asp-append-version="true"></script>
 }

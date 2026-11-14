@@ -87,6 +87,14 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    // Where the authentication cookie sends a signed-in user who lacks the rights for a page
+    // (CookieConstants.AccessDeniedPath).
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
+
     private IActionResult RedirectToLocal(string? returnUrl)
     {
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))

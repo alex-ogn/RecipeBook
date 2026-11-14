@@ -1,35 +1,82 @@
-﻿@using RecipeBook.ViewModels.Recipes;
+﻿@*
+    _RecipeCard.cshtml — ONE RECIPE IN A LIST
+    -------------------------------------------------------------------------
+    Looks like a post in a social feed:
+        [avatar] author name                     [⋯ menu, owner only]
+        [            photo            ]
+        Title
+        Short description (2 lines)
+        ♥ likes   👁 views
+
+    HOW TO USE: put the cards inside a "recipe-grid", which arranges them in
+    1, 2 or 3 columns depending on the screen width:
+
+        <div class="recipe-grid">
+            @foreach (var card in Model.Recipes)
+            {
+                <partial name="_RecipeCard" model="card" />
+            }
+        </div>
+
+    The look is in wwwroot/css/components.css, section 4.
+*@
+@using RecipeBook.ViewModels.Recipes;
 @model RecipeCardViewModel
 
-<div class="col-md-4 mb-4">
-    <div class="card h-100">
-        <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Title">
-        <div class="card-body d-flex flex-column">
-            <h5 class="card-title">@Model.Title</h5>
-            <p class="card-text">@Model.DescriptionPreview</p>
-            <div class="mt-auto">
-            <a asp-action="Details" asp-controller="Recipes" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
-                Детайли
-            </a>
+<article class="recipe-card">
 
-            @if (Model.IsOwner)
-            {
-                <a asp-action="Edit" asp-controller="Recipes" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">
-                    Редактирай
-                </a>
-                <a asp-action="Delete" asp-controller="Recipes" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">
-                    Изтрий
-                </a>
-            }
+    @* ----- Author row ----- *@
+    <header class="recipe-card__header">
+        <a class="recipe-card__author" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId">
+            <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId })"
+                 alt="" class="avatar avatar--sm" loading="lazy" />
+            <span class="recipe-card__author-name">@Model.UserName</span>
+        </a>
+
+        @* The author (or an admin) gets a "⋯" menu with Edit and Delete.
+           "dropdown" is a Bootstrap component: the button opens the <ul> below it. *@
+        @if (Model.IsOwner)
+        {
+            <div class="dropdown">
+                <button type="button" class="btn-icon" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Действия">
+                    <i class="bi bi-three-dots"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" asp-controller="Recipes" asp-action="Edit" asp-route-id="@Model.Id">
+                            <i class="bi bi-pencil"></i> Редактирай
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item dropdown-item--danger" asp-controller="Recipes" asp-action="Delete" asp-route-id="@Model.Id">
+                            <i class="bi bi-trash"></i> Изтрий
+                        </a>
+                    </li>
+                </ul>
             </div>
-            <div class="text-muted small mt-2 text-end">
-                <span class="me-2">
-                    <i class="bi bi-heart-fill text-danger"></i> @Model.LikesCount
-                </span>
-                <span>
-                    <i class="bi bi-eye text-secondary"></i> @Model.ViewCount
-                </span>
-            </div>
-        </div>
+        }
+    </header>
+
+    @* ----- Photo (clicking it opens the recipe). loading="lazy" = download it only when it scrolls into view. ----- *@
+    <a asp-controller="Recipes" asp-action="Details" asp-route-id="@Model.Id" tabindex="-1" aria-hidden="true">
+        <img src="@Model.ImageUrl" alt="" class="recipe-card__image" loading="lazy" />
+    </a>
+
+    @* ----- Title and short description ----- *@
+    <div class="recipe-card__body">
+        <h3 class="recipe-card__title">
+            <a asp-controller="Recipes" asp-action="Details" asp-route-id="@Model.Id">@Model.Title</a>
+        </h3>
+        <p class="recipe-card__text">@Model.DescriptionPreview</p>
     </div>
-</div>
+
+    @* ----- Counters ----- *@
+    <footer class="recipe-card__footer">
+        <span class="recipe-card__stat recipe-card__stat--likes" title="Харесвания">
+            <i class="bi bi-heart-fill"></i> @Model.LikesCount
+        </span>
+        <span class="recipe-card__stat" title="Преглеждания">
+            <i class="bi bi-eye"></i> @Model.ViewCount
+        </span>
+    </footer>
+</article>

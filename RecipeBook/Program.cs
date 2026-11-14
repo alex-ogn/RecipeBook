@@ -68,9 +68,9 @@ builder.Services.AddScoped<IdentityErrorDescriber, CustomIdentityErrorDescriber>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Users/AccessDenied";
+    options.LoginPath = CookieConstants.LoginPath;
+    options.LogoutPath = CookieConstants.LogoutPath;
+    options.AccessDeniedPath = CookieConstants.AccessDeniedPath;
 });
 
 // Limit how often one client can post the login and registration forms.

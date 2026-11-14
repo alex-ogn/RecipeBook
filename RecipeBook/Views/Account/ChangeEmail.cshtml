@@ -1,45 +1,38 @@
+@*
+    Account/ChangeEmail.cshtml — ASK TO CHANGE THE E-MAIL ADDRESS
+    -------------------------------------------------------------------------
+    Rendered inside the centered card of _AuthLayout.cshtml.
+    The e-mail only changes after the user opens the link sent to the new address.
+*@
 @model RecipeBook.ViewModels.Account.ChangeEmailViewModel
 @{
     ViewData["Title"] = "Смяна на имейл";
+    Layout = "_AuthLayout";
 }
 
-<div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card shadow" style="max-width: 480px; width: 100%;">
-        <div class="card-body p-4">
-            <h2 class="text-center text-warm-red mb-3">Смяна на имейл</h2>
-            <p class="text-muted text-center mb-4">Текущ имейл: <strong>@Model?.CurrentEmail</strong>. Ще изпратим линк за потвърждение на новия адрес; имейлът се сменя едва след като го отвориш.</p>
+<h1 class="auth__title">Смяна на имейл</h1>
+<p class="auth__lead">Текущ имейл: <strong>@Model?.CurrentEmail</strong>. Ще изпратим линк за потвърждение на новия адрес; имейлът се сменя едва след като го отвориш.</p>
 
-            <form asp-action="ChangeEmail" method="post">
-                @if (!ViewData.ModelState.IsValid)
-                {
-                    <div class="text-danger mb-3">
-                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                        {
-                            <div>@error.ErrorMessage</div>
-                        }
-                    </div>
-                }
+<form asp-action="ChangeEmail" method="post">
+    <div asp-validation-summary="ModelOnly" class="form-errors"></div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="NewEmail" class="form-label"></label>
-                    <input asp-for="NewEmail" class="form-control" />
-                    <span asp-validation-for="NewEmail" class="text-danger small"></span>
-                </div>
-                <div class="form-group mb-3">
-                    <label asp-for="CurrentPassword" class="form-label"></label>
-                    <input asp-for="CurrentPassword" class="form-control" type="password" />
-                    <span asp-validation-for="CurrentPassword" class="text-danger small"></span>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn" style="background-color: var(--buttery-yellow); color: white;">Изпрати линк за потвърждение</button>
-                </div>
-
-                <div class="text-center mt-3">
-                    <a asp-controller="Users" asp-action="Edit" class="text-decoration-none">Обратно към профила</a>
-                </div>
-            </form>
-        </div>
+    <div class="form-field">
+        <label asp-for="NewEmail" class="form-label"></label>
+        <input asp-for="NewEmail" class="form-control" autocomplete="email" />
+        <span asp-validation-for="NewEmail"></span>
     </div>
+
+    <div class="form-field">
+        <label asp-for="CurrentPassword" class="form-label"></label>
+        <input asp-for="CurrentPassword" class="form-control" type="password" autocomplete="current-password" />
+        <span asp-validation-for="CurrentPassword"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Изпрати линк за потвърждение</button>
+</form>
+
+<div class="auth__links">
+    <a asp-controller="Users" asp-action="Edit">Обратно към профила</a>
 </div>
 
 @section Scripts {

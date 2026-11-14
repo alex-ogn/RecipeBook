@@ -302,5 +302,14 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("NewEmail", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Коментар.
+        /// </summary>
+        public static string Comment {
+            get {
+                return ResourceManager.GetString("Comment", resourceCulture);
+            }
+        }
     }
 }

@@ -1,0 +1,117 @@
+@*
+    _NavLinks.cshtml — THE MAIN MENU
+    -------------------------------------------------------------------------
+    Rendered twice by _Layout.cshtml: in the desktop sidebar and in the phone
+    slide-in menu. Edit this one file to add, remove or reorder menu items.
+
+    Who sees what:
+      everyone        Начало, Рецепти
+      signed in       + Следвани, Запазени, Харесани, Хора, profile, settings, logout
+      admins          + the "Администрация" group
+      not signed in   + Вход, Регистрация
+
+    The current page gets the CSS class "is-active" (green highlight).
+    The look is in wwwroot/css/layout.css, section 3.
+*@
+@{
+    // Which controller/action produced the current page, e.g. "Recipes" / "Index".
+    var currentController = ViewContext.RouteData.Values["controller"] as string;
+    var currentAction = ViewContext.RouteData.Values["action"] as string;
+    var currentRouteId = ViewContext.RouteData.Values["id"] as string;
+
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var isSignedIn = User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin);
+
+    // Returns "is-active" when the given controller/action is the page being shown, otherwise "".
+    string ActiveClass(string controller, string action) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "is-active"
+            : string.Empty;
+
+    // The profile page (Recipes/MyIndex) shows any user; highlight "Моят профил" only on the user's own.
+    var isOwnProfilePage = ActiveClass("Recipes", "MyIndex").Length > 0
+        && (currentRouteId == null || currentRouteId == userId);
+}
+
+<nav class="nav-menu" aria-label="Основно меню">
+
+    <a class="nav-menu__link @ActiveClass("Home", "Index")" asp-controller="Home" asp-action="Index">
+        <i class="bi bi-house-door"></i> Начало
+    </a>
+    <a class="nav-menu__link @ActiveClass("Recipes", "Index")" asp-controller="Recipes" asp-action="Index">
+        <i class="bi bi-compass"></i> Рецепти
+    </a>
+
+    @if (isSignedIn)
+    {
+        <a class="nav-menu__link @ActiveClass("Recipes", "FollowedUsersRecipes")" asp-controller="Recipes" asp-action="FollowedUsersRecipes">
+            <i class="bi bi-people"></i> Следвани
+        </a>
+        <a class="nav-menu__link @ActiveClass("Recipes", "SavedRecipes")" asp-controller="Recipes" asp-action="SavedRecipes">
+            <i class="bi bi-bookmark"></i> Запазени
+        </a>
+        <a class="nav-menu__link @ActiveClass("Recipes", "LikedRecipes")" asp-controller="Recipes" asp-action="LikedRecipes">
+            <i class="bi bi-heart"></i> Харесани
+        </a>
+        <a class="nav-menu__link @ActiveClass("Users", "Index")" asp-controller="Users" asp-action="Index">
+            <i class="bi bi-person-lines-fill"></i> Хора
+        </a>
+        <a class="nav-menu__link @(isOwnProfilePage ? "is-active" : "")" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@userId">
+            <i class="bi bi-person-circle"></i> Моят профил
+        </a>
+
+        @* The orange call-to-action button. *@
+        <a class="btn btn-accent nav-menu__cta" asp-controller="Recipes" asp-action="Create">
+            <i class="bi bi-plus-lg"></i> Нова рецепта
+        </a>
+    }
+
+    @if (User.IsInRole(UserRoles.Admin))
+    {
+        <h2 class="nav-menu__heading">Администрация</h2>
+
+        <a class="nav-menu__link @ActiveClass("RecipeCategories", "Index")" asp-controller="RecipeCategories" asp-action="Index">
+            <i class="bi bi-grid"></i> Категории на рецепти
+        </a>
+        <a class="nav-menu__link @ActiveClass("Ingredients", "Index")" asp-controller="Ingredients" asp-action="Index">
+            <i class="bi bi-basket"></i> Съставки
+        </a>
+        <a class="nav-menu__link @ActiveClass("IngredientCategories", "Index")" asp-controller="IngredientCategories" asp-action="Index">
+            <i class="bi bi-tags"></i> Категории на съставки
+        </a>
+        <a class="nav-menu__link @ActiveClass("AdminStatistics", "UserStats")" asp-controller="AdminStatistics" asp-action="UserStats">
+            <i class="bi bi-bar-chart"></i> Статистика: потребители
+        </a>
+        <a class="nav-menu__link @ActiveClass("AdminStatistics", "RecipeStats")" asp-controller="AdminStatistics" asp-action="RecipeStats">
+            <i class="bi bi-pie-chart"></i> Статистика: рецепти
+        </a>
+    }
+
+    @* Everything below this element is pushed to the bottom of the sidebar. *@
+    <div class="nav-menu__spacer"></div>
+
+    @if (isSignedIn)
+    {
+        <a class="nav-menu__link @ActiveClass("Users", "Edit")" asp-controller="Users" asp-action="Edit" asp-route-id="@userId">
+            <i class="bi bi-gear"></i> Настройки
+        </a>
+
+        @* Logging out changes the session, so it must be a POST form (not a link).
+           The form tag helper adds the hidden antiforgery token automatically. *@
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="nav-menu__link">
+                <i class="bi bi-box-arrow-right"></i> Изход
+            </button>
+        </form>
+    }
+    else
+    {
+        <a class="nav-menu__link @ActiveClass("Account", "Login")" asp-controller="Account" asp-action="Login">
+            <i class="bi bi-box-arrow-in-right"></i> Вход
+        </a>
+        <a class="nav-menu__link @ActiveClass("Account", "Register")" asp-controller="Account" asp-action="Register">
+            <i class="bi bi-person-plus"></i> Регистрация
+        </a>
+    }
+</nav>
