@@ -14,14 +14,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// The connection string comes from user secrets (Development only) or the ConnectionStrings__DefaultConnection
+// environment variable. Fail with a clear message instead of a vague error on the first query.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString ?? throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' is not set. Run with ASPNETCORE_ENVIRONMENT=Development to use user " +
+        "secrets, or set the ConnectionStrings__DefaultConnection environment variable.")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = true;
         options.SignIn.RequireConfirmedEmail = true;
+        // Login accepts an email, so it must identify exactly one account.
+        options.User.RequireUniqueEmail = true;
 
         // Lock the account after repeated wrong passwords (brute-force protection).
         options.Lockout.AllowedForNewUsers = true;
