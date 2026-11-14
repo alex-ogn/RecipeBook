@@ -183,4 +183,55 @@
   <data name="UserNotFoundById" xml:space="preserve">
     <value>Не е намерен потребител с ID &apos;{0}&apos;.</value>
   </data>
+  <data name="AccountDeleted" xml:space="preserve">
+    <value>Профилът ви беше изтрит.</value>
+  </data>
+  <data name="AccountDisabled" xml:space="preserve">
+    <value>Профилът е деактивиран от администратор.</value>
+  </data>
+  <data name="AdminCannotDeleteOwnAccount" xml:space="preserve">
+    <value>Администраторите не могат да изтрият собствения си профил.</value>
+  </data>
+  <data name="CannotLockYourself" xml:space="preserve">
+    <value>Не можете да заключите собствения си профил.</value>
+  </data>
+  <data name="ChangeEmailBody" xml:space="preserve">
+    <value>За да потвърдите новия си имейл адрес, &lt;a href=&apos;{0}&apos;&gt;кликнете тук&lt;/a&gt;.</value>
+  </data>
+  <data name="ChangeEmailSubject" xml:space="preserve">
+    <value>Потвърдете новия си имейл</value>
+  </data>
+  <data name="EmailChangeNoticeBody" xml:space="preserve">
+    <value>Получихме заявка имейлът на профила ви в RecipeBook да бъде сменен на {0}. Ако не сте вие, сменете паролата си незабавно.</value>
+  </data>
+  <data name="EmailChangeNoticeSubject" xml:space="preserve">
+    <value>Заявка за смяна на имейла</value>
+  </data>
+  <data name="IncorrectPassword" xml:space="preserve">
+    <value>Грешна парола.</value>
+  </data>
+  <data name="PasswordChanged" xml:space="preserve">
+    <value>Паролата беше сменена успешно.</value>
+  </data>
+  <data name="PasswordChangedNoticeBody" xml:space="preserve">
+    <value>Паролата на профила ви в RecipeBook беше сменена. Ако не сте вие, използвайте „Забравена парола“ на страницата за вход, за да възстановите достъпа си.</value>
+  </data>
+  <data name="PasswordChangedNoticeSubject" xml:space="preserve">
+    <value>Паролата ви беше сменена</value>
+  </data>
+  <data name="PasswordResetEmailBody" xml:space="preserve">
+    <value>За да зададете нова парола, &lt;a href=&apos;{0}&apos;&gt;кликнете тук&lt;/a&gt;. Ако не сте заявили смяна на паролата, игнорирайте този имейл.</value>
+  </data>
+  <data name="PasswordResetEmailSubject" xml:space="preserve">
+    <value>Смяна на парола</value>
+  </data>
+  <data name="PasswordResetLinkSent" xml:space="preserve">
+    <value>Изпратен е линк за смяна на паролата на {0}.</value>
+  </data>
+  <data name="UserLocked" xml:space="preserve">
+    <value>Профилът на {0} е деактивиран.</value>
+  </data>
+  <data name="UserUnlocked" xml:space="preserve">
+    <value>Профилът на {0} е активиран отново.</value>
+  </data>
 </root>

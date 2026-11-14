@@ -104,5 +104,32 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("PasswordTooShort", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Имейлът вече се използва..
+        /// </summary>
+        public static string DuplicateEmail {
+            get {
+                return ResourceManager.GetString("DuplicateEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Линкът е невалиден или е изтекъл..
+        /// </summary>
+        public static string InvalidToken {
+            get {
+                return ResourceManager.GetString("InvalidToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Грешна парола..
+        /// </summary>
+        public static string PasswordMismatch {
+            get {
+                return ResourceManager.GetString("PasswordMismatch", resourceCulture);
+            }
+        }
     }
 }

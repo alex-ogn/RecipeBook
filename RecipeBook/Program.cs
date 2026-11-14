@@ -32,6 +32,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddErrorDescriber<CustomIdentityErrorDescriber>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+// Sign out other sessions soon after a password/email change, a lock or a deletion (all update the security stamp).
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = AccountSecurityConstants.SecurityStampValidationInterval);
+
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -43,6 +47,8 @@ builder.Services.AddControllersWithViews(options => options.Filters.Add(new Auto
 // custom services
 builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAccountEmailService, AccountEmailService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 builder.Services.AddScoped<IRecipeCategoryService, RecipeCategoryService>();

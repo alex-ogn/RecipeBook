@@ -1,10 +1,10 @@
-﻿using AngleSharp.Css.Values;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using RecipeBook.Constants;
 using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.Resources;
 using RecipeBook.ViewModels.Users;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -18,8 +18,6 @@ namespace RecipeBook.Services
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
-        private readonly IPasswordValidator<ApplicationUser> _passwordValidator;
-        private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
         private readonly IRecipeService _recipeService;
         private readonly IWebHostEnvironment _env;
         private readonly IImageStorageService _imageStorage;
@@ -28,8 +26,6 @@ namespace RecipeBook.Services
         public UserProfileService(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
-            IPasswordValidator<ApplicationUser> passwordValidator,
-            IPasswordHasher<ApplicationUser> passwordHasher,
             IRecipeService recipeService,
             IWebHostEnvironment env,
             IImageStorageService imageStorage,
@@ -37,8 +33,6 @@ namespace RecipeBook.Services
         {
             _context = context;
             _userManager = userManager;
-            _passwordValidator = passwordValidator;
-            _passwordHasher = passwordHasher;
             _recipeService = recipeService;
             _env = env;
             _imageStorage = imageStorage;
@@ -84,13 +78,6 @@ namespace RecipeBook.Services
                 if (!setUserNameResult.Succeeded) return setUserNameResult;
             }
 
-            // Email
-            if (user.Email != model.Email)
-            {
-                var setEmailResult = await _userManager.SetEmailAsync(user, model.Email);
-                if (!setEmailResult.Succeeded) return setEmailResult;
-            }
-
             // Phone number
             if (user.PhoneNumber != model.PhoneNumber)
             {
@@ -116,15 +103,8 @@ namespace RecipeBook.Services
                 user.ProfilePictureVersion++;
             }
 
-            // Password
-            if (!string.IsNullOrWhiteSpace(model.NewPassword))
-            {
-                var passwordValidation = await _passwordValidator.ValidateAsync(_userManager, user, model.NewPassword);
-                if (!passwordValidation.Succeeded) return passwordValidation;
-
-                user.PasswordHash = _passwordHasher.HashPassword(user, model.NewPassword);
-            }
-
+            // Email and password are not changed here: they have their own forms in AccountController,
+            // which ask for the current password and confirm the new email address.
             return await _userManager.UpdateAsync(user);
         }
 
@@ -139,9 +119,30 @@ namespace RecipeBook.Services
             if (targetUserId == currentUserId)
                 return IdentityResult.Failed(new IdentityError { Description = _localizer["CanNotDeleteYourOwnProfile"] });
 
+            return await DeleteUserDataAsync(targetUserId);
+        }
+
+        /// <summary>
+        /// Deletes the user's own account with all of their recipes. Admins can't delete themselves,
+        /// so the site always keeps its admin account.
+        /// </summary>
+        public async Task<IdentityResult> DeleteOwnAccountAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return IdentityResult.Failed(new IdentityError { Description = _localizer["UserNotFound"] });
+
+            if (await _userManager.IsInRoleAsync(user, UserRoles.Admin))
+                return IdentityResult.Failed(new IdentityError { Description = MessageTexts.AdminCannotDeleteOwnAccount });
+
+            return await DeleteUserDataAsync(userId);
+        }
+
+        private async Task<IdentityResult> DeleteUserDataAsync(string userId)
+        {
             var user = await _userManager.Users
                 .Include(u => u.Recipes)
-                .FirstOrDefaultAsync(u => u.Id == targetUserId);
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 return IdentityResult.Failed(new IdentityError { Description = _localizer["UserNotFound"] });
@@ -153,10 +154,10 @@ namespace RecipeBook.Services
             }
 
             // Delete related records
-            _context.SavedRecipes.RemoveRange(_context.SavedRecipes.Where(x => x.UserId == targetUserId));
-            _context.RecipeLikes.RemoveRange(_context.RecipeLikes.Where(x => x.UserId == targetUserId));
-            _context.UserFollowers.RemoveRange(_context.UserFollowers.Where(f => f.FollowerId == targetUserId || f.FollowedId == targetUserId));
-            _context.RecipeComments.RemoveRange(_context.RecipeComments.Where(c => c.UserId == targetUserId));
+            _context.SavedRecipes.RemoveRange(_context.SavedRecipes.Where(x => x.UserId == userId));
+            _context.RecipeLikes.RemoveRange(_context.RecipeLikes.Where(x => x.UserId == userId));
+            _context.UserFollowers.RemoveRange(_context.UserFollowers.Where(f => f.FollowerId == userId || f.FollowedId == userId));
+            _context.RecipeComments.RemoveRange(_context.RecipeComments.Where(c => c.UserId == userId));
 
             await _context.SaveChangesAsync();
 

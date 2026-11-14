@@ -11,8 +11,7 @@ namespace RecipeBook.ViewModels.Users
         [Display(Name = nameof(DisplayTexts.UserName), ResourceType = typeof(DisplayTexts))]
         public string UserName { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
+        // Shown read-only: the email is changed through Account/ChangeEmail, which confirms the new address.
         [Display(Name = nameof(DisplayTexts.Email), ResourceType = typeof(DisplayTexts))]
         public string Email { get; set; } = string.Empty;
 
@@ -20,21 +19,23 @@ namespace RecipeBook.ViewModels.Users
         [Display(Name = nameof(DisplayTexts.PhoneNumber), ResourceType = typeof(DisplayTexts))]
         public string? PhoneNumber { get; set; }
 
-        [Display(Name = nameof(DisplayTexts.NewPassword), ResourceType = typeof(DisplayTexts))]
-        [DataType(DataType.Password)]
-        public string? NewPassword { get; set; }
-
-        [Display(Name = nameof(DisplayTexts.ConfirmNewPassword), ResourceType = typeof(DisplayTexts))]
-        [DataType(DataType.Password)]
-        [Compare(nameof(NewPassword), ErrorMessageResourceName = nameof(ValidationTexts.PasswordsDoNotMatch), ErrorMessageResourceType = typeof(ValidationTexts))]
-        public string? ConfirmPassword { get; set; }
-
         [Display(Name = nameof(DisplayTexts.ProfilePicture), ResourceType = typeof(DisplayTexts))]
         public IFormFile? ProfilePicture { get; set; }
 
         public string? ExistingProfilePictureUrl { get; set; } // за показване в изгледите
 
         public int ProfilePictureVersion { get; set; } // за да се показва винаги най-новата
+
+        // Account state, shown on the form only (never read from the POST).
+        public bool EmailConfirmed { get; set; }
+
+        public bool IsLockedOut { get; set; }
+
+        public bool IsDisabled { get; set; }
+
+        public DateTimeOffset? LockoutEnd { get; set; }
+
+        public bool IsOwnProfile { get; set; }
 
     }
 

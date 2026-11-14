@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Потребители";
+
+    // Emails are personal data: only admins see them.
+    bool isAdmin = User.IsInRole(UserRoles.Admin);
 }
 
 <div class="container mt-4">
@@ -30,7 +33,10 @@
             <tr>
                 <th style="width: 100px;">Снимка</th>
                 <th>Потребителско име</th>
-                <th>Имейл</th>
+                @if (isAdmin)
+                {
+                    <th>Имейл</th>
+                }
                 <th style="width: 150px;">Действия</th>
             </tr>
         </thead>
@@ -44,7 +50,10 @@
                          style="width: 70px; height: 70px; object-fit: cover;" />
                     </td>
                     <td>@user.UserName</td>
-                    <td>@user.Email</td>
+                    @if (isAdmin)
+                    {
+                        <td>@user.Email</td>
+                    }
                     <td class="text-center">
                         <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary me-1" title="Редактирай">
                             <i class="bi bi-pencil-square"></i>

@@ -185,5 +185,14 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("TitleLength", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Моля, потвърдете..
+        /// </summary>
+        public static string ConfirmationRequired {
+            get {
+                return ResourceManager.GetString("ConfirmationRequired", resourceCulture);
+            }
+        }
     }
 }

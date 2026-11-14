@@ -1,0 +1,47 @@
+@model RecipeBook.ViewModels.Account.ChangeEmailViewModel
+@{
+    ViewData["Title"] = "Смяна на имейл";
+}
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow" style="max-width: 480px; width: 100%;">
+        <div class="card-body p-4">
+            <h2 class="text-center text-warm-red mb-3">Смяна на имейл</h2>
+            <p class="text-muted text-center mb-4">Текущ имейл: <strong>@Model?.CurrentEmail</strong>. Ще изпратим линк за потвърждение на новия адрес; имейлът се сменя едва след като го отвориш.</p>
+
+            <form asp-action="ChangeEmail" method="post">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="text-danger mb-3">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <div class="form-group mb-3">
+                    <label asp-for="NewEmail" class="form-label"></label>
+                    <input asp-for="NewEmail" class="form-control" />
+                    <span asp-validation-for="NewEmail" class="text-danger small"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label asp-for="CurrentPassword" class="form-label"></label>
+                    <input asp-for="CurrentPassword" class="form-control" type="password" />
+                    <span asp-validation-for="CurrentPassword" class="text-danger small"></span>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn" style="background-color: var(--buttery-yellow); color: white;">Изпрати линк за потвърждение</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-controller="Users" asp-action="Edit" class="text-decoration-none">Обратно към профила</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

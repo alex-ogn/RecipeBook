@@ -25,6 +25,12 @@ namespace RecipeBook.Services
         /// <returns></returns>
         Task<IdentityResult> DeleteUserAsync(string targetUserId, string currentUserId);
         /// <summary>
+        /// Deletes the user's own account (not allowed for admins)
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<IdentityResult> DeleteOwnAccountAsync(string userId);
+        /// <summary>
         /// Return profile picture for user id
         /// </summary>
         /// <param name="userId"></param>

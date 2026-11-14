@@ -1,0 +1,52 @@
+@model RecipeBook.ViewModels.Account.DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Изтриване на профил";
+}
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow border-danger" style="max-width: 480px; width: 100%;">
+        <div class="card-body p-4">
+            <h2 class="text-center text-danger mb-3">Изтриване на профил</h2>
+            <p class="text-muted text-center mb-4">
+                Профилът ти, рецептите, коментарите, харесванията и запазените рецепти ще бъдат изтрити.
+                Това действие не може да бъде отменено.
+            </p>
+
+            <form asp-action="DeleteAccount" method="post">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="text-danger mb-3">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <div>@error.ErrorMessage</div>
+                        }
+                    </div>
+                }
+
+                <div class="form-group mb-3">
+                    <label asp-for="CurrentPassword" class="form-label"></label>
+                    <input asp-for="CurrentPassword" class="form-control" type="password" />
+                    <span asp-validation-for="CurrentPassword" class="text-danger small"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="Confirm" class="form-check-input" />
+                    <label asp-for="Confirm" class="form-check-label"></label>
+                    <span asp-validation-for="Confirm" class="text-danger small d-block"></span>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-danger">Изтрий профила завинаги</button>
+                </div>
+
+                <div class="text-center mt-3">
+                    <a asp-controller="Users" asp-action="Edit" class="text-decoration-none">Отказ</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -159,4 +159,7 @@
   <data name="TitleLength" xml:space="preserve">
     <value>Заглавието трябва да е дълго между {2} и {1} символа.</value>
   </data>
+  <data name="ConfirmationRequired" xml:space="preserve">
+    <value>Моля, потвърдете.</value>
+  </data>
 </root>

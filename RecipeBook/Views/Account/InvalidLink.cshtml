@@ -1,0 +1,23 @@
+@{
+    ViewData["Title"] = "Невалиден линк";
+}
+
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow" style="max-width: 500px; width: 100%;">
+        <div class="card-body p-4 text-center">
+            <div class="mb-3">
+                <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
+            </div>
+
+            <h2 class="text-warm-red mb-3">Линкът е невалиден</h2>
+
+            <p class="text-muted mb-4">
+                Линкът е невалиден, изтекъл е или вече е използван. Можеш да поискаш нов.
+            </p>
+
+            <div class="d-grid">
+                <a asp-controller="Home" asp-action="Index" class="btn" style="background-color: var(--buttery-yellow); color: white;">Към началната страница</a>
+            </div>
+        </div>
+    </div>
+</div>

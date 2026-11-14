@@ -275,5 +275,32 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("UserNameOrEmail", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Разбирам, че профилът ми и всичките ми рецепти ще бъдат изтрити завинаги.
+        /// </summary>
+        public static string ConfirmDeleteAccount {
+            get {
+                return ResourceManager.GetString("ConfirmDeleteAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Текуща парола.
+        /// </summary>
+        public static string CurrentPassword {
+            get {
+                return ResourceManager.GetString("CurrentPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Нов имейл.
+        /// </summary>
+        public static string NewEmail {
+            get {
+                return ResourceManager.GetString("NewEmail", resourceCulture);
+            }
+        }
     }
 }

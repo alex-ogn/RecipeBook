@@ -9,6 +9,14 @@
 
 <div class="container mt-3">
 
+    @if (TempData[TempDataKeys.SuccessMessage] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData[TempDataKeys.SuccessMessage]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <!-- Hero Section -->
     <section class="hero-section position-relative overflow-hidden mb-5">
         <!-- Logo background image -->
