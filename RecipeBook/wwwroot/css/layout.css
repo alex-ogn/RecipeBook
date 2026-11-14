@@ -1,0 +1,323 @@
+/* =============================================================================
+   layout.css — THE FRAME AROUND EVERY PAGE ("app shell")
+   =============================================================================
+   Styles for the parts written in Views/Shared/_Layout.cshtml:
+
+     DESKTOP (992px and wider)              PHONE / TABLET (under 992px)
+     +----------+----------------------+    +----------------------+
+     |          |  top bar (search)    |    | top bar (menu+search)|
+     | sidebar  +----------------------+    +----------------------+
+     | (menu)   |                      |    |                      |
+     |          |  page content        |    |  page content        |
+     |          |                      |    |                      |
+     |          |  footer              |    +----------------------+
+     +----------+----------------------+    | bottom tab bar       |
+                                            +----------------------+
+
+   RESPONSIVE RULE USED IN THIS FILE ("mobile first"):
+   the plain rules describe the PHONE layout. Rules inside
+       @media (min-width: 992px) { ... }
+   are added on top only when the window is at least 992px wide (desktop).
+   992px is Bootstrap's "lg" breakpoint, so it matches classes like d-lg-none.
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. Shell: sidebar + main column side by side
+   --------------------------------------------------------------------------- */
+.app {
+    display: flex;          /* children are placed in a row */
+    min-height: 100vh;      /* at least the full window height ("vh" = 1% of window height) */
+}
+
+/* The column on the right: top bar, content, footer stacked vertically. */
+.app-main {
+    flex: 1;                /* take all the width the sidebar leaves free */
+    min-width: 0;           /* allows wide children (tables) to shrink instead of overflowing */
+    display: flex;
+    flex-direction: column;
+    /* Leave room at the bottom so the fixed tab bar does not cover content (phones). */
+    padding-bottom: var(--bottomnav-height);
+}
+
+@media (min-width: 992px) {
+    .app-main {
+        padding-bottom: 0;  /* no tab bar on desktop */
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   2. Sidebar (desktop only)
+   --------------------------------------------------------------------------- */
+.app-sidebar {
+    display: none;          /* hidden on phones: the bottom bar and the slide-in menu replace it */
+}
+
+@media (min-width: 992px) {
+    .app-sidebar {
+        display: flex;
+        flex-direction: column;
+        flex: 0 0 var(--sidebar-width);   /* fixed width: do not grow, do not shrink */
+        position: sticky;                 /* stays in place while the page scrolls... */
+        top: 0;
+        height: 100vh;                    /* ...and is exactly as tall as the window */
+        overflow-y: auto;                 /* scroll inside the sidebar if the menu is too long */
+        padding: var(--space-5) var(--space-4);
+        background-color: var(--color-surface);
+        border-right: 1px solid var(--color-border);
+    }
+}
+
+/* Logo at the top of the sidebar and of the phone menu. */
+.app-logo {
+    display: block;
+    padding: 0 var(--space-3);
+    margin-bottom: var(--space-5);
+}
+
+.app-logo img {
+    display: block;
+    width: 100%;
+    max-width: 170px;
+    height: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   3. Menu links (Views/Shared/_NavLinks.cshtml)
+   Used twice: inside the desktop sidebar and inside the phone slide-in menu.
+   --------------------------------------------------------------------------- */
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);    /* small space between menu items */
+    flex: 1;                /* fill the sidebar height, so "margin-top: auto" below can push items down */
+}
+
+/* One menu row: icon + text. Buttons (logout) share the look of links. */
+.nav-menu__link {
+    display: flex;
+    align-items: center;    /* icon and text vertically centered */
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-3);
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-text);
+    font-weight: 600;
+    text-align: left;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.nav-menu__link:hover {
+    background-color: var(--color-surface-soft);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+/* The page the user is on right now (class added in _NavLinks.cshtml). */
+.nav-menu__link.is-active {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+/* Icons in the menu are a bit bigger than the text. */
+.nav-menu__link .bi {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* Small grey title above a group of links ("Администрация"). */
+.nav-menu__heading {
+    margin: var(--space-4) 0 var(--space-1);
+    padding: 0 var(--space-3);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;       /* slightly spaced letters */
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+/* The big "New recipe" button inside the menu. */
+.nav-menu__cta {
+    margin: var(--space-3) 0;
+}
+
+/* Pushes everything after it (logout / login) to the bottom of the sidebar. */
+.nav-menu__spacer {
+    margin-top: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   4. Top bar: menu button (phones), search box, avatar or login buttons
+   --------------------------------------------------------------------------- */
+.app-topbar {
+    position: sticky;       /* stays at the top of the window while scrolling */
+    top: 0;
+    z-index: 1020;          /* above page content, below Bootstrap menus and dialogs */
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    height: var(--topbar-height);
+    padding: 0 var(--space-4);
+    /* Slightly see-through cream with a blur of whatever scrolls underneath. */
+    background-color: rgba(250, 246, 238, 0.88);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 992px) {
+    .app-topbar {
+        padding: 0 var(--space-6);
+    }
+}
+
+/* Search form: grows to fill the free space, but not endlessly. */
+.app-search {
+    position: relative;     /* lets the icon be placed inside the input */
+    flex: 1;
+    max-width: 520px;
+}
+
+.app-search__input {
+    width: 100%;
+    height: 42px;
+    padding: 0 var(--space-4) 0 2.75rem;   /* extra left padding leaves room for the icon */
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+}
+
+.app-search__input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--color-primary-soft);   /* soft green glow */
+}
+
+/* The magnifier button sitting inside the left edge of the input. */
+.app-search__button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2.75rem;
+    height: 42px;
+    border: 0;
+    background: none;
+    color: var(--color-text-muted);
+}
+
+/* Right side of the top bar: pushed to the far right by "margin-left: auto". */
+.app-topbar__account {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   5. Page content and footer
+   --------------------------------------------------------------------------- */
+.app-content {
+    flex: 1;                              /* pushes the footer to the bottom on short pages */
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin: 0 auto;                       /* centers the content column */
+    padding: var(--space-5) var(--space-4);
+}
+
+@media (min-width: 992px) {
+    .app-content {
+        padding: var(--space-6);
+    }
+}
+
+.app-footer {
+    padding: var(--space-5) var(--space-4);
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   6. Bottom tab bar (phones and tablets) — Views/Shared/_BottomNav.cshtml
+   --------------------------------------------------------------------------- */
+.app-bottomnav {
+    position: fixed;        /* glued to the bottom edge of the window */
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    display: flex;
+    height: var(--bottomnav-height);
+    background-color: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    /* On phones with a home indicator (iPhone), keep the tabs above it. */
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+@media (min-width: 992px) {
+    .app-bottomnav {
+        display: none;      /* desktop uses the sidebar instead */
+    }
+}
+
+/* One tab: icon on top, tiny label under it. */
+.app-bottomnav__link {
+    flex: 1;                /* all tabs get equal width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--color-text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.app-bottomnav__link:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.app-bottomnav__link .bi {
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
+.app-bottomnav__link.is-active {
+    color: var(--color-primary);
+}
+
+/* The middle "+" tab: an orange circle that stands out. */
+.app-bottomnav__link--create .bi {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-accent);
+    color: var(--color-text-on-dark);
+}
+
+/* ---------------------------------------------------------------------------
+   7. Slide-in menu on phones (Bootstrap "offcanvas", opened by the ☰ button)
+   --------------------------------------------------------------------------- */
+.app-offcanvas {
+    width: min(300px, 85vw);              /* 300px, but never more than 85% of the screen */
+    background-color: var(--color-surface);
+}
+
+.app-offcanvas .offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-4);
+}
+
+/* The ☰ button itself: only shown below the desktop breakpoint
+   (the "d-lg-none" class in _Layout.cshtml hides it on desktop). */
+.app-menu-button {
+    flex: 0 0 auto;
+}

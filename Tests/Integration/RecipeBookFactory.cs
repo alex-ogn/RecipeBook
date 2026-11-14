@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.Services;
 
 namespace Tests.Integration;
 
@@ -25,6 +26,11 @@ public class RecipeBookFactory : WebApplicationFactory<Program>
 
     private readonly string _databaseName = $"RecipeBookIntegration-{Guid.NewGuid()}";
 
+    /// <summary>
+    /// Every email the app sent (nothing leaves the test).
+    /// </summary>
+    public CapturingEmailSender Emails { get; } = new();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
@@ -35,6 +41,9 @@ public class RecipeBookFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.RemoveAll(typeof(IDbContextOptionsConfiguration<ApplicationDbContext>));
             services.AddDbContext<ApplicationDbContext>(options => options.UseInMemoryDatabase(_databaseName));
+
+            services.RemoveAll<IEmailSender>();
+            services.AddSingleton<IEmailSender>(Emails);
 
             services.AddAuthentication(TestAuthHandler.SchemeName)
                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.SchemeName, _ => { });
@@ -100,6 +109,32 @@ public class RecipeBookFactory : WebApplicationFactory<Program>
         }
 
         return user;
+    }
+
+    public async Task AddToRoleAsync(string userName, string role)
+    {
+        using var scope = Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = await userManager.FindByNameAsync(userName)
+            ?? throw new InvalidOperationException($"No user {userName}.");
+        await userManager.AddToRoleAsync(user, role);
+    }
+
+    /// <summary>
+    /// The user as currently stored (fresh scope, so no stale tracked entity), or null when deleted.
+    /// </summary>
+    public async Task<ApplicationUser?> FindUserAsync(string userId)
+    {
+        using var scope = Services.CreateScope();
+        return await scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>().FindByIdAsync(userId);
+    }
+
+    public async Task<bool> HasPasswordAsync(string userId, string password)
+    {
+        using var scope = Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var user = await userManager.FindByIdAsync(userId);
+        return user != null && await userManager.CheckPasswordAsync(user, password);
     }
 
     public async Task<bool> IsLockedOutAsync(string userName)

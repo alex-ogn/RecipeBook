@@ -1,0 +1,39 @@
+@*
+    _AuthLayout.cshtml — CENTERED CARD FOR ACCOUNT PAGES
+    -------------------------------------------------------------------------
+    A "nested layout": it wraps the page in a small centered white card and is
+    itself wrapped by the normal _Layout.cshtml (menu, top bar...).
+
+        _Layout.cshtml  >  _AuthLayout.cshtml  >  the page (e.g. Login.cshtml)
+
+    A view opts in with:
+        @{ Layout = "_AuthLayout"; }
+
+    Used by every view in Views/Account (login, register, password and e-mail
+    pages, confirmation messages). Inside the card a page normally has:
+        <div class="auth__icon">   optional big icon (message pages)
+        <h1 class="auth__title">   heading
+        <p class="auth__lead">     one or two sentences of explanation
+        the form or a button
+        <div class="auth__links">  links under the form
+
+    The look is in wwwroot/css/pages.css, section 5.
+*@
+@{
+    Layout = "_Layout";
+}
+
+<div class="auth">
+    <section class="panel auth__card">
+        @RenderBody()
+    </section>
+</div>
+
+@* Pass the page's optional sections up to _Layout.cshtml (a nested layout must forward them). *@
+@section Styles {
+    @RenderSection("Styles", required: false)
+}
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

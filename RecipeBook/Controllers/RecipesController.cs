@@ -426,7 +426,7 @@ namespace RecipeBook.Controllers
             if (!RecipePermissions.CanEditComment(comment.UserId, User))
                 return Forbid();
 
-            return View(new CommentEditViewModel { Id = comment.Id, Content = comment.Content });
+            return View(new CommentEditViewModel { Id = comment.Id, RecipeId = comment.RecipeId, Content = comment.Content });
         }
 
         [Authorize]
@@ -434,14 +434,18 @@ namespace RecipeBook.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditComment(CommentEditViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-
             var comment = await _interactionService.GetCommentAsync(model.Id);
             if (comment == null) return NotFound();
 
             if (!RecipePermissions.CanEditComment(comment.UserId, User))
                 return Forbid();
+
+            if (!ModelState.IsValid)
+            {
+                // The "cancel" link needs the recipe; take it from the database, not from the posted form.
+                model.RecipeId = comment.RecipeId;
+                return View(model);
+            }
 
             await _interactionService.UpdateCommentAsync(comment, model.Content);
             return RedirectToAction(nameof(Details), new { id = comment.RecipeId });

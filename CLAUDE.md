@@ -21,7 +21,7 @@ Exceptions: `ViewData["Title"]` (Razor convention) and user-facing text (see bel
   - `TempDataKeys` / `ViewDataKeys` — keys passed between controllers and views
   - `ImageConstants` — image folders, URL prefixes, default images
   - `UserProfileConstants` — user/profile defaults and validation values
-  - `CookieConstants` — cookie names and lifetimes
+  - `CookieConstants` — cookie names and lifetimes, auth cookie paths (login, logout, access denied)
   - `AccountSecurityConstants` — login lockout and auth rate-limit values
 
   Add to an existing class when the value fits its domain; otherwise create a new `<Domain>Constants` class.
@@ -105,6 +105,32 @@ Add a new `<Area>Texts.resx` only when a new area does not fit any of these.
 - Pass page data through view-model properties, not `ViewData` (keep `ViewData` for `Title` and small layout values).
 - "Go back" redirects use `this.RedirectToLocalReferer(fallbackUrl)`, never `Redirect(Request.Headers.Referer)`.
 - Rich text is sanitized by the singleton `IHtmlSanitizer` (`RecipeHtmlSanitizer.Create()`), inside the service.
+
+## Frontend
+
+Plain CSS and JS on top of the local Bootstrap 5.1 (grid, utilities, dropdown, offcanvas, alert). No build step.
+Every CSS/JS file and every view starts with a comment explaining what it is for — keep that up when adding files.
+
+- **CSS** (`wwwroot/css/`, loaded by `_Layout.cshtml` in this order):
+  `tokens.css` (all colors, fonts, spacing, radius as CSS variables — change the look here) → `base.css` (plain tags)
+  → `layout.css` (app shell: sidebar, top bar, bottom tab bar, breakpoints) → `components.css` (buttons, `.panel`,
+  `.recipe-card`, `.avatar`, forms, `.chip`, `.data-table`, pager, `.empty-state`, `.people-list`)
+  → `pages.css` (styles used by a single page). Never hard-code a color or size that has a token.
+- **No inline styles or scripts in views**: no `style="..."`, no `<style>`, no `onclick`/`onsubmit`, no `<script>` with
+  code. Styles go in the CSS files; scripts in `wwwroot/js/` (`site.js` on every page, `recipe-form.js`,
+  `admin-charts.js`), loaded from `@section Scripts`. Data for a script goes in `data-*` attributes or a
+  `<script type="application/json">` block.
+- **Responsive**: mobile first — plain rules are the phone layout, `@media (min-width: 768px / 992px)` adds tablet /
+  desktop. The sidebar shows from 992px; below that the bottom tab bar and the offcanvas menu are used.
+- **Shared view pieces** (`Views/Shared/`): `_NavLinks` (the menu, rendered in the sidebar and the phone menu),
+  `_BottomNav`, `_Alerts` (TempData messages — use it instead of repeating alert markup), `_RecipeCard` (inside a
+  `<div class="recipe-grid">`), `_Pager`, `_AuthLayout` (nested layout for `Views/Account`, set with
+  `Layout = "_AuthLayout"`). The recipe form fields are in `Views/Recipes/_RecipeFormFields.cshtml`.
+- **Page skeleton**: `<div class="page-header"><h1>…</h1>[buttons]</div>`, `<partial name="_Alerts" />`, then
+  `.panel` sections; lists in `.recipe-grid` / `.people-list` / `.table-wrap > table.data-table`; an `.empty-state`
+  when a list is empty. Confirmation before a POST: `data-confirm="question"` on the form (handled by `site.js`).
+- jQuery is loaded once, in the layout. Page-only libraries (Trumbowyg, Chart.js) are loaded by the page that needs
+  them, with a pinned version.
 
 ## Security
 

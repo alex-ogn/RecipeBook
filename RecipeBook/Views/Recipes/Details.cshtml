@@ -1,216 +1,277 @@
-﻿@using RecipeBook.Authorization
+﻿@*
+    Recipes/Details.cshtml — ONE RECIPE, IN FULL
+    -------------------------------------------------------------------------
+    1. Title
+    2. Photo with a side panel next to it (under it on phones):
+         - author box: avatar + name
+         - info box: servings, cooking time, category, views, date,
+           diet chips, like / save / PDF buttons (+ edit / delete for the owner)
+    3. Ingredients table: category | product | quantity
+    4. Description and instructions (rich text)
+    5. Comments: a form to add one, then the list
+    6. Similar recipes (_RecipeCard in a .recipe-grid)
+
+    Like, save, comment and delete are POST forms: the form tag helper adds
+    the hidden antiforgery token, and the controller redirects back here.
+
+    The look is in wwwroot/css/pages.css, section 3.
+*@
+@using RecipeBook.Authorization
 @using RecipeBook.ViewModels.Recipes;
 @model RecipeViewModel
 
 @{
-    ViewData["Title"] = "Детайли за рецепта";
-    bool isUserAdmin = Model.IsUserAdmin;
-    var currentUserId = Model.CurrentUserId;
+    ViewData["Title"] = Model.Title;
     bool isSaved = Model.IsSaved;
     bool isLiked = Model.IsLiked;
-    var likeCount = Model.LikeCount;
+
+    // Use the default picture when the recipe has no photo.
+    var imageUrl = string.IsNullOrEmpty(Model.ImageUrl) ? ImageConstants.DefaultRecipeImageUrl : Model.ImageUrl;
 }
 
-<!-- Връзка към CSS файла -->
-<link rel="stylesheet" href="~/css/recipe-details.css" />
+<article class="recipe">
 
-<div class="recipe-container">
-    <h1 class="recipe-title">@Model.Title</h1>
+    @* ---------- 1. Title ---------- *@
+    <h1 class="recipe__title">@Model.Title</h1>
 
-    <!-- Снимка + дясна колона -->
-    <div class="recipe-main">
-        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    @* ---------- 2. Photo + side panel ----------
+       Side by side on wide screens (photo on the left, panel on the right),
+       one under the other on phones. See ".recipe__main" in pages.css. *@
+    <div class="recipe__main">
+
+        <img src="@imageUrl" alt="@Model.Title" class="recipe__image" />
+
+        <aside class="recipe__side">
+
+            @* ----- Author box: avatar + name, both link to the author's profile ----- *@
+            <section class="panel recipe__author">
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId">
+                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId })"
+                         alt="" class="avatar avatar--md" />
+                </a>
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId" class="recipe__author-name">
+                    @Model.User?.UserName
+                </a>
+            </section>
+
+            @* ----- Info box: facts, diet chips, action buttons ----- *@
+            <section class="panel recipe__info">
+
+                @* "label: value" rows. <dl> is the HTML element for such pairs (dt = label, dd = value). *@
+                <dl class="recipe__facts">
+                    <dt><i class="bi bi-people"></i> Порции</dt>
+                    <dd>@Model.Servings</dd>
+
+                    <dt><i class="bi bi-clock"></i> Време за готвене</dt>
+                    <dd>@Model.CookingTime минути</dd>
+
+                    <dt><i class="bi bi-grid"></i> Категория</dt>
+                    <dd>@Model.RecipeCategory?.Name</dd>
+
+                    <dt><i class="bi bi-eye"></i> Преглеждания</dt>
+                    <dd>@Model.ViewCount</dd>
+
+                    <dt><i class="bi bi-calendar3"></i> Добавена на</dt>
+                    <dd>@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</dd>
+                </dl>
+
+                @* Diet chips: shown only when at least one applies. *@
+                @if (Model.IsVegetarian || Model.IsVegan || Model.IsGlutenFree || Model.IsLactoseFree)
+                {
+                    <div class="chip-list">
+                        @if (Model.IsVegetarian)
+                        {
+                            <span class="chip chip--green">Вегетарианска</span>
+                        }
+                        @if (Model.IsVegan)
+                        {
+                            <span class="chip chip--green">Веган</span>
+                        }
+                        @if (Model.IsGlutenFree)
+                        {
+                            <span class="chip chip--orange">Без глутен</span>
+                        }
+                        @if (Model.IsLactoseFree)
+                        {
+                            <span class="chip chip--orange">Без лактоза</span>
+                        }
+                    </div>
+                }
+
+                <div class="recipe__actions">
+
+                    @* Like: posts to "Like" or "Unlike" depending on the current state.
+                       "is-on" paints the heart red (pages.css). *@
+                    <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="action-button action-button--like @(isLiked ? "is-on" : "")" title="Харесай">
+                            <i class="bi @(isLiked ? "bi-heart-fill" : "bi-heart")"></i>
+                            <span>@Model.LikeCount</span>
+                        </button>
+                    </form>
+
+                    @* Save to "Запазени". *@
+                    <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="action-button action-button--save @(isSaved ? "is-on" : "")" title="Запази">
+                            <i class="bi @(isSaved ? "bi-bookmark-fill" : "bi-bookmark")"></i>
+                            <span>@(isSaved ? "Запазена" : "Запази")</span>
+                        </button>
+                    </form>
+
+                    @* PDF: only reads data, so a normal link is enough. It opens in a new tab. *@
+                    <a asp-action="ExportPdf" asp-route-id="@Model.Id" target="_blank" rel="noopener" class="action-button" title="Изтегли като PDF">
+                        <i class="bi bi-file-earmark-arrow-down"></i>
+                        <span>PDF</span>
+                    </a>
+                </div>
+
+                @* Only the author or an admin can change the recipe (the controller checks again). *@
+                @if (Model.CanModify)
+                {
+                    <div class="button-row">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i> Редактирай
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Изтрий
+                        </a>
+                    </div>
+                }
+            </section>
+        </aside>
+    </div>
+
+    @* ---------- 3. Ingredients table ----------
+       Three columns: category | product | quantity. Ingredients are grouped by
+       category, and the category cell is written only once per group:
+       rowspan="3" makes that one cell as tall as the 3 rows of its group. *@
+    <section class="panel">
+        <h2 class="panel__title">Съставки</h2>
+
+        <div class="table-wrap mb-0">
+            <table class="data-table ingredient-table">
+                <thead>
+                    <tr>
+                        <th class="ingredient-table__category">Категория</th>
+                        <th>Продукт</th>
+                        <th class="ingredient-table__quantity">Количество</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var group in Model.RecipeIngredients
+                        .GroupBy(i => i.Ingredient.IngredientCategory?.Name ?? string.Empty)
+                        .OrderBy(g => g.Key))
+                    {
+                        var rowspan = group.Count();
+                        var first = true;
+
+                        foreach (var item in group)
+                        {
+                            <tr>
+                                @* Only the first row of a group gets the category cell. *@
+                                @if (first)
+                                {
+                                    <th rowspan="@rowspan" scope="rowgroup" class="ingredient-table__category">@group.Key</th>
+                                    first = false;
+                                }
+                                <td>@item.Ingredient.Name</td>
+                                <td class="ingredient-table__quantity">@item.QuantityNeeded</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    @* ---------- 4. Description and instructions ----------
+       Html.Raw prints the HTML as it is. This is safe ONLY because the text
+       was cleaned on the server (RecipeHtmlSanitizer) when the recipe was saved. *@
+    @if (!string.IsNullOrWhiteSpace(Model.Description))
+    {
+        <section class="panel">
+            <h2 class="panel__title">Описание</h2>
+            <div class="rich-text">@Html.Raw(Model.Description)</div>
+        </section>
+    }
+
+    <section class="panel">
+        <h2 class="panel__title">Инструкции</h2>
+        <div class="rich-text">@Html.Raw(Model.Instructions)</div>
+    </section>
+
+    @* ---------- 5. Comments ---------- *@
+    <section class="panel">
+        <h2 class="panel__title">Коментари</h2>
+
+        <form asp-action="AddComment" method="post" class="comment-form">
+            <input type="hidden" name="recipeId" value="@Model.Id" />
+            <textarea name="content" class="form-control" rows="2" placeholder="Напиши коментар..." aria-label="Коментар" required></textarea>
+            <button type="submit" class="btn btn-primary">Публикувай</button>
+        </form>
+
+        @if (Model.Comments != null && Model.Comments.Any())
         {
-            <img src="@Model.ImageUrl" class="recipe-image" alt="@Model.Title">
+            @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+            {
+                <div class="comment">
+                    <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@comment.UserId">
+                        <img src="@Url.Action("GetProfilePicture", "Users", new { userId = comment.UserId })"
+                             alt="" class="avatar avatar--sm" loading="lazy" />
+                    </a>
+
+                    <div class="comment__body">
+                        <div class="comment__meta">
+                            <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@comment.UserId" class="comment__author">@comment.User.UserName</a>
+                            <span class="text-muted small">@comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</span>
+                        </div>
+                        <p class="comment__text">@comment.Content</p>
+                    </div>
+
+                    <div class="comment__actions">
+                        @* Who may edit / delete is decided by RecipePermissions (and checked again in the controller). *@
+                        @if (RecipePermissions.CanEditComment(comment.UserId, User))
+                        {
+                            <a asp-action="EditComment" asp-route-id="@comment.Id" class="btn-icon" title="Редактирай">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        }
+
+                        @if (RecipePermissions.CanDeleteComment(comment.UserId, Model.UserId, User))
+                        {
+                            @* data-confirm: site.js asks the question before the form is sent. *@
+                            <form asp-action="DeleteComment" method="post" data-confirm="Да изтрия ли коментара?">
+                                <input type="hidden" name="id" value="@comment.Id" />
+                                <button type="submit" class="btn-icon btn-icon--danger" title="Изтрий">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
         }
         else
         {
-            <!-- Снимка по подразбиране, ако няма качена -->
-            <img src="@ImageConstants.DefaultRecipeImageUrl" class="recipe-image" alt="@Model.Title">
+            <p class="text-muted mb-0">Няма добавени коментари.</p>
         }
-        <div class="recipe-side-info">
-            <!-- Потребителска секция -->
-            <div class="white-box profile-box">
-                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId">
-                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId })" class="profile-avatar" alt="Потребител" />
-                </a>
-                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId" class="fw-bold">
-                    @Model.User?.UserName
-                </a>
-            </div>
+    </section>
 
-            <!-- Инфо за порции и др. -->
-            <div class="white-box">
-                <p><strong>Порции:</strong> @Model.Servings</p>
-                <p><strong>Време за готвене:</strong> @Model.CookingTime минути</p>
-                <p><strong>Категория:</strong> @Model.RecipeCategory?.Name</p>
-                <p><strong>Преглеждания:</strong> @Model.ViewCount</p>
-                <p><strong>Дата на добавяне:</strong> @Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Обратно към списъка
+    </a>
+</article>
 
-                @if (Model.IsVegetarian)
-                {
-                    <span class="badge bg-success">Вегетарианска</span>
-                }
-                @if (Model.IsVegan)
-                {
-                    <span class="badge bg-success">Веган</span>
-                }
-                @if (Model.IsGlutenFree)
-                {
-                    <span class="badge bg-warning text-dark">Без глутен</span>
-                }
-                @if (Model.IsLactoseFree)
-                {
-                    <span class="badge bg-warning text-dark">Без лактоза</span>
-                }
+@* ---------- 6. Similar recipes ---------- *@
+@if (Model.SimilarRecipes?.Any() == true)
+{
+    <h2 class="section-title">Подобни рецепти</h2>
 
-                <br/> </br/>
-                 <div class="d-flex gap-3 align-items-center">           
-                    <!-- Харесване -->
-                    <form asp-action="@(isLiked ? "Unlike" : "Like")" method="post" class="icon-form" title="Харесай">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <button type="submit" class="icon-button">
-                            <i class="bi bi-heart-fill @(isLiked ? "text-danger" : "text-secondary")"></i>
-                            <span>@likeCount</span>
-                        </button>
-                    </form>
-
-                    <!-- Запазване -->
-                    <form asp-action="@(isSaved ? "UnsaveRecipe" : "SaveRecipe")" method="post" class="icon-form" title="Запази">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <button type="submit" class="icon-button">
-                            <i class="bi @(isSaved ? "bi-bookmark-fill text-warning" : "bi-bookmark text-secondary")"></i>
-                        </button>
-                    </form>
-
-                    <form asp-action="ExportPdf" asp-route-id="@Model.Id" method="get" target="_blank" class="icon-form" title="Изтегли като PDF">
-                        <button type="submit" class="icon-button">
-                            <i class="bi bi-file-earmark-arrow-down text-secondary"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Съставки -->
-    <!-- Съставки по категории с rowspan -->
-    <!-- Съставки по категории -->
-    <div class="section-box">
-        <h4 class="mb-3">Съставки</h4>
-
-        <table class="table table-bordered align-middle">
-            <thead class="table-warning">
-                <tr>
-                    <th style="width: 25%;">Категория</th>
-                    <th style="width: 45%;">Продукт</th>
-                    <th style="width: 30%;">Количество</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var group in Model.RecipeIngredients
-                .GroupBy(i => i.Ingredient.IngredientCategory?.Name ?? string.Empty)
-                .OrderBy(g => g.Key))
-                {
-                    var rowspan = group.Count();
-                    var first = true;
-
-                    foreach (var item in group)
-                    {
-                        <tr>
-                            @if (first)
-                            {
-                                <td rowspan="@rowspan" class="fw-bold text-center align-middle bg-light">@group.Key</td>
-                                first = false;
-                            }
-                            <td>@item.Ingredient.Name</td>
-                            <td>@item.QuantityNeeded</td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-
-
-
-    <!-- Описание и инструкции -->
-    <div class="section-box">
-        <h4>Описание</h4>
-        <div class="formatted-text">
-            @Html.Raw(Model.Description)
-        </div>
-
-        <h4 class="mt-4">Инструкции</h4>
-        <div class="formatted-text">
-            @Html.Raw(Model.Instructions)
-        </div>
-    </div>
-
-    <div class="section-box">
-        <form asp-action="AddComment" method="post">
-            <input type="hidden" name="recipeId" value="@Model.Id" />
-            <div class="mb-2">
-                <textarea name="content" class="form-control" placeholder="Напиши коментар..." required></textarea>
-            </div>
-            <button type="submit" class="btn btn-sm btn-outline-success">Публикувай</button>
-        </form>
-
-        <br />
-    <h5>Коментари:</h5>
-    @if (Model.Comments != null && Model.Comments.Any())
-    {
-        @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+    <div class="recipe-grid">
+        @foreach (var recipe in Model.SimilarRecipes)
         {
-            <div class="border rounded p-2 mb-2 bg-light">
-                <p class="mb-1">@comment.Content</p>
-                <small class="text-muted">от @comment.User.UserName на @comment.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
-
-                @if (RecipePermissions.CanEditComment(comment.UserId, User))
-                {
-                        <form asp-action="EditComment" method="get" class="d-inline ms-2">
-                            <input type="hidden" name="id" value="@comment.Id" />
-                            <button type="submit" class="comment-action-btn edit">Редактирай</button>
-                        </form>
-                }
-              
-                @if (RecipePermissions.CanDeleteComment(comment.UserId, Model.UserId, User))
-                {
-                        <form asp-action="DeleteComment" method="post" class="d-inline ms-2">
-                            <input type="hidden" name="id" value="@comment.Id" />
-                            <button type="submit" class="comment-action-btn delete">Изтрий</button>
-                        </form>
-                }
-
-            </div>
+            <partial name="_RecipeCard" model="recipe" />
         }
-    }
-    else
-    {
-       <p class="text-muted">Няма добавени коментари.</p>
-    }
     </div>
-
-    <!-- Бутони -->
-    <div class="mb-5">
-        @if (Model.CanModify)
-        {
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Редактирай</a>
-        }
-
-        <a asp-action="Index" class="btn btn-secondary">Обратно към списъка</a>
-    </div>
-
-        @if (Model.SimilarRecipes?.Any() == true)
-        {
-            <h1>Подобни рецепти</h1>
-
-            <div class="row">
-                @foreach (var recipe in Model.SimilarRecipes)
-                {
-                    <partial name="_RecipeCard" model="recipe" />
-                }
-            </div>
-        }
-
-</div>
+}

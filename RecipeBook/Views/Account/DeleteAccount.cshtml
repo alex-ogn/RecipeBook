@@ -1,0 +1,44 @@
+@*
+    Account/DeleteAccount.cshtml — DELETE MY ACCOUNT
+    -------------------------------------------------------------------------
+    Rendered inside the centered card of _AuthLayout.cshtml.
+    The user must type the current password and tick the checkbox.
+*@
+@model RecipeBook.ViewModels.Account.DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Изтриване на профил";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth__icon auth__icon--danger"><i class="bi bi-exclamation-triangle-fill"></i></div>
+<h1 class="auth__title">Изтриване на профил</h1>
+<p class="auth__lead">
+    Профилът ти, рецептите, коментарите, харесванията и запазените рецепти ще бъдат изтрити.
+    Това действие не може да бъде отменено.
+</p>
+
+<form asp-action="DeleteAccount" method="post">
+    <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+    <div class="form-field">
+        <label asp-for="CurrentPassword" class="form-label"></label>
+        <input asp-for="CurrentPassword" class="form-control" type="password" autocomplete="current-password" />
+        <span asp-validation-for="CurrentPassword"></span>
+    </div>
+
+    <div class="form-check form-field">
+        <input asp-for="Confirm" class="form-check-input" />
+        <label asp-for="Confirm" class="form-check-label"></label>
+        <span asp-validation-for="Confirm" class="d-block"></span>
+    </div>
+
+    <button type="submit" class="btn btn-danger w-100">Изтрий профила завинаги</button>
+</form>
+
+<div class="auth__links">
+    <a asp-controller="Users" asp-action="Edit">Отказ</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

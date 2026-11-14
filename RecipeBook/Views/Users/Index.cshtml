@@ -1,62 +1,89 @@
-﻿@model PagedResult<ApplicationUser>
+﻿@*
+    Users/Index.cshtml — FIND PEOPLE
+    -------------------------------------------------------------------------
+    A searchable, paged list of users. Each row: avatar, name (link to the
+    profile page) and, for admins only, the e-mail and the admin buttons.
+
+    Who sees what:
+      everyone signed in   avatar + name; a settings button on their own row
+      admins               + e-mail, "edit" and "details" buttons on every row
+    (The controller enforces the same rules; hiding buttons is only tidiness.)
+
+    The look (.people-list, .person) is in wwwroot/css/components.css, section 13.
+*@
+@model PagedResult<ApplicationUser>
 
 @{
-    ViewData["Title"] = "Потребители";
+    ViewData["Title"] = "Хора";
+
+    // Emails are personal data: only admins see them.
+    bool isAdmin = User.IsInRole(UserRoles.Admin);
+    var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Потребители</h1>
-    </div>
+<div class="page-header">
+    <h1>Хора</h1>
+</div>
 
-    @if (TempData[TempDataKeys.SuccessMessage] != null)
+<partial name="_Alerts" />
+
+@* Search: a GET form without an action posts back to this same page (/Users?search=...). *@
+<form method="get" class="filter-bar" role="search">
+    <div class="filter-bar__field">
+        <label for="userSearch" class="form-label">Търсене</label>
+        <input id="userSearch" type="search" name="search" class="form-control" placeholder="Търси потребител..." value="@ViewData[ViewDataKeys.Search]" />
+    </div>
+    <div class="filter-bar__actions">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Търси
+        </button>
+    </div>
+</form>
+
+@if (Model.Any())
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData[TempDataKeys.SuccessMessage]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-    <form method="get" class="mb-3">
-        <div class="input-group">
-            <input type="text" name="search" class="form-control" placeholder="Търси потребител..." value="@ViewData[ViewDataKeys.Search]" />
-            <button type="submit" class="search-icon-button">
-                <i class="bi bi-search"></i>
-            </button>
-        </div>
-    </form>
+    <ul class="people-list">
+        @foreach (var user in Model)
+        {
+            <li class="person">
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@user.Id">
+                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion })"
+                         alt="" class="avatar avatar--md" loading="lazy" />
+                </a>
 
-    <table class="table table-bordered table-hover align-middle shadow-sm">
-        <thead class="table-light">
-            <tr>
-                <th style="width: 100px;">Снимка</th>
-                <th>Потребителско име</th>
-                <th>Имейл</th>
-                <th style="width: 150px;">Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in Model)
-            {
-                <tr>
-                    <td>
-                        <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion })"
-                         class="rounded-circle"
-                         style="width: 70px; height: 70px; object-fit: cover;" />
-                    </td>
-                    <td>@user.UserName</td>
-                    <td>@user.Email</td>
-                    <td class="text-center">
-                        <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary me-1" title="Редактирай">
-                            <i class="bi bi-pencil-square"></i>
+                <div class="person__info">
+                    <a class="person__name" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@user.Id">@user.UserName</a>
+                    @if (isAdmin)
+                    {
+                        <span class="person__meta">@user.Email</span>
+                    }
+                </div>
+
+                <div class="person__actions">
+                    @* Editing is allowed for admins and for the user's own profile. *@
+                    @if (isAdmin || user.Id == currentUserId)
+                    {
+                        <a asp-action="Edit" asp-route-id="@user.Id" class="btn-icon" title="Редактирай">
+                            <i class="bi bi-pencil"></i>
                         </a>
-                        <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-outline-info me-1" title="Детайли">
+                    }
+                    @if (isAdmin)
+                    {
+                        <a asp-action="Details" asp-route-id="@user.Id" class="btn-icon" title="Детайли">
                             <i class="bi bi-info-circle"></i>
                         </a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
 
     <partial name="_Pager" model="Model" />
-</div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="bi bi-people"></i>
+        Няма намерени потребители.
+    </div>
+}

@@ -1,0 +1,103 @@
+/* =============================================================================
+   tokens.css — THE DESIGN SETTINGS OF THE SITE
+   =============================================================================
+   This file contains no real styling. It only defines "CSS variables"
+   (also called custom properties or design tokens): named values such as
+   colors, fonts, spacing and corner radius.
+
+   Every other CSS file uses these names instead of raw values, for example:
+
+       color: var(--color-primary);
+
+   WHY: to change the look of the whole site (say, a different green) you edit
+   ONE line here and every button, link and icon follows.
+
+   HOW TO READ IT:
+     :root { ... }      ":root" means "the whole page", so the variables are
+                        available everywhere.
+     --name: value;     defines a variable.
+     var(--name)        uses it (in the other files).
+
+   Load order (see Views/Shared/_Layout.cshtml):
+     bootstrap -> tokens.css -> base.css -> layout.css -> components.css -> pages.css
+   ============================================================================= */
+
+:root {
+    /* ---------------------------------------------------------------------
+       COLORS
+       The palette is "cozy kitchen": warm cream paper, herb green,
+       pumpkin orange, and tomato red for hearts and warnings.
+       --------------------------------------------------------------------- */
+
+    /* Backgrounds */
+    --color-bg: #FAF6EE;            /* page background: warm cream, like cookbook paper */
+    --color-surface: #FFFFFF;       /* cards, menus, inputs: anything that sits ON the page */
+    --color-surface-soft: #F4EEE2;  /* slightly darker cream: hover states, table headers, chips */
+
+    /* Brand green: main buttons, active menu item, links */
+    --color-primary: #1A6158;
+    --color-primary-dark: #134A43;  /* hover / pressed */
+    --color-primary-soft: #E2EFEC;  /* very light green background (active menu item, success alert) */
+
+    /* Accent orange: the "New recipe" button, highlights, the logo */
+    --color-accent: #F4A261;
+    --color-accent-dark: #E0863F;   /* hover / pressed */
+    --color-accent-soft: #FDEEDF;   /* very light orange background (badges, info alert) */
+
+    /* Red: likes (hearts), delete buttons, error messages */
+    --color-danger: #E63946;
+    --color-danger-dark: #C92A37;
+    --color-danger-soft: #FCE8EA;
+
+    /* Text */
+    --color-text: #264653;          /* normal text: dark blue-grey, softer than pure black */
+    --color-text-muted: #6B7F86;    /* secondary text: dates, counters, hints */
+    --color-text-on-dark: #FFFFFF;  /* text on green / red buttons */
+
+    /* Lines */
+    --color-border: #E9E1D3;        /* thin borders around cards and inputs */
+
+    /* ---------------------------------------------------------------------
+       FONTS
+       Both fonts are loaded from Google Fonts in _Layout.cshtml and support
+       Cyrillic. The names after the first one are fallbacks used if the
+       font cannot be downloaded.
+       --------------------------------------------------------------------- */
+    --font-heading: "Lora", Georgia, "Times New Roman", serif;          /* titles: a book-like serif */
+    --font-body: "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif; /* everything else: round and friendly */
+
+    /* ---------------------------------------------------------------------
+       SPACING
+       One scale used for margins, paddings and gaps, so distances look
+       consistent. "rem" is relative to the base font size (1rem = 16px).
+       --------------------------------------------------------------------- */
+    --space-1: 0.25rem;  /*  4px */
+    --space-2: 0.5rem;   /*  8px */
+    --space-3: 0.75rem;  /* 12px */
+    --space-4: 1rem;     /* 16px */
+    --space-5: 1.5rem;   /* 24px */
+    --space-6: 2rem;     /* 32px */
+    --space-7: 3rem;     /* 48px */
+
+    /* ---------------------------------------------------------------------
+       SHAPES AND SHADOWS
+       --------------------------------------------------------------------- */
+    --radius-sm: 8px;      /* inputs, small chips */
+    --radius-md: 14px;     /* menus, alerts */
+    --radius-lg: 20px;     /* cards */
+    --radius-pill: 999px;  /* fully rounded: buttons, badges, avatars */
+
+    --shadow-sm: 0 1px 2px rgba(38, 70, 83, 0.06);    /* resting card */
+    --shadow-md: 0 6px 20px rgba(38, 70, 83, 0.10);   /* hovered card, dropdown menu */
+
+    /* ---------------------------------------------------------------------
+       LAYOUT SIZES (used by layout.css)
+       --------------------------------------------------------------------- */
+    --sidebar-width: 260px;     /* left menu on desktop */
+    --topbar-height: 64px;      /* bar with the search box */
+    --bottomnav-height: 60px;   /* tab bar on phones */
+    --content-max-width: 1080px;/* the page content never gets wider than this */
+
+    /* How fast hover effects animate */
+    --transition-fast: 150ms ease;
+}

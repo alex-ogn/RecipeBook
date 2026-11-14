@@ -1,27 +1,26 @@
-﻿@model RecipeBook.Models.RecipeCategory
+﻿@*
+    RecipeCategories/Details.cshtml — ADMIN: ONE RECIPE CATEGORY (read-only)
+*@
+@model RecipeBook.Models.RecipeCategory
 
 @{
     ViewData["Title"] = "Детайли за категория";
 }
 
-<div class="container mt-4">
-    <h1 class="mb-4">Детайли за категория на рецепта</h1>
+<section class="panel panel--narrow">
+    <h1 class="panel__title">Детайли за категория на рецепта</h1>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-3 text-muted">Име на категория:</dt>
-                <dd class="col-sm-9">@Model.Name</dd>
-            </dl>
-        </div>
-    </div>
+    <dl class="detail-list">
+        <dt>Име на категория</dt>
+        <dd>@Model.Name</dd>
+    </dl>
 
-    <div class="mt-4 d-flex justify-content-between">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
-            <i class="bi bi-pencil-square"></i> Редактирай
+    <div class="button-row">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Редактирай
         </a>
-        <a asp-action="Index" class="btn btn-outline-primary">
+        <a asp-action="Index" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Назад към списъка
         </a>
     </div>
-</div>
+</section>

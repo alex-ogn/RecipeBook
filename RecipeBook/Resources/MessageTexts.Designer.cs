@@ -257,5 +257,167 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("UserNotFoundById", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Профилът ви беше изтрит..
+        /// </summary>
+        public static string AccountDeleted {
+            get {
+                return ResourceManager.GetString("AccountDeleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Профилът е деактивиран от администратор..
+        /// </summary>
+        public static string AccountDisabled {
+            get {
+                return ResourceManager.GetString("AccountDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Администраторите не могат да изтрият собствения си профил..
+        /// </summary>
+        public static string AdminCannotDeleteOwnAccount {
+            get {
+                return ResourceManager.GetString("AdminCannotDeleteOwnAccount", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Не можете да заключите собствения си профил..
+        /// </summary>
+        public static string CannotLockYourself {
+            get {
+                return ResourceManager.GetString("CannotLockYourself", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to За да потвърдите новия си имейл адрес, &lt;a href=&apos;{0}&apos;&gt;кликнете тук&lt;/a&gt;..
+        /// </summary>
+        public static string ChangeEmailBody {
+            get {
+                return ResourceManager.GetString("ChangeEmailBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Потвърдете новия си имейл.
+        /// </summary>
+        public static string ChangeEmailSubject {
+            get {
+                return ResourceManager.GetString("ChangeEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Получихме заявка имейлът на профила ви в RecipeBook да бъде сменен на {0}. Ако не сте вие, сменете паролата си незабавно..
+        /// </summary>
+        public static string EmailChangeNoticeBody {
+            get {
+                return ResourceManager.GetString("EmailChangeNoticeBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Заявка за смяна на имейла.
+        /// </summary>
+        public static string EmailChangeNoticeSubject {
+            get {
+                return ResourceManager.GetString("EmailChangeNoticeSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Грешна парола..
+        /// </summary>
+        public static string IncorrectPassword {
+            get {
+                return ResourceManager.GetString("IncorrectPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Паролата беше сменена успешно..
+        /// </summary>
+        public static string PasswordChanged {
+            get {
+                return ResourceManager.GetString("PasswordChanged", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Паролата на профила ви в RecipeBook беше сменена. Ако не сте вие, използвайте „Забравена парола“ на страницата за вход, за да възстановите достъпа си..
+        /// </summary>
+        public static string PasswordChangedNoticeBody {
+            get {
+                return ResourceManager.GetString("PasswordChangedNoticeBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Паролата ви беше сменена.
+        /// </summary>
+        public static string PasswordChangedNoticeSubject {
+            get {
+                return ResourceManager.GetString("PasswordChangedNoticeSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to За да зададете нова парола, &lt;a href=&apos;{0}&apos;&gt;кликнете тук&lt;/a&gt;. Ако не сте заявили смяна на паролата, игнорирайте този имейл..
+        /// </summary>
+        public static string PasswordResetEmailBody {
+            get {
+                return ResourceManager.GetString("PasswordResetEmailBody", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Смяна на парола.
+        /// </summary>
+        public static string PasswordResetEmailSubject {
+            get {
+                return ResourceManager.GetString("PasswordResetEmailSubject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Изпратен е линк за смяна на паролата на {0}..
+        /// </summary>
+        public static string PasswordResetLinkSent {
+            get {
+                return ResourceManager.GetString("PasswordResetLinkSent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Профилът на {0} е деактивиран..
+        /// </summary>
+        public static string UserLocked {
+            get {
+                return ResourceManager.GetString("UserLocked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Профилът на {0} е активиран отново..
+        /// </summary>
+        public static string UserUnlocked {
+            get {
+                return ResourceManager.GetString("UserUnlocked", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Нямаш достъп.
+        /// </summary>
+        public static string AccessDeniedTitle {
+            get {
+                return ResourceManager.GetString("AccessDeniedTitle", resourceCulture);
+            }
+        }
     }
 }

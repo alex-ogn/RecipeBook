@@ -1,0 +1,14 @@
+@*
+    Account/ConfirmEmailChangeSuccess.cshtml — MESSAGE: "your e-mail was changed"
+    Rendered inside the centered card of _AuthLayout.cshtml.
+*@
+@{
+    ViewData["Title"] = "Имейлът е сменен";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth__icon auth__icon--success"><i class="bi bi-check-circle-fill"></i></div>
+<h1 class="auth__title">Имейлът е сменен</h1>
+<p class="auth__lead">Новият ти имейл адрес е потвърден и вече се използва за профила.</p>
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-primary w-100">Към началната страница</a>

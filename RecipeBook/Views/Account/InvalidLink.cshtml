@@ -1,0 +1,15 @@
+@*
+    Account/InvalidLink.cshtml — MESSAGE: "this link is not valid"
+    Shown when a confirmation link is wrong, expired or already used.
+    Rendered inside the centered card of _AuthLayout.cshtml.
+*@
+@{
+    ViewData["Title"] = "Невалиден линк";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth__icon auth__icon--danger"><i class="bi bi-x-circle-fill"></i></div>
+<h1 class="auth__title">Линкът е невалиден</h1>
+<p class="auth__lead">Линкът е невалиден, изтекъл е или вече е използван. Можеш да поискаш нов.</p>
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-primary w-100">Към началната страница</a>

@@ -1,0 +1,17 @@
+@*
+    Account/AccessDenied.cshtml — MESSAGE: "you may not open this page"
+    Shown when a signed-in user opens something they have no rights for
+    (for example the edit page of someone else's recipe).
+    Rendered inside the centered card of _AuthLayout.cshtml.
+*@
+@using RecipeBook.Resources
+@{
+    ViewData["Title"] = MessageTexts.AccessDeniedTitle;
+    Layout = "_AuthLayout";
+}
+
+<div class="auth__icon auth__icon--danger"><i class="bi bi-shield-lock-fill"></i></div>
+<h1 class="auth__title">@MessageTexts.AccessDeniedTitle</h1>
+<p class="auth__lead">Нямаш права да отвориш тази страница.</p>
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-primary w-100">Към началната страница</a>

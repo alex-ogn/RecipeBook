@@ -1,0 +1,169 @@
+@*
+    Recipes/_RecipeFormFields.cshtml — THE FIELDS OF THE RECIPE FORM
+    -------------------------------------------------------------------------
+    Shared by Create.cshtml and Edit.cshtml, so the two pages cannot drift
+    apart. It must be rendered INSIDE their <form> tag:
+
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            <partial name="_RecipeFormFields" model="Model" />
+            ...buttons...
+        </form>
+
+    Sections: basics, photo, diet, ingredients, description and instructions.
+
+    The ingredient picker and the two text editors are driven by
+    wwwroot/js/recipe-form.js. That script finds elements by their id, so
+    DO NOT rename the ids below without changing the script too:
+      ingredient-picker, ingredient-search, ingredient-results,
+      add-ingredient-btn, new-ingredient-input, new-ingredient-name,
+      confirm-new-ingredient, cancel-new-ingredient,
+      selected-ingredients-table, SelectedIngredientsJson,
+      selected-ingredients-data
+
+    Labels (<label asp-for>) take their text from the [Display] attributes of
+    RecipeEditViewModel, i.e. from Resources/DisplayTexts.resx.
+*@
+@using RecipeBook.ViewModels.Recipes;
+@model RecipeEditViewModel
+@{
+    // ".jpg,.jpeg,.png,.webp" — the file dialog only offers the image types the server accepts.
+    var acceptedImages = string.Join(",", ImageConstants.AllowedImageExtensions);
+}
+
+@* Errors that do not belong to one field. *@
+<div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+@* ---------- Basics ---------- *@
+<section class="panel">
+    <h2 class="panel__title">Основна информация</h2>
+
+    <div class="form-field">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title"></span>
+    </div>
+
+    @* Three fields side by side on wide screens, one per row on phones
+       (Bootstrap grid: "col-md-4" = one third of the row from 768px up). *@
+    <div class="row">
+        <div class="col-md-4 form-field">
+            <label asp-for="CategoryId" class="form-label"></label>
+            <select asp-for="CategoryId" asp-items="@Model.Categories" class="form-select"></select>
+        </div>
+        <div class="col-6 col-md-4 form-field">
+            <label asp-for="Servings" class="form-label"></label>
+            <input asp-for="Servings" class="form-control" />
+            <span asp-validation-for="Servings"></span>
+        </div>
+        <div class="col-6 col-md-4 form-field">
+            <label asp-for="CookingTime" class="form-label"></label>
+            <input asp-for="CookingTime" class="form-control" />
+            <span asp-validation-for="CookingTime"></span>
+        </div>
+    </div>
+
+    @* Diet checkboxes in one wrapping row. *@
+    <div class="check-row">
+        <div class="form-check">
+            <input asp-for="IsVegetarian" class="form-check-input" />
+            <label asp-for="IsVegetarian" class="form-check-label"></label>
+        </div>
+        <div class="form-check">
+            <input asp-for="IsVegan" class="form-check-input" />
+            <label asp-for="IsVegan" class="form-check-label"></label>
+        </div>
+        <div class="form-check">
+            <input asp-for="IsGlutenFree" class="form-check-input" />
+            <label asp-for="IsGlutenFree" class="form-check-label"></label>
+        </div>
+        <div class="form-check">
+            <input asp-for="IsLactoseFree" class="form-check-input" />
+            <label asp-for="IsLactoseFree" class="form-check-label"></label>
+        </div>
+    </div>
+</section>
+
+@* ---------- Photo ---------- *@
+<section class="panel">
+    <h2 class="panel__title">Снимка</h2>
+
+    @* On the edit page: show the photo the recipe already has. *@
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" alt="Текуща снимка" class="recipe-form__current-image" />
+        <p class="form-hint">Това е текущата снимка. Изберете файл само ако искате да я смените.</p>
+    }
+
+    <div class="form-field mb-0">
+        <label asp-for="imageFileNew" class="form-label"></label>
+        <input type="file" asp-for="imageFileNew" class="form-control" accept="@acceptedImages" />
+        <span asp-validation-for="imageFileNew"></span>
+        <div class="form-hint">До @ImageConstants.MaxImageSizeMegabytes MB (@acceptedImages).</div>
+    </div>
+</section>
+
+@* ---------- Ingredients ----------
+   data-ingredients-url tells the script where to load the list of all ingredients from. *@
+<section class="panel" id="ingredient-picker" data-ingredients-url="@Url.Action("GetAll", "Ingredients")">
+    <h2 class="panel__title">Съставки</h2>
+
+    @* Type to search; matching ingredients appear in the list under the box; click one to add it. *@
+    <div class="ingredient-search">
+        <input type="text" id="ingredient-search" class="form-control" placeholder="Търси съставка..." autocomplete="off" aria-label="Търси съставка" />
+        <ul id="ingredient-results" class="ingredient-search__results"></ul>
+    </div>
+
+    @* For an ingredient that is not in the list yet: the button reveals a small input. *@
+    <button type="button" id="add-ingredient-btn" class="btn btn-sm btn-outline-primary mt-3">
+        <i class="bi bi-plus-lg"></i> Добави нова съставка
+    </button>
+
+    @* "hidden" keeps this block invisible until the script shows it. *@
+    <div id="new-ingredient-input" class="new-ingredient" hidden>
+        <input type="text" id="new-ingredient-name" class="form-control" placeholder="Име на нова съставка" aria-label="Име на нова съставка" />
+        <button type="button" class="btn btn-primary" id="confirm-new-ingredient">Добави</button>
+        <button type="button" class="btn-icon" id="cancel-new-ingredient" aria-label="Отказ">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    @* The chosen ingredients. The rows are created by the script. *@
+    <div class="table-wrap mt-3 mb-0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Съставка</th>
+                    <th>Количество</th>
+                    <th class="data-table__actions">Премахни</th>
+                </tr>
+            </thead>
+            <tbody id="selected-ingredients-table"></tbody>
+        </table>
+    </div>
+
+    @* What the server actually receives: the chosen ingredients as JSON text.
+       The script rewrites this value after every change. *@
+    <input type="hidden" name="SelectedIngredientsJson" id="SelectedIngredientsJson" />
+
+    @* The ingredients the recipe already has (edit page, or after a validation error).
+       type="application/json" means the browser does not run this block; the script only reads it. *@
+    <script type="application/json" id="selected-ingredients-data">@Html.Raw(Json.Serialize(Model.SelectedIngredients))</script>
+</section>
+
+@* ---------- Text ----------
+   recipe-form.js turns these two <textarea> elements into rich-text editors (bold, lists...). *@
+<section class="panel">
+    <h2 class="panel__title">Описание и приготвяне</h2>
+
+    <div class="form-field">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="6" data-rich-editor></textarea>
+        <span asp-validation-for="Description"></span>
+    </div>
+
+    <div class="form-field mb-0">
+        <label asp-for="Instructions" class="form-label"></label>
+        <textarea asp-for="Instructions" class="form-control" rows="6" data-rich-editor></textarea>
+        <span asp-validation-for="Instructions"></span>
+    </div>
+</section>

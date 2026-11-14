@@ -1,0 +1,807 @@
+/* =============================================================================
+   components.css — REUSABLE BUILDING BLOCKS
+   =============================================================================
+   Small pieces that appear on many pages: buttons, panels, the recipe card,
+   avatars, form fields, alerts, chips, tables, the pager...
+
+   NAMING: classes follow the "BEM" convention, which reads like this:
+       .recipe-card            the block (the component itself)
+       .recipe-card__title     an element INSIDE the block   (two underscores)
+       .avatar--lg             a VARIANT of the block        (two dashes)
+
+   Some sections restyle Bootstrap classes (.btn, .form-control, .alert,
+   .pagination, .dropdown-menu) so the Bootstrap widgets match our colors.
+   Bootstrap 5.1 has no color variables for these, so we override the rules.
+
+   CONTENTS
+     1.  Buttons
+     2.  Panel (white box)
+     3.  Page header and section titles
+     4.  Recipe grid and recipe card
+     5.  Avatar
+     6.  Forms
+     7.  Alerts (messages)
+     8.  Chips (small labels)
+     9.  Tables
+     10. Pager
+     11. Dropdown menu
+     12. Empty state
+     13. People list
+     14. Counters (number + label)
+     15. Rich text (recipe description / instructions)
+     16. Detail list (label: value)
+   ============================================================================= */
+
+/* ---------------------------------------------------------------------------
+   1. BUTTONS
+   Use them like in Bootstrap:  <a class="btn btn-primary">...</a>
+     btn-primary            green, the main action of a page
+     btn-accent             orange, "create something new"
+     btn-outline-primary    white with a green border, secondary action
+     btn-outline-secondary  white with a grey border, "Back" / "Cancel"
+     btn-danger             red, destructive action (delete)
+     btn-outline-danger     quieter delete
+     btn-icon               round button that contains only an icon
+   --------------------------------------------------------------------------- */
+.btn {
+    display: inline-flex;               /* icon and text sit on one line... */
+    align-items: center;                /* ...vertically centered */
+    justify-content: center;
+    gap: var(--space-2);                /* space between icon and text */
+    padding: 0.55rem 1.2rem;
+    border-radius: var(--radius-pill);  /* fully rounded ends, like social apps */
+    font-weight: 700;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast),
+                color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.btn:hover {
+    text-decoration: none;
+}
+
+/* Replace Bootstrap's blue focus glow with our orange one. */
+.btn:focus,
+.btn:active:focus {
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+}
+
+.btn-sm {
+    padding: 0.35rem 0.9rem;
+    font-size: 0.875rem;
+}
+
+/* Green */
+.btn-primary,
+.btn-primary:focus {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-text-on-dark);
+}
+
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:active:focus {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: var(--color-text-on-dark);
+}
+
+/* Orange */
+.btn-accent,
+.btn-accent:focus {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-text-on-dark);
+}
+
+.btn-accent:hover,
+.btn-accent:active {
+    background-color: var(--color-accent-dark);
+    border-color: var(--color-accent-dark);
+    color: var(--color-text-on-dark);
+}
+
+/* White with green border */
+.btn-outline-primary,
+.btn-outline-primary:focus {
+    background-color: var(--color-surface);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:active,
+.btn-outline-primary:active:focus {
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
+}
+
+/* White with grey border */
+.btn-outline-secondary,
+.btn-outline-secondary:focus {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-secondary:active,
+.btn-outline-secondary:active:focus {
+    background-color: var(--color-surface-soft);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+/* Red */
+.btn-danger,
+.btn-danger:focus {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--color-text-on-dark);
+}
+
+.btn-danger:hover,
+.btn-danger:active,
+.btn-danger:active:focus {
+    background-color: var(--color-danger-dark);
+    border-color: var(--color-danger-dark);
+    color: var(--color-text-on-dark);
+}
+
+.btn-outline-danger,
+.btn-outline-danger:focus {
+    background-color: var(--color-surface);
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:active,
+.btn-outline-danger:active:focus {
+    background-color: var(--color-danger-soft);
+    border-color: var(--color-danger);
+    color: var(--color-danger-dark);
+}
+
+/* Round icon-only button (☰, ⋯, edit pencil in tables...). */
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: none;
+    color: var(--color-text);
+    font-size: 1.2rem;
+}
+
+.btn-icon:hover {
+    background-color: var(--color-surface-soft);
+    color: var(--color-text);
+}
+
+.btn-icon--danger:hover {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+}
+
+/* A row of buttons under a form: wraps onto several lines on narrow screens. */
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------------------------
+   2. PANEL — a white rounded box that groups related content
+   <section class="panel"> ... </section>
+   --------------------------------------------------------------------------- */
+.panel {
+    padding: var(--space-5);
+    margin-bottom: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Narrow panel for simple forms (admin create/edit, confirm delete). */
+.panel--narrow {
+    max-width: 560px;
+}
+
+/* Red border: "be careful" panels (delete confirmations). */
+.panel--danger {
+    border-color: var(--color-danger);
+}
+
+.panel__title {
+    margin-bottom: var(--space-4);
+    font-size: 1.2rem;
+}
+
+/* ---------------------------------------------------------------------------
+   3. PAGE HEADER AND SECTION TITLES
+   --------------------------------------------------------------------------- */
+
+/* Title on the left, action buttons on the right; stacks on narrow screens. */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;                    /* buttons drop under the title when there is no room */
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+}
+
+.page-header h1 {
+    margin-bottom: 0;
+}
+
+/* Title of a section inside a page ("Most popular", "Comments"). */
+.section-title {
+    margin: var(--space-6) 0 var(--space-4);
+}
+
+/* ---------------------------------------------------------------------------
+   4. RECIPE GRID AND RECIPE CARD (Views/Shared/_RecipeCard.cshtml)
+   --------------------------------------------------------------------------- */
+
+/* The grid decides by itself how many cards fit in a row:
+   "auto-fill" + "minmax(260px, 1fr)" means: make as many columns as fit,
+   each at least 260px wide, and share the leftover space equally.
+   Result: 1 column on phones, 2 on tablets, 3 on desktop — with no
+   breakpoints to maintain. */
+.recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--space-5);
+}
+
+/* The card looks like a post in a social feed:
+   author row, photo, title + short text, counters. */
+.recipe-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+/* Lift the card a little when the mouse is over it. */
+.recipe-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Top row: avatar + author name on the left, "⋯" menu on the right. */
+.recipe-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+    min-height: 60px;
+}
+
+.recipe-card__author {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;                       /* allows the long-name ellipsis below to work */
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+/* Long user names are cut with "..." instead of breaking the layout. */
+.recipe-card__author-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The photo. "aspect-ratio" keeps every photo the same shape (4:3) and
+   "object-fit: cover" crops it to fill that shape without stretching. */
+.recipe-card__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background-color: var(--color-surface-soft);   /* shown while the photo loads */
+}
+
+.recipe-card__body {
+    flex: 1;                            /* takes the free height, so footers line up across a row */
+    padding: var(--space-4) var(--space-4) var(--space-2);
+}
+
+.recipe-card__title {
+    margin-bottom: var(--space-1);
+    font-size: 1.15rem;
+}
+
+.recipe-card__title a {
+    color: var(--color-text);
+}
+
+/* Show at most 2 lines of the description, then "...". */
+.recipe-card__text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 0;
+    color: var(--color-text-muted);
+    font-size: 0.925rem;
+}
+
+/* Bottom row: likes and views. */
+.recipe-card__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.recipe-card__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.recipe-card__stat--likes .bi {
+    color: var(--color-danger);
+}
+
+/* ---------------------------------------------------------------------------
+   5. AVATAR — round profile picture
+   <img class="avatar avatar--md" ...>
+   --------------------------------------------------------------------------- */
+.avatar {
+    flex: 0 0 auto;                     /* never squeezed by a flex row */
+    border-radius: var(--radius-pill);
+    object-fit: cover;                  /* crop to a circle without stretching */
+    background-color: var(--color-surface-soft);
+    border: 2px solid var(--color-surface);
+    box-shadow: 0 0 0 1px var(--color-border);   /* thin ring around the picture */
+}
+
+.avatar--sm { width: 36px;  height: 36px; }    /* cards, comments, top bar */
+.avatar--md { width: 56px;  height: 56px; }    /* people lists, recipe author */
+.avatar--lg { width: 104px; height: 104px; }   /* profile header */
+.avatar--xl { width: 160px; height: 160px; }   /* settings page */
+
+/* ---------------------------------------------------------------------------
+   6. FORMS
+   --------------------------------------------------------------------------- */
+.form-label {
+    margin-bottom: var(--space-1);
+    font-weight: 700;
+}
+
+.form-control,
+.form-select {
+    padding: 0.6rem 0.9rem;
+    border-color: var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+}
+
+/* Green border + soft glow when a field is being edited. */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+/* Checkboxes: green when ticked. */
+.form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+/* Space between one field (label + input + error) and the next. */
+.form-field {
+    margin-bottom: var(--space-4);
+}
+
+/* Small grey hint under a field. */
+.form-hint {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+/* ASP.NET validation: these class names are generated by the framework.
+   .field-validation-error    the message under a field (<span asp-validation-for>)
+   .input-validation-error    the input itself when its value is invalid
+   .validation-summary-errors the list of errors at the top of a form        */
+.field-validation-error,
+.validation-summary-errors,
+.form-errors {
+    color: var(--color-danger);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.validation-summary-errors ul,
+.form-errors ul {
+    margin-bottom: var(--space-3);
+    padding-left: 1.2rem;
+}
+
+.input-validation-error {
+    border-color: var(--color-danger);
+}
+
+/* The framework renders the summary even when there are no errors
+   (with this class instead); keep it invisible so it takes no space. */
+.validation-summary-valid {
+    display: none;
+}
+
+/* Filter bar above lists: fields in a row that wraps on small screens.
+   "align-items: flex-end" lines the buttons up with the bottom of the inputs. */
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    margin-bottom: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+/* Each field grows to share the row, but never gets narrower than 180px;
+   when there is no room it moves to the next line. */
+.filter-bar__field {
+    flex: 1 1 180px;
+}
+
+.filter-bar__actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------------------------
+   7. ALERTS — messages shown after an action (Views/Shared/_Alerts.cshtml)
+   --------------------------------------------------------------------------- */
+.alert {
+    border: 0;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+}
+
+.alert-success {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+}
+
+.alert-danger {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger-dark);
+}
+
+.alert-info,
+.alert-warning {
+    background-color: var(--color-accent-soft);
+    color: var(--color-text);
+}
+
+/* ---------------------------------------------------------------------------
+   8. CHIPS — small rounded labels (diet tags, statuses, counters)
+   <span class="chip chip--green">Веган</span>
+   --------------------------------------------------------------------------- */
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface-soft);
+    color: var(--color-text);
+    font-size: 0.85rem;
+    font-weight: 700;
+    white-space: nowrap;                /* a chip never breaks onto two lines */
+}
+
+.chip--green  { background-color: var(--color-primary-soft); color: var(--color-primary-dark); }
+.chip--orange { background-color: var(--color-accent-soft);  color: #9A5417; }
+.chip--red    { background-color: var(--color-danger-soft);  color: var(--color-danger-dark); }
+
+/* A group of chips that wraps onto more lines when needed. */
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* ---------------------------------------------------------------------------
+   9. TABLES
+   Always wrap a table like this, so that on phones the TABLE scrolls
+   sideways instead of the whole page:
+       <div class="table-wrap"><table class="data-table"> ... </table></div>
+   --------------------------------------------------------------------------- */
+.table-wrap {
+    overflow-x: auto;                   /* horizontal scrollbar only when needed */
+    margin-bottom: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+.data-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;          /* no double borders between cells */
+}
+
+.data-table th,
+.data-table td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* Header row: small grey uppercase labels on a cream strip. */
+.data-table thead th {
+    background-color: var(--color-surface-soft);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* A thin line between rows (but not above the first one). */
+.data-table tbody tr + tr td,
+.data-table tbody tr + tr th {
+    border-top: 1px solid var(--color-border);
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--color-bg);
+}
+
+/* The last column with the edit / details / delete icons: right aligned, no wrapping. */
+.data-table__actions {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   10. PAGER — page numbers under lists (Views/Shared/_Pager.cshtml)
+   Restyles Bootstrap's .pagination into round buttons.
+   --------------------------------------------------------------------------- */
+.pagination {
+    gap: var(--space-1);
+}
+
+.pagination .page-link {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--radius-pill) !important;   /* Bootstrap rounds only the first/last item */
+    background: none;
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--color-surface-soft);
+    text-decoration: none;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--color-primary);
+    color: var(--color-text-on-dark);
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--color-border);
+}
+
+/* ---------------------------------------------------------------------------
+   11. DROPDOWN MENU (Bootstrap) — the "⋯" menu on recipe cards
+   --------------------------------------------------------------------------- */
+.dropdown-menu {
+    padding: var(--space-2);
+    border-color: var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--color-surface-soft);
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.dropdown-item--danger,
+.dropdown-item--danger:hover {
+    color: var(--color-danger);
+}
+
+/* ---------------------------------------------------------------------------
+   12. EMPTY STATE — friendly message when a list has nothing to show
+   --------------------------------------------------------------------------- */
+.empty-state {
+    padding: var(--space-7) var(--space-4);
+    color: var(--color-text-muted);
+    text-align: center;
+}
+
+.empty-state .bi {
+    display: block;
+    margin-bottom: var(--space-3);
+    color: var(--color-accent);
+    font-size: 3rem;
+    line-height: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   13. PEOPLE LIST — rows with avatar, name and an action (follow, edit)
+   --------------------------------------------------------------------------- */
+.people-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));   /* same trick as .recipe-grid */
+    gap: var(--space-3);
+    padding: 0;
+    margin: 0 0 var(--space-5);
+    list-style: none;                   /* removes the bullet points of the <ul> */
+}
+
+.person {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+}
+
+/* Name (and e-mail under it). Takes the free width; long text is cut with "...". */
+.person__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.person__name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+.person__meta {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+.person__actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* ---------------------------------------------------------------------------
+   14. COUNTERS — a big number with a small label under it
+   (profile: recipes / followers / following; home: totals)
+   --------------------------------------------------------------------------- */
+.stat {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-text);
+    line-height: 1.2;
+}
+
+a.stat:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.stat__number {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+.stat__label {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+/* ---------------------------------------------------------------------------
+   15. RICH TEXT — the recipe description and instructions
+   This HTML is written by users in the editor and cleaned on the server
+   (RecipeHtmlSanitizer), so we style plain tags inside the wrapper.
+   --------------------------------------------------------------------------- */
+.rich-text {
+    overflow-wrap: anywhere;            /* very long words / links break instead of overflowing */
+    line-height: 1.75;
+}
+
+.rich-text p {
+    margin-bottom: var(--space-3);
+}
+
+.rich-text ol,
+.rich-text ul {
+    margin-bottom: var(--space-3);
+    padding-left: 1.4rem;
+}
+
+.rich-text li {
+    margin-bottom: var(--space-2);
+}
+
+.rich-text h3,
+.rich-text h4 {
+    margin-top: var(--space-4);
+    font-size: 1.1rem;
+}
+
+.rich-text a {
+    text-decoration: underline;
+}
+
+/* The last element should not add empty space at the bottom of its box. */
+.rich-text > :last-child {
+    margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   16. DETAIL LIST — "label: value" pairs on details / delete pages
+   <dl class="detail-list"><dt>Име</dt><dd>Захар</dd></dl>
+   --------------------------------------------------------------------------- */
+.detail-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;   /* labels as wide as needed, values take the rest */
+    gap: var(--space-2) var(--space-5);
+    margin-bottom: var(--space-5);
+}
+
+.detail-list dt {
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.detail-list dd {
+    margin: 0;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}

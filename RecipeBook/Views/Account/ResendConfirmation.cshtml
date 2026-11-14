@@ -1,0 +1,33 @@
+@*
+    Account/ResendConfirmation.cshtml — SEND THE CONFIRMATION E-MAIL AGAIN
+    -------------------------------------------------------------------------
+    Rendered inside the centered card of _AuthLayout.cshtml.
+*@
+@model RecipeBook.ViewModels.Account.ResendConfirmationViewModel
+@{
+    ViewData["Title"] = "Нов имейл за потвърждение";
+    Layout = "_AuthLayout";
+}
+
+<h1 class="auth__title">Потвърждение на имейл</h1>
+<p class="auth__lead">Въведи имейла, с който си се регистрирал, и ще ти изпратим нов линк за потвърждение.</p>
+
+<form asp-action="ResendConfirmation" method="post">
+    <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+    <div class="form-field">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" autocomplete="email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Изпрати отново</button>
+</form>
+
+<div class="auth__links">
+    <a asp-action="Login">Обратно към вход</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

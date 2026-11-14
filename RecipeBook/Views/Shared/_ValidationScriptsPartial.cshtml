@@ -1,3 +1,16 @@
-﻿<script src="~/lib/jquery/dist/jquery.min.js"></script>
+﻿@*
+    _ValidationScriptsPartial.cshtml — VALIDATION IN THE BROWSER
+    -------------------------------------------------------------------------
+    Add it to a page that has a form, so that mistakes ("this field is
+    required") are shown immediately, without sending the form first:
+
+        @section Scripts {
+            <partial name="_ValidationScriptsPartial" />
+        }
+
+    The rules come from the attributes of the view model ([Required], ...).
+    The server checks everything again, so this is only a convenience.
+    Both scripts need jQuery, which _Layout.cshtml has already loaded.
+*@
 <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

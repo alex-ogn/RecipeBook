@@ -1,0 +1,40 @@
+@*
+    Account/ChangeEmail.cshtml — ASK TO CHANGE THE E-MAIL ADDRESS
+    -------------------------------------------------------------------------
+    Rendered inside the centered card of _AuthLayout.cshtml.
+    The e-mail only changes after the user opens the link sent to the new address.
+*@
+@model RecipeBook.ViewModels.Account.ChangeEmailViewModel
+@{
+    ViewData["Title"] = "Смяна на имейл";
+    Layout = "_AuthLayout";
+}
+
+<h1 class="auth__title">Смяна на имейл</h1>
+<p class="auth__lead">Текущ имейл: <strong>@Model?.CurrentEmail</strong>. Ще изпратим линк за потвърждение на новия адрес; имейлът се сменя едва след като го отвориш.</p>
+
+<form asp-action="ChangeEmail" method="post">
+    <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+    <div class="form-field">
+        <label asp-for="NewEmail" class="form-label"></label>
+        <input asp-for="NewEmail" class="form-control" autocomplete="email" />
+        <span asp-validation-for="NewEmail"></span>
+    </div>
+
+    <div class="form-field">
+        <label asp-for="CurrentPassword" class="form-label"></label>
+        <input asp-for="CurrentPassword" class="form-control" type="password" autocomplete="current-password" />
+        <span asp-validation-for="CurrentPassword"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Изпрати линк за потвърждение</button>
+</form>
+
+<div class="auth__links">
+    <a asp-controller="Users" asp-action="Edit">Обратно към профила</a>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

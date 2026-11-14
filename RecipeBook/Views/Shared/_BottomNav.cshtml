@@ -1,0 +1,53 @@
+@*
+    _BottomNav.cshtml — THE TAB BAR AT THE BOTTOM (phones and tablets)
+    -------------------------------------------------------------------------
+    Shows the few most used destinations, like the tab bar of a mobile app.
+    Everything else is in the slide-in menu (the ☰ button in the top bar).
+    Hidden on desktop by wwwroot/css/layout.css, section 6.
+*@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"] as string;
+    var currentAction = ViewContext.RouteData.Values["action"] as string;
+
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var isSignedIn = User.IsInRole(UserRoles.User) || User.IsInRole(UserRoles.Admin);
+
+    // Returns "is-active" when the given controller/action is the page being shown, otherwise "".
+    string ActiveClass(string controller, string action) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "is-active"
+            : string.Empty;
+}
+
+<nav class="app-bottomnav" aria-label="Бърза навигация">
+    <a class="app-bottomnav__link @ActiveClass("Home", "Index")" asp-controller="Home" asp-action="Index">
+        <i class="bi bi-house-door"></i> Начало
+    </a>
+    <a class="app-bottomnav__link @ActiveClass("Recipes", "Index")" asp-controller="Recipes" asp-action="Index">
+        <i class="bi bi-compass"></i> Рецепти
+    </a>
+
+    @if (isSignedIn)
+    {
+        @* The round orange "+" in the middle. The text is only for screen readers. *@
+        <a class="app-bottomnav__link app-bottomnav__link--create" asp-controller="Recipes" asp-action="Create" aria-label="Нова рецепта">
+            <i class="bi bi-plus-lg"></i>
+        </a>
+        <a class="app-bottomnav__link @ActiveClass("Recipes", "SavedRecipes")" asp-controller="Recipes" asp-action="SavedRecipes">
+            <i class="bi bi-bookmark"></i> Запазени
+        </a>
+        <a class="app-bottomnav__link @ActiveClass("Recipes", "MyIndex")" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@userId">
+            <i class="bi bi-person-circle"></i> Профил
+        </a>
+    }
+    else
+    {
+        <a class="app-bottomnav__link @ActiveClass("Account", "Login")" asp-controller="Account" asp-action="Login">
+            <i class="bi bi-box-arrow-in-right"></i> Вход
+        </a>
+        <a class="app-bottomnav__link @ActiveClass("Account", "Register")" asp-controller="Account" asp-action="Register">
+            <i class="bi bi-person-plus"></i> Регистрация
+        </a>
+    }
+</nav>

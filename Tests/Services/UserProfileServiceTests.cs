@@ -9,6 +9,7 @@ using Moq;
 using RecipeBook.Constants;
 using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.Resources;
 using RecipeBook.Services;
 using RecipeBook.ViewModels.Users;
 using System.Collections.Generic;
@@ -22,8 +23,6 @@ namespace Tests.Services
     public class UserProfileServiceTests
     {
         private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
-        private readonly Mock<IPasswordValidator<ApplicationUser>> _mockPasswordValidator;
-        private readonly Mock<IPasswordHasher<ApplicationUser>> _mockPasswordHasher;
         private readonly Mock<IRecipeService> _mockRecipeService;
         private readonly Mock<IWebHostEnvironment> _mockEnv;
         private readonly UserProfileService _service;
@@ -37,8 +36,6 @@ namespace Tests.Services
             var context = new ApplicationDbContext(options);
 
             _mockUserManager = MockUserManager();
-            _mockPasswordValidator = new Mock<IPasswordValidator<ApplicationUser>>();
-            _mockPasswordHasher = new Mock<IPasswordHasher<ApplicationUser>>();
             _mockRecipeService = new Mock<IRecipeService>();
             _mockEnv = new Mock<IWebHostEnvironment>();
 
@@ -58,8 +55,6 @@ namespace Tests.Services
             _service = new UserProfileService(
                 context,
                 _mockUserManager.Object,
-                _mockPasswordValidator.Object,
-                _mockPasswordHasher.Object,
                 _mockRecipeService.Object,
                 _mockEnv.Object,
                 new Mock<IImageStorageService>().Object,
@@ -92,6 +87,31 @@ namespace Tests.Services
         {
             var result = await _service.DeleteUserAsync("123", "123");
             Assert.False(result.Succeeded);
+        }
+
+        [Fact]
+        public async Task DeleteOwnAccountAsync_ShouldFail_ForAdmin()
+        {
+            var admin = new ApplicationUser { Id = "admin-id", UserName = "admin" };
+            _mockUserManager.Setup(m => m.FindByIdAsync(admin.Id)).ReturnsAsync(admin);
+            _mockUserManager.Setup(m => m.IsInRoleAsync(admin, UserRoles.Admin)).ReturnsAsync(true);
+
+            var result = await _service.DeleteOwnAccountAsync(admin.Id);
+
+            Assert.False(result.Succeeded);
+            Assert.Contains(result.Errors, e => e.Description == MessageTexts.AdminCannotDeleteOwnAccount);
+            _mockUserManager.Verify(m => m.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task DeleteOwnAccountAsync_ShouldFail_WhenUserNotFound()
+        {
+            _mockUserManager.Setup(m => m.FindByIdAsync("missing")).ReturnsAsync((ApplicationUser?)null);
+
+            var result = await _service.DeleteOwnAccountAsync("missing");
+
+            Assert.False(result.Succeeded);
+            _mockUserManager.Verify(m => m.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
 
         [Fact]

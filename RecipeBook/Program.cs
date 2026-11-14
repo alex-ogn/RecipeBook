@@ -14,14 +14,20 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// The connection string comes from user secrets (Development only) or the ConnectionStrings__DefaultConnection
+// environment variable. Fail with a clear message instead of a vague error on the first query.
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString ?? throw new InvalidOperationException(
+        "Connection string 'DefaultConnection' is not set. Run with ASPNETCORE_ENVIRONMENT=Development to use user " +
+        "secrets, or set the ConnectionStrings__DefaultConnection environment variable.")));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = true;
         options.SignIn.RequireConfirmedEmail = true;
+        // Login accepts an email, so it must identify exactly one account.
+        options.User.RequireUniqueEmail = true;
 
         // Lock the account after repeated wrong passwords (brute-force protection).
         options.Lockout.AllowedForNewUsers = true;
@@ -31,6 +37,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddRoles<IdentityRole>()
     .AddErrorDescriber<CustomIdentityErrorDescriber>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Sign out other sessions soon after a password/email change, a lock or a deletion (all update the security stamp).
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = AccountSecurityConstants.SecurityStampValidationInterval);
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
@@ -43,6 +53,8 @@ builder.Services.AddControllersWithViews(options => options.Filters.Add(new Auto
 // custom services
 builder.Services.AddScoped<IRecipePdfService, RecipePdfService>();
 builder.Services.AddScoped<IUserProfileService, UserProfileService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAccountEmailService, AccountEmailService>();
 builder.Services.AddScoped<IRecipeService, RecipeService>();
 builder.Services.AddScoped<IImageStorageService, ImageStorageService>();
 builder.Services.AddScoped<IRecipeCategoryService, RecipeCategoryService>();
@@ -56,9 +68,9 @@ builder.Services.AddScoped<IdentityErrorDescriber, CustomIdentityErrorDescriber>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-    options.AccessDeniedPath = "/Users/AccessDenied";
+    options.LoginPath = CookieConstants.LoginPath;
+    options.LogoutPath = CookieConstants.LogoutPath;
+    options.AccessDeniedPath = CookieConstants.AccessDeniedPath;
 });
 
 // Limit how often one client can post the login and registration forms.

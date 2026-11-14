@@ -1,4 +1,14 @@
-﻿@using RecipeBook.ViewModels.Users;
+﻿@*
+    Users/FollowList.cshtml — FOLLOWERS / FOLLOWING
+    -------------------------------------------------------------------------
+    One view for two pages: Users/Followers/{id} and Users/Following/{id}.
+    The controller chooses the title (ViewData ListTitle).
+    Each row: avatar, name (link to the profile) and a follow / unfollow
+    button — except on the signed-in user's own row.
+
+    The look (.people-list, .person) is in wwwroot/css/components.css, section 13.
+*@
+@using RecipeBook.ViewModels.Users;
 @model List<FollowViewModel>
 
 @{
@@ -6,28 +16,45 @@
     var currentUserId = ViewData[ViewDataKeys.CurrentUserId] as string;
 }
 
-<h3>@ViewData[ViewDataKeys.ListTitle]</h3>
+<div class="page-header">
+    <h1>@ViewData[ViewDataKeys.ListTitle]</h1>
+</div>
 
-<div class="row">
-    @foreach (var item in Model)
-    {
-        var user = item.User;
-        <div class="col-md-4 mb-3">
-            <div class="card p-3 d-flex align-items-center">
-                <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id })" class="rounded-circle" width="60" height="60" />
-                <h5>@user.UserName</h5>
+@if (Model.Any())
+{
+    <ul class="people-list">
+        @foreach (var item in Model)
+        {
+            var user = item.User;
+
+            <li class="person">
+                <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@user.Id">
+                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id })"
+                         alt="" class="avatar avatar--md" loading="lazy" />
+                </a>
+
+                <div class="person__info">
+                    <a class="person__name" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@user.Id">@user.UserName</a>
+                </div>
 
                 @if (user.Id != currentUserId)
                 {
-                    <form asp-action="@(item.IsFollowing ? "Unfollow" : "Follow")"
-                  asp-controller="Users" method="post">
+                    @* Posts to "Follow" or "Unfollow" depending on the current state. *@
+                    <form asp-controller="Users" asp-action="@(item.IsFollowing ? "Unfollow" : "Follow")" method="post" class="person__actions">
                         <input type="hidden" name="userId" value="@user.Id" />
-                        <button type="submit" class="btn btn-outline-primary btn-sm mt-1">
-                            @(item.IsFollowing ? "Отследвай ❌" : "Последвай")
+                        <button type="submit" class="btn btn-sm @(item.IsFollowing ? "btn-outline-primary" : "btn-primary")">
+                            @(item.IsFollowing ? "Отследвай" : "Последвай")
                         </button>
                     </form>
                 }
-            </div>
-        </div>
-    }
-</div>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="empty-state">
+        <i class="bi bi-people"></i>
+        Списъкът е празен.
+    </div>
+}

@@ -1,10 +1,14 @@
-﻿@{
+﻿@*
+    Home/Privacy.cshtml — STATIC "PRIVACY POLICY" PAGE
+    Plain text in a readable column (.prose, pages.css section 8).
+*@
+@{
     ViewData["Title"] = "Privacy Policy";
 }
 
-<h1>@ViewData["Title"]</h1>
+<article class="panel prose">
+    <h1>@ViewData["Title"]</h1>
 
-<div class="container">
     <h2>Introduction</h2>
     <p>This Privacy Policy describes how we handle your personal information for our services on the Recipe book website.</p>
 
@@ -31,4 +35,4 @@
 
     <h2>Data Security</h2>
     <p>We take appropriate security measures to protect against unauthorized access to or unauthorized alteration, disclosure or destruction of data.</p>
-</div>
+</article>

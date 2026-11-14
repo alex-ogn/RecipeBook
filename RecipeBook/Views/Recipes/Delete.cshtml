@@ -1,27 +1,30 @@
-﻿@model RecipeBook.Models.Recipe
+﻿@*
+    Recipes/Delete.cshtml — CONFIRM DELETING A RECIPE
+    -------------------------------------------------------------------------
+    A confirmation page: nothing is deleted until the red button is pressed
+    (it posts the form to the Delete action).
+*@
+@model RecipeBook.Models.Recipe
 
 @{
     ViewData["Title"] = "Изтриване";
 }
 
-<h1 class="mb-4 text-danger">Изтриване</h1>
+<section class="panel panel--narrow panel--danger">
+    <h1 class="panel__title">Изтриване на рецепта</h1>
 
-<div class="alert alert-warning">
-    Сигурни ли сте, че искате да изтриете тази рецепта?
-</div>
+    <p>Сигурни ли сте, че искате да изтриете тази рецепта? Действието не може да бъде отменено.</p>
 
-<div class="mb-4">
-    <dl class="row mt-3">
-        <dt class="col-sm-3">Име:</dt>
-        <dd class="col-sm-9">@Model.Title</dd>
-
+    <dl class="detail-list">
+        <dt>Име</dt>
+        <dd>@Model.Title</dd>
     </dl>
-</div>
 
-<form asp-action="Delete">
-    <input type="hidden" asp-for="Id" />
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-danger">Изтрий</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Назад</a>
-    </div>
-</form>
+    <form asp-action="Delete" method="post" class="button-row">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash"></i> Изтрий
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Назад</a>
+    </form>
+</section>

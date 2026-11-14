@@ -1,32 +1,23 @@
-﻿@{
+﻿@*
+    Account/RegisterConfirmation.cshtml — MESSAGE: "check your mailbox"
+    Shown right after registration: the account works only after the user
+    opens the confirmation link from the e-mail.
+    Rendered inside the centered card of _AuthLayout.cshtml.
+*@
+@{
     ViewData["Title"] = "Потвърждение на регистрация";
+    Layout = "_AuthLayout";
 }
 
-<div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card shadow" style="max-width: 500px; width: 100%;">
-        <div class="card-body p-4 text-center">
+<div class="auth__icon"><i class="bi bi-envelope-check"></i></div>
+<h1 class="auth__title">Провери пощата си</h1>
+<p class="auth__lead">
+    Изпратихме линк за потвърждение на твоя имейл адрес.
+    Моля, отвори пощата си и кликни върху линка, за да активираш профила си.
+</p>
 
-            <div class="mb-3">
-                <i class="bi bi-envelope-check text-warm-red" style="font-size: 3rem;"></i>
-            </div>
-
-            <h2 class="text-warm-red mb-3">Провери пощата си</h2>
-
-            <p class="text-muted mb-4">
-                Изпратихме линк за потвърждение на твоя имейл адрес.
-                Моля, отвори пощата си и кликни върху линка, за да активираш профила си.
-            </p>
-
-            <div class="alert alert-info small text-start mb-4">
-                <strong>Важно:</strong> Ако не виждаш имейла до няколко минути, провери папката <em>Spam / Спам</em>.
-            </div>
-
-            <div class="d-grid gap-2">
-                <a asp-action="Login" asp-controller="Account" class="btn" style="background-color: var(--buttery-yellow); color: white;">
-                    Към страницата за вход
-                </a>
-            </div>
-
-        </div>
-    </div>
+<div class="alert alert-info small">
+    <strong>Важно:</strong> Ако не виждаш имейла до няколко минути, провери папката <em>Spam / Спам</em>.
 </div>
+
+<a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100">Към страницата за вход</a>

@@ -52,5 +52,26 @@ namespace RecipeBook.Services
                 Code = nameof(PasswordRequiresLower),
                 Description = _localizer["PasswordRequiresLower"]
             };
+
+        public override IdentityError PasswordMismatch()
+            => new IdentityError
+            {
+                Code = nameof(PasswordMismatch),
+                Description = _localizer["PasswordMismatch"]
+            };
+
+        public override IdentityError InvalidToken()
+            => new IdentityError
+            {
+                Code = nameof(InvalidToken),
+                Description = _localizer["InvalidToken"]
+            };
+
+        public override IdentityError DuplicateEmail(string email)
+            => new IdentityError
+            {
+                Code = nameof(DuplicateEmail),
+                Description = _localizer["DuplicateEmail"]
+            };
     }
 }
