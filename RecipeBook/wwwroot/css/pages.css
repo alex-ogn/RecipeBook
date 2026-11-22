@@ -184,7 +184,18 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, var(--color-overlay) 0%, var(--color-overlay-strong) 100%);
+    background: var(--color-hero-overlay-strong);   /* one even layer: the text fills the whole banner */
+}
+
+/* The dark layer is light, so a dark "glow" (text-shadow) behind the white text
+   keeps it readable even on bright parts of a photo. Two shadows, separated by a comma:
+     0 1px 3px   a tight, sharp outline right around the letters
+     0 0 18px    a wide, soft cloud behind the whole line
+   (the numbers: right offset, down offset, blur). */
+.hero--with-slides .hero__title,
+.hero--with-slides .hero__lead,
+.hero--with-slides .hero__stats {
+    text-shadow: 0 1px 3px var(--color-overlay-strong), 0 0 18px var(--color-overlay);
 }
 
 /* The banner itself when it has photos: no light background or border, white text. */
@@ -311,9 +322,11 @@
         max-width: 620px;               /* the right part of the banner stays free for the photo */
     }
 
-    /* Wider screens: dark on the left behind the text, fading out to the right so the photo shows. */
+    /* Wider screens: dark on the left behind the text, fading out to the right so the photo shows.
+       The percentages are positions across the banner: fully "strong" up to 30%,
+       fading to the light "middle" value at 60% (where the text ends), clear at 100%. */
     .hero-slides::after {
-        background: linear-gradient(90deg, var(--color-overlay-strong) 0%, var(--color-overlay) 45%, var(--color-overlay-soft) 100%);
+        background: linear-gradient(90deg, var(--color-hero-overlay-strong) 0%, var(--color-hero-overlay-strong) 30%, var(--color-hero-overlay) 60%, var(--color-overlay-soft) 100%);
     }
 
     .hero-slides__footer {
