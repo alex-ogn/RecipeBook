@@ -27,7 +27,7 @@ Exceptions: `ViewData["Title"]` (Razor convention) and user-facing text (see bel
   Add to an existing class when the value fits its domain; otherwise create a new `<Domain>Constants` class.
   `RecipeBook.Constants` is imported in `Views/_ViewImports.cshtml`, so views use the same constants.
 - **Values used by a single class** that are not part of any contract → `private const` in that class
-  (e.g. `FeaturedRecipesCount` in `HomeController`).
+  (e.g. `PopularRecipesCount` in `HomeController`).
 - **Configuration** → a strongly typed options class in `RecipeBook/Options/` with `public const string SectionName`,
   registered in `Program.cs` with `builder.Services.Configure<T>(builder.Configuration.GetSection(T.SectionName))`
   and injected as `IOptions<T>`. Never read `_configuration["Section:Key"]` directly.
@@ -117,7 +117,7 @@ Every CSS/JS file and every view starts with a comment explaining what it is for
   `.recipe-card`, `.avatar`, forms, `.chip`, `.data-table`, pager, `.empty-state`, `.people-list`)
   → `pages.css` (styles used by a single page). Never hard-code a color or size that has a token.
 - **No inline styles or scripts in views**: no `style="..."`, no `<style>`, no `onclick`/`onsubmit`, no `<script>` with
-  code. Styles go in the CSS files; scripts in `wwwroot/js/` (`site.js` on every page, `recipe-form.js`,
+  code. Styles go in the CSS files; scripts in `wwwroot/js/` (`site.js` on every page, `recipe-form.js`, `home-hero.js`,
   `admin-charts.js`), loaded from `@section Scripts`. Data for a script goes in `data-*` attributes or a
   `<script type="application/json">` block.
 - **Responsive**: mobile first — plain rules are the phone layout, `@media (min-width: 768px / 992px)` adds tablet /

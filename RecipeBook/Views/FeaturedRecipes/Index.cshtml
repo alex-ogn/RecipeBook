@@ -1,0 +1,69 @@
+@*
+    FeaturedRecipes/Index.cshtml — ADMIN: RECIPES IN THE HOME PAGE BANNER
+    -------------------------------------------------------------------------
+    The recipes whose photos the home page banner fades through, in the order they were added.
+    A recipe is added from its own page ("Покажи на началната страница", admins only) and removed here
+    or on that page. While the list is empty, the banner shows the most liked recipes that have a photo.
+    The table uses .data-table (components.css); the thumbnail is .featured-thumb (pages.css, section 10).
+*@
+@using RecipeBook.ViewModels.Recipes;
+@model List<RecipeCardViewModel>
+
+@{
+    ViewData["Title"] = "Начална страница";
+}
+
+<div class="page-header">
+    <h1>Снимки на началната страница</h1>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary">
+        <i class="bi bi-eye"></i> Виж началната страница
+    </a>
+</div>
+
+<partial name="_Alerts" />
+
+<p class="form-hint">
+    <i class="bi bi-info-circle"></i>
+    За да добавиш рецепта, отвори я и натисни „Покажи на началната страница“. Могат да се добавят само рецепти със снимка.
+</p>
+
+@if (Model.Any())
+{
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Снимка</th>
+                    <th>Рецепта</th>
+                    <th>Автор</th>
+                    <th class="data-table__actions">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var recipe in Model)
+                {
+                    <tr>
+                        <td><img src="@recipe.ImageUrl" alt="" class="featured-thumb" loading="lazy" /></td>
+                        <td><a asp-controller="Recipes" asp-action="Details" asp-route-id="@recipe.Id">@recipe.Title</a></td>
+                        <td>@recipe.UserName</td>
+                        <td class="data-table__actions">
+                            <form asp-action="Remove" method="post" data-confirm="Да махна ли рецептата от началната страница?">
+                                <input type="hidden" name="id" value="@recipe.Id" />
+                                <button type="submit" class="btn-icon btn-icon--danger" title="Махни">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="bi bi-images"></i>
+        Няма избрани рецепти. Началната страница показва @FeaturedRecipeConstants.DefaultCount от най-харесваните рецепти със снимка.
+    </div>
+}

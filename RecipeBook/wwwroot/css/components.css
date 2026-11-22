@@ -30,6 +30,7 @@
      14. Counters (number + label)
      15. Rich text (recipe description / instructions)
      16. Detail list (label: value)
+     17. Scroller (one sideways-scrolling row with arrow buttons)
    ============================================================================= */
 
 /* ---------------------------------------------------------------------------
@@ -804,4 +805,75 @@ a.stat:hover {
     margin: 0;
     font-weight: 700;
     overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------------------
+   17. SCROLLER — one row that scrolls sideways, with round arrow buttons
+   Wrap any row that scrolls sideways (overflow-x: auto) like this; site.js
+   makes the arrows work and shows each one only when there is more to see
+   in its direction:
+
+       <div class="scroller" data-scroller>
+           <button type="button" class="scroller__button scroller__button--prev" data-scroller-prev hidden>…</button>
+           <div class="category-tiles" data-scroller-track> …the items… </div>
+           <button type="button" class="scroller__button scroller__button--next" data-scroller-next hidden>…</button>
+       </div>
+
+   Used by: the categories row on the home page.
+   --------------------------------------------------------------------------- */
+.scroller {
+    position: relative;                 /* the arrows are placed on its left and right edges */
+}
+
+/* Hide the scrollbar of the row: the arrows (and swiping) replace it.
+   "scrollbar-width" is for Firefox, "::-webkit-scrollbar" for Chrome, Edge and Safari. */
+.scroller [data-scroller-track] {
+    scrollbar-width: none;
+}
+
+.scroller [data-scroller-track]::-webkit-scrollbar {
+    display: none;
+}
+
+/* The arrow buttons. Phones: not shown at all, because people swipe and the screen is
+   too narrow for buttons over the edges. From 768px they appear (see the @media block). */
+.scroller__button {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    /* A white round button with an arrow, sitting over the edge of the row, vertically centered. */
+    .scroller__button {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);    /* move up by half its own height = exactly centered */
+        z-index: 1;                     /* above the tiles */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-pill);
+        background-color: var(--color-surface);
+        color: var(--color-text);
+        box-shadow: var(--shadow-md);
+        transition: background-color var(--transition-fast), color var(--transition-fast);
+    }
+
+    .scroller__button:hover {
+        background-color: var(--color-primary);
+        color: var(--color-text-on-dark);
+    }
+
+    /* "hidden" is set by site.js when the row is already at that end (or everything fits).
+       The browser normally hides [hidden] elements, but "display: inline-flex" above
+       would win, so say it again here. */
+    .scroller__button[hidden] {
+        display: none;
+    }
+
+    .scroller__button--prev { left: calc(-1 * var(--space-3)); }    /* half over the left edge */
+    .scroller__button--next { right: calc(-1 * var(--space-3)); }   /* half over the right edge */
 }

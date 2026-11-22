@@ -1,4 +1,5 @@
 using RecipeBook.Models;
+using RecipeBook.ViewModels.Home;
 
 namespace RecipeBook.Services
 {
@@ -9,6 +10,11 @@ namespace RecipeBook.Services
     {
         Task<List<RecipeCategory>> GetAllAsync();
         Task<RecipeCategory?> GetByIdAsync(int id);
+
+        /// <summary>
+        /// Categories that have at least one recipe, with their recipe counts and a photo, the largest first.
+        /// </summary>
+        Task<List<CategoryTileViewModel>> GetWithRecipeCountsAsync(int count);
         /// <summary>
         /// First category whose name contains <paramref name="namePart"/> (case-insensitive), or null.
         /// </summary>

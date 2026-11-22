@@ -237,4 +237,13 @@
   <data name="AccessDeniedTitle" xml:space="preserve">
     <value>Нямаш достъп</value>
   </data>
+  <data name="RecipeFeatured" xml:space="preserve">
+    <value>Рецептата е добавена към началната страница.</value>
+  </data>
+  <data name="RecipeUnfeatured" xml:space="preserve">
+    <value>Рецептата е махната от началната страница.</value>
+  </data>
+  <data name="RecipeFeatureNeedsImage" xml:space="preserve">
+    <value>Само рецепти със снимка могат да се показват на началната страница.</value>
+  </data>
 </root>

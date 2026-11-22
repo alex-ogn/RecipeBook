@@ -295,6 +295,9 @@ namespace RecipeBook.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("FeaturedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");

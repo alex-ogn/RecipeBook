@@ -51,6 +51,7 @@ public class SecurityIntegrationTests : IClassFixture<RecipeBookFactory>, IAsync
     [InlineData("/Ingredients")]
     [InlineData("/RecipeCategories")]
     [InlineData("/AdminStatistics/UserStats")]
+    [InlineData("/FeaturedRecipes")]
     public async Task AdminPages_AreForbiddenForUsers_AndOpenForAdmins(string url)
     {
         var asUser = await _factory.CreateClientAs(RecipeBookFactory.StrangerId, UserRoles.User).GetAsync(url);

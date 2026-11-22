@@ -45,6 +45,30 @@
    (?SelectedCategoryId=3&sortOrder=MostLiked), so the result can be bookmarked
    and the pager can keep them when changing pages. *@
 <form asp-controller="Recipes" asp-action="@listAction" method="get" class="filter-bar">
+    @* Quick filters chosen on the home page (time, diet). They have no field of their own, so they
+       travel as hidden inputs: changing the category or the sort order keeps them.
+       "Изчисти" below removes them together with everything else. *@
+    @if (Model.MaxCookingTime.HasValue)
+    {
+        <input type="hidden" name="@nameof(Model.MaxCookingTime)" value="@Model.MaxCookingTime" />
+    }
+    @if (Model.IsVegetarian)
+    {
+        <input type="hidden" name="@nameof(Model.IsVegetarian)" value="true" />
+    }
+    @if (Model.IsVegan)
+    {
+        <input type="hidden" name="@nameof(Model.IsVegan)" value="true" />
+    }
+    @if (Model.IsGlutenFree)
+    {
+        <input type="hidden" name="@nameof(Model.IsGlutenFree)" value="true" />
+    }
+    @if (Model.IsLactoseFree)
+    {
+        <input type="hidden" name="@nameof(Model.IsLactoseFree)" value="true" />
+    }
+
     <div class="filter-bar__field">
         <label asp-for="SelectedCategoryId" class="form-label">Категория</label>
         <select asp-for="SelectedCategoryId" asp-items="Model.Categories" class="form-select">
@@ -79,6 +103,33 @@
         </a>
     </div>
 </form>
+
+@* Shows which quick filters are on, so the list doesn't look mysteriously short. *@
+@if (Model.HasQuickFilter)
+{
+    <div class="chip-list active-filters" aria-label="Активни филтри">
+        @if (Model.MaxCookingTime.HasValue)
+        {
+            <span class="chip chip--orange"><i class="bi bi-stopwatch"></i> До @Model.MaxCookingTime мин</span>
+        }
+        @if (Model.IsVegetarian)
+        {
+            <span class="chip chip--green"><i class="bi bi-flower1"></i> Вегетарианско</span>
+        }
+        @if (Model.IsVegan)
+        {
+            <span class="chip chip--green"><i class="bi bi-tree"></i> Веганско</span>
+        }
+        @if (Model.IsGlutenFree)
+        {
+            <span class="chip chip--green"><i class="bi bi-slash-circle"></i> Без глутен</span>
+        }
+        @if (Model.IsLactoseFree)
+        {
+            <span class="chip chip--green"><i class="bi bi-droplet-half"></i> Без лактоза</span>
+        }
+    </div>
+}
 
 @if (Model.Recipes.Any())
 {

@@ -50,6 +50,69 @@ namespace Tests.Services
         }
 
         [Fact]
+        public async Task GetRecipes_FiltersByCookingTimeAndDiet()
+        {
+            using var context = TestDb.Create();
+            context.Users.Add(TestDb.User("chef"));
+            context.RecipeCategories.Add(new RecipeCategory { Id = 1, Name = "Soups" });
+            var quickVegan = TestDb.Recipe(1, "chef", title: "Quick vegan");
+            quickVegan.CookingTime = RecipeFilterConstants.QuickCookingMinutes;
+            quickVegan.IsVegan = true;
+            quickVegan.IsVegetarian = true;
+            var slowGlutenFree = TestDb.Recipe(2, "chef", title: "Slow gluten-free");
+            slowGlutenFree.CookingTime = RecipeFilterConstants.QuickCookingMinutes + 1;
+            slowGlutenFree.IsGlutenFree = true;
+            var quickLactoseFree = TestDb.Recipe(3, "chef", title: "Quick lactose-free");
+            quickLactoseFree.CookingTime = 10;
+            quickLactoseFree.IsLactoseFree = true;
+            quickLactoseFree.ImageUrl = ImageConstants.RecipeImagesUrlPrefix + "photo.jpg";
+            slowGlutenFree.ImageUrl = string.Empty;
+            context.Recipes.AddRange(quickVegan, slowGlutenFree, quickLactoseFree);
+            await context.SaveChangesAsync();
+            var service = CreateService(context);
+
+            async Task<int[]> Ids(RecipeListFilter filter) => (await service.GetRecipeCardsAsync(filter, 1, 100)).Select(r => r.Id).OrderBy(id => id).ToArray();
+
+            Assert.Equal(new[] { 1, 3 }, await Ids(new RecipeListFilter { MaxCookingTime = RecipeFilterConstants.QuickCookingMinutes }));
+            Assert.Equal(new[] { 1 }, await Ids(new RecipeListFilter { IsVegetarian = true }));
+            Assert.Equal(new[] { 1 }, await Ids(new RecipeListFilter { IsVegan = true }));
+            Assert.Equal(new[] { 2 }, await Ids(new RecipeListFilter { IsGlutenFree = true }));
+            Assert.Equal(new[] { 3 }, await Ids(new RecipeListFilter { IsLactoseFree = true }));
+            Assert.Empty(await Ids(new RecipeListFilter { IsGlutenFree = true, MaxCookingTime = RecipeFilterConstants.QuickCookingMinutes }));
+            Assert.Equal(new[] { 3 }, await Ids(new RecipeListFilter { HasImage = true }));
+            Assert.Equal(new[] { 1, 2, 3 }, await Ids(new RecipeListFilter()));
+        }
+
+        [Fact]
+        public async Task SetFeatured_NeedsARecipeWithAPhoto_AndKeepsTheOriginalOrder()
+        {
+            using var context = TestDb.Create();
+            context.Users.Add(TestDb.User("chef"));
+            context.RecipeCategories.Add(new RecipeCategory { Id = 1, Name = "Soups" });
+            var first = TestDb.Recipe(1, "chef");
+            first.ImageUrl = ImageConstants.RecipeImagesUrlPrefix + "1.jpg";
+            var second = TestDb.Recipe(2, "chef");
+            second.ImageUrl = ImageConstants.RecipeImagesUrlPrefix + "2.jpg";
+            context.Recipes.AddRange(first, second, TestDb.Recipe(3, "chef"));
+            await context.SaveChangesAsync();
+            var service = CreateService(context);
+
+            Assert.Equal(FeatureResult.NotFound, await service.SetFeaturedAsync(99, featured: true));
+            Assert.Equal(FeatureResult.NoImage, await service.SetFeaturedAsync(3, featured: true));
+            Assert.Equal(FeatureResult.Updated, await service.SetFeaturedAsync(2, featured: true));
+            Assert.Equal(FeatureResult.Updated, await service.SetFeaturedAsync(1, featured: true));
+            var firstFeaturedAt = (await context.Recipes.FindAsync(2))!.FeaturedAt;
+
+            // Featuring again keeps its place; the order is the order they were featured in.
+            Assert.Equal(FeatureResult.Updated, await service.SetFeaturedAsync(2, featured: true));
+            Assert.Equal(firstFeaturedAt, (await context.Recipes.FindAsync(2))!.FeaturedAt);
+            Assert.Equal(new[] { 2, 1 }, (await service.GetFeaturedAsync()).Select(r => r.Id));
+
+            Assert.Equal(FeatureResult.Updated, await service.SetFeaturedAsync(2, featured: false));
+            Assert.Equal(new[] { 1 }, (await service.GetFeaturedAsync()).Select(r => r.Id));
+        }
+
+        [Fact]
         public async Task GetRecipes_IncludesAuthorAndSorts()
         {
             using var context = await SeedListAsync();

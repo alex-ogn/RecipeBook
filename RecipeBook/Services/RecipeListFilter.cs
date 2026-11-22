@@ -24,5 +24,17 @@ namespace RecipeBook.Services
 
         /// <summary>Case-insensitive part of the title.</summary>
         public string? TitleContains { get; init; }
+
+        /// <summary>When true, only recipes with an uploaded photo.</summary>
+        public bool HasImage { get; init; }
+
+        /// <summary>Recipes that take at most this many minutes.</summary>
+        public int? MaxCookingTime { get; init; }
+
+        // Diet flags: applied only when true (false means "any", not "must not be").
+        public bool IsVegetarian { get; init; }
+        public bool IsVegan { get; init; }
+        public bool IsGlutenFree { get; init; }
+        public bool IsLactoseFree { get; init; }
     }
 }

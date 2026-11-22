@@ -138,6 +138,36 @@
                         </a>
                     </div>
                 }
+
+                @* Admins choose which recipes appear in the home page banner (FeaturedRecipesController).
+                   The banner shows the recipe's photo, so a recipe without one cannot be added. *@
+                @if (Model.IsUserAdmin)
+                {
+                    <div class="feature-toggle">
+                        @if (Model.FeaturedAt != null)
+                        {
+                            <form asp-controller="FeaturedRecipes" asp-action="Remove" method="post">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-star-fill"></i> Махни от началната страница
+                                </button>
+                            </form>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <form asp-controller="FeaturedRecipes" asp-action="Add" method="post">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-star"></i> Покажи на началната страница
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <p class="form-hint"><i class="bi bi-info-circle"></i> Добави снимка, за да покажеш рецептата на началната страница.</p>
+                        }
+                    </div>
+                }
             </section>
         </aside>
     </div>
