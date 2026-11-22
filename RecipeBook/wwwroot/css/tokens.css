@@ -56,7 +56,8 @@
     --color-text-on-dark-muted: rgba(255, 255, 255, 0.8);  /* secondary text on dark photos (white at 80%) */
 
     /* Lines */
-    --color-border: #E9E1D3;        /* thin borders around cards and inputs */
+    --color-border: #DDE0DC;        /* thin borders around cards and inputs: neutral gray to match the page
+                                       (a warm beige border looked orange next to the gray) */
 
     /* Dark see-through layers over photos, so white text stays readable
        (home page banner slideshow, category tiles). They are plain black (0, 0, 0)
