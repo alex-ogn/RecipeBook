@@ -7,6 +7,10 @@
     <WarningsAsErrors>nullable</WarningsAsErrors>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-RecipeBook-0f6a828f-f7d6-4f9e-ae08-130d18544948</UserSecretsId>
+    <!-- Recipe photos uploaded at runtime (ImageConstants.RecipeImagesFolder) are user data, not project files.
+         Without this, dotnet watch / Visual Studio Hot Reload sees each upload as a new project file and shuts the
+         app down mid-request. UseStaticFiles still serves them from disk. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);wwwroot\images\recipes\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

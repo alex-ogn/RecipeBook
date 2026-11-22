@@ -178,6 +178,29 @@ public class SecurityIntegrationTests : IClassFixture<RecipeBookFactory>, IAsync
     }
 
     [Fact]
+    public async Task EditPost_ReplacesImage_WhenOwnerUploadsTwice()
+    {
+        await AddRecipeAsync(204, RecipeBookFactory.AuthorId);
+        var client = _factory.CreateClientAs(RecipeBookFactory.AuthorId, UserRoles.User);
+
+        foreach (var _ in Enumerable.Range(0, 2))
+        {
+            var token = await client.GetAntiforgeryTokenAsync("/Recipes/Edit/204");
+            var form = RecipeForm(token, id: 204, title: "Със снимка");
+            var file = new ByteArrayContent(new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0 });
+            file.Headers.ContentType = new MediaTypeHeaderValue("image/png");
+            form.Add(file, "imageFileNew", "photo.png");
+
+            var response = await client.PostAsync("/Recipes/Edit/204", form);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        }
+
+        var saved = await _factory.QueryAsync(db => db.Recipes.AsNoTracking().SingleAsync(r => r.Id == 204));
+        Assert.StartsWith(ImageConstants.RecipeImagesUrlPrefix, saved.ImageUrl);
+    }
+
+    [Fact]
     public async Task Delete_ByOtherUser_IsForbidden_ButAdminCanDelete()
     {
         await AddRecipeAsync(203, RecipeBookFactory.AuthorId);
