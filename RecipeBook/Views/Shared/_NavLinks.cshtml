@@ -71,6 +71,9 @@
     {
         <h2 class="nav-menu__heading">Администрация</h2>
 
+        <a class="nav-menu__link @ActiveClass("FeaturedRecipes", "Index")" asp-controller="FeaturedRecipes" asp-action="Index">
+            <i class="bi bi-images"></i> Начална страница
+        </a>
         <a class="nav-menu__link @ActiveClass("RecipeCategories", "Index")" asp-controller="RecipeCategories" asp-action="Index">
             <i class="bi bi-grid"></i> Категории на рецепти
         </a>

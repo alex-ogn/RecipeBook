@@ -419,5 +419,32 @@ namespace RecipeBook.Resources {
                 return ResourceManager.GetString("AccessDeniedTitle", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Рецептата е добавена към началната страница..
+        /// </summary>
+        public static string RecipeFeatured {
+            get {
+                return ResourceManager.GetString("RecipeFeatured", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Рецептата е махната от началната страница..
+        /// </summary>
+        public static string RecipeUnfeatured {
+            get {
+                return ResourceManager.GetString("RecipeUnfeatured", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Само рецепти със снимка могат да се показват на началната страница..
+        /// </summary>
+        public static string RecipeFeatureNeedsImage {
+            get {
+                return ResourceManager.GetString("RecipeFeatureNeedsImage", resourceCulture);
+            }
+        }
     }
 }

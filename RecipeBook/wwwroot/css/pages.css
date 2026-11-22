@@ -5,7 +5,7 @@
    single page needs it. Each section names the view it belongs to.
 
    CONTENTS
-     1. Home page hero                (Views/Home/Index.cshtml)
+     1. Home page                     (Views/Home/Index.cshtml)
      2. Profile header                (Views/Recipes/MyIndex.cshtml)
      3. Recipe details                (Views/Recipes/Details.cshtml)
      4. Recipe form                   (Views/Recipes/_RecipeFormFields.cshtml)
@@ -13,28 +13,73 @@
      6. Profile settings              (Views/Users/Edit.cshtml)
      7. Admin statistics              (Views/AdminStatistics/*.cshtml)
      8. Text pages                    (Views/Home/About.cshtml, Privacy.cshtml)
+     9. Recipe list                   (Views/Recipes/Index.cshtml)
+    10. Home page photos (admin)      (Views/FeaturedRecipes/Index.cshtml)
 
    Reminder: plain rules are for phones; "@media (min-width: ...)" blocks add
    the changes for wider screens (768px = tablets, 992px = desktop).
    ============================================================================= */
 
 /* ---------------------------------------------------------------------------
-   1. HOME PAGE HERO — the big welcome banner
+   1. HOME PAGE (Views/Home/Index.cshtml, slideshow script: wwwroot/js/home-hero.js)
+      1a. Hero: welcome text + search over a background photo slideshow
+      1b. Quick picks (time and diet links)
+      1c. Section header row (title + "see all")
+      1d. Category tiles
+      1e. "How it works" steps and the join panel
+      1f. Gentle fade-in of the sections
    --------------------------------------------------------------------------- */
+
+/* ----- 1a. HERO ----------------------------------------------------------- */
+
+/* The banner. Without photos it is a light box; with photos see "hero--with-slides" below.
+   The look on wider screens is in the @media block at the end of 1a. */
 .hero {
-    display: flex;
-    flex-direction: column;             /* phones: text on top, totals under it */
-    gap: var(--space-5);
+    display: grid;
+    gap: var(--space-6);
     padding: var(--space-6) var(--space-5);
     border-radius: var(--radius-lg);
-    /* A soft diagonal blend from white into light orange. */
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-accent-soft) 100%);
+    /* Two soft "blobs" of color (radial gradients) over a light diagonal blend:
+       orange in the top right, green in the bottom left. Pure CSS, no image file. */
+    background:
+        radial-gradient(circle at 90% 10%, var(--color-accent-soft) 0%, transparent 45%),
+        radial-gradient(circle at 0% 100%, var(--color-primary-soft) 0%, transparent 40%),
+        linear-gradient(135deg, var(--color-surface) 0%, var(--color-bg) 100%);
     border: 1px solid var(--color-border);
+    overflow: hidden;                   /* the photos must not stick out of the rounded corners */
+}
+
+/* Grid columns refuse by default to get narrower than their content, which pushed the
+   search box past the right edge on phones. "min-width: 0" lets them shrink to fit. */
+.hero > * {
+    min-width: 0;
+}
+
+/* Small line above the title ("Готвим заедно"). */
+.hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-dark);
+    font-weight: 700;
+    font-size: 0.85rem;
 }
 
 .hero__title {
-    font-size: clamp(1.8rem, 1.3rem + 2.4vw, 2.8rem);   /* grows with the screen, within limits */
+    font-size: clamp(2rem, 1.4rem + 2.8vw, 3.2rem);   /* grows with the screen, within limits */
+    line-height: 1.15;
     margin-bottom: var(--space-3);
+}
+
+/* The highlighted word: an orange "marker" stroke under the bottom half of the word.
+   The gradient is transparent for the top 60% and orange for the rest. */
+.hero__highlight {
+    background: linear-gradient(transparent 60%, var(--color-accent-soft) 60%);
+    color: var(--color-primary);
 }
 
 .hero__lead {
@@ -44,39 +89,544 @@
     font-size: 1.1rem;
 }
 
+/* The big search box: a white pill with the magnifier on the left
+   and the "Търси" button inside its right end. */
+.hero-search {
+    position: relative;                 /* lets the icon be placed inside the box */
+    display: flex;
+    align-items: center;
+    max-width: 520px;
+    margin-bottom: var(--space-5);
+    padding: var(--space-1);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-md);
+}
+
+/* The green ring around the whole box while the user types in it.
+   ":focus-within" = "something inside me has the keyboard focus". */
+.hero-search:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-soft), var(--shadow-md);
+}
+
+.hero-search__icon {
+    position: absolute;
+    left: var(--space-4);
+    color: var(--color-text-muted);
+    pointer-events: none;               /* clicks go through the icon into the input */
+}
+
+.hero-search__input {
+    flex: 1;
+    min-width: 0;                       /* lets the input shrink on narrow phones */
+    height: 44px;
+    padding: 0 var(--space-3) 0 2.6rem; /* left room for the icon */
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 1rem;
+}
+
+.hero-search__input:focus {
+    outline: none;                      /* the ring is drawn on .hero-search instead */
+}
+
+/* The totals ("12 рецепти · 5 готвачи") as a quiet line under the buttons. */
 .hero__stats {
     display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-5);
+    margin: var(--space-5) 0 0;
+    padding: 0;
+    list-style: none;                   /* it is a <ul>: hide the bullets */
+    color: var(--color-text-muted);
+}
+
+.hero__stats strong {
+    color: var(--color-primary);
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    margin-right: var(--space-1);
+}
+
+/* ----- THE BACKGROUND SLIDESHOW (only when the hero has "hero--with-slides") -----
+   All photos lie on top of each other behind the text. Each one is invisible
+   (opacity: 0) except the one with "is-active", which home-hero.js moves along.
+   Because "opacity" has a transition, the old photo fades out while the new one fades in. */
+.hero-slides {
+    position: absolute;
+    inset: 0;                           /* = top/right/bottom/left 0: covers the whole banner */
+    z-index: -1;                        /* behind the text (see "isolation" on .hero--with-slides) */
+}
+
+.hero-slides__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;                  /* fill the banner, cropping the edges instead of stretching */
+    opacity: 0;
+    transform: scale(1.08);             /* starts slightly zoomed in... */
+    transition: opacity 1.2s ease, transform 8s ease-out;
+}
+
+.hero-slides__image.is-active {
+    opacity: 1;
+    transform: scale(1);                /* ...and slowly zooms out while visible ("Ken Burns" effect) */
+}
+
+/* A dark layer over the photos so the white text is readable on any picture.
+   "::after" is an extra box CSS adds inside .hero-slides without any HTML.
+   Phones: evenly dark, because the text covers the whole width. */
+.hero-slides::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--color-overlay) 0%, var(--color-overlay-strong) 100%);
+}
+
+/* The banner itself when it has photos: no light background or border, white text. */
+.hero--with-slides {
+    position: relative;                 /* the photos and the corner footer are placed inside it */
+    isolation: isolate;                 /* keeps the photos' "z-index: -1" inside the banner instead of behind the page */
+    border: 0;
+    background: var(--color-text);      /* dark color shown for a moment while the first photo loads */
+    color: var(--color-text-on-dark);
+    padding-bottom: calc(var(--space-7) + var(--space-5));   /* room for the caption and dots at the bottom */
+}
+
+.hero--with-slides .hero__title {
+    color: var(--color-text-on-dark);
+}
+
+/* The highlighted word turns orange instead of the green "marker" (green is hard to read on a dark photo). */
+.hero--with-slides .hero__highlight {
+    background: none;
+    color: var(--color-accent);
+}
+
+.hero--with-slides .hero__lead,
+.hero--with-slides .hero__stats {
+    color: var(--color-text-on-dark-muted);
+}
+
+.hero--with-slides .hero__stats strong {
+    color: var(--color-text-on-dark);
+}
+
+/* "Разгледай рецепти": a white outline button on the dark photo. */
+.hero--with-slides .hero__secondary-button {
+    border-color: var(--color-text-on-dark);
+    background-color: transparent;
+    color: var(--color-text-on-dark);
+}
+
+.hero--with-slides .hero__secondary-button:hover {
+    background-color: var(--color-text-on-dark);
+    color: var(--color-primary);
+}
+
+/* Bottom of the banner: "📷 recipe name" on the left, the dots on the right. */
+.hero-slides__footer {
+    position: absolute;
+    left: var(--space-5);
+    right: var(--space-5);
+    bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: var(--space-3);
 }
 
-/* One white tile with a number and a label. */
-.hero__stat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+/* The link to the recipe in the background: a see-through dark pill. */
+.hero-slides__caption {
+    display: inline-flex;
     align-items: center;
-    padding: var(--space-4);
-    background-color: var(--color-surface);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    gap: var(--space-2);
+    min-width: 0;                       /* allows the "…" below on long names */
+    max-width: 70%;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-overlay);
+    color: var(--color-text-on-dark);
+    font-size: 0.85rem;
+    font-weight: 700;
 }
 
-.hero__stat .stat__number {
-    color: var(--color-primary);
-    font-size: 2rem;
+.hero-slides__caption span {
+    white-space: nowrap;                /* one line, ending with "…" when the name is long */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.hero-slides__caption:hover {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+.hero-slides__dots {
+    display: flex;
+    gap: var(--space-2);
+}
+
+/* One dot per photo: a small see-through circle; the current one is white and stretched into a pill. */
+.hero-slides__dot {
+    width: 10px;
+    height: 10px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background-color: var(--color-text-on-dark-muted);
+    transition: width var(--transition-fast), background-color var(--transition-fast);
+}
+
+.hero-slides__dot.is-active {
+    width: 26px;
+    background-color: var(--color-text-on-dark);
+}
+
+/* People who asked for less motion: no slow zoom, and a quicker fade. The photos still change,
+   because a soft fade is not the kind of movement the setting is meant to stop. */
+@media (prefers-reduced-motion: reduce) {
+    .hero-slides__image {
+        transform: none;
+        transition: opacity 0.6s ease;
+    }
 }
 
 @media (min-width: 768px) {
     .hero {
-        flex-direction: row;            /* wide screens: text left, totals right */
-        align-items: center;
-        justify-content: space-between;
         padding: var(--space-7) var(--space-6);
     }
 
-    .hero__stats {
-        flex-direction: column;
-        min-width: 180px;
+    .hero--with-slides {
+        min-height: 460px;
+        align-content: center;          /* the text sits in the vertical middle of the tall banner */
+        padding-bottom: calc(var(--space-7) + var(--space-5));
+    }
+
+    .hero--with-slides .hero__text {
+        max-width: 620px;               /* the right part of the banner stays free for the photo */
+    }
+
+    /* Wider screens: dark on the left behind the text, fading out to the right so the photo shows. */
+    .hero-slides::after {
+        background: linear-gradient(90deg, var(--color-overlay-strong) 0%, var(--color-overlay) 45%, var(--color-overlay-soft) 100%);
+    }
+
+    .hero-slides__footer {
+        left: var(--space-6);
+        right: var(--space-6);
+        bottom: var(--space-5);
+    }
+}
+
+/* ----- 1b. QUICK PICKS ---------------------------------------------------- */
+
+/* A row of big pill links. On phones the row scrolls sideways
+   instead of wrapping onto many lines. */
+.quick-picks {
+    display: flex;
+    gap: var(--space-3);
+    margin: var(--space-5) 0 0;
+    padding-bottom: var(--space-2);     /* room for the scrollbar on desktops with narrow windows */
+    overflow-x: auto;
+    scrollbar-width: none;              /* hide the scrollbar (Firefox)... */
+}
+
+.quick-picks::-webkit-scrollbar {
+    display: none;                      /* ...and in Chrome, Edge, Safari */
+}
+
+.quick-pick {
+    flex: 0 0 auto;                     /* keep its natural width, never shrink */
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 700;
+    white-space: nowrap;
+    transition: background-color var(--transition-fast), border-color var(--transition-fast),
+                color var(--transition-fast);
+}
+
+.quick-pick .bi {
+    color: var(--color-primary);
+}
+
+.quick-pick:hover {
+    background-color: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
+    text-decoration: none;
+}
+
+@media (min-width: 768px) {
+    .quick-picks {
+        flex-wrap: wrap;                /* enough room: wrap instead of scrolling */
+        overflow-x: visible;
+    }
+}
+
+/* ----- 1c. SECTION HEADER ROW --------------------------------------------- */
+
+/* "Title ............ Виж всички →" on one line. */
+.home-section__header {
+    display: flex;
+    align-items: baseline;              /* the link sits on the same text line as the title */
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin: var(--space-7) 0 var(--space-4);
+}
+
+.home-section__header .section-title {
+    margin: 0;                          /* the header row already has the spacing */
+}
+
+.home-section__more {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* The arrow slides a little to the right on hover. */
+.home-section__more .bi {
+    transition: transform var(--transition-fast);
+}
+
+.home-section__more:hover .bi {
+    transform: translateX(3px);
+}
+
+/* ----- 1d. CATEGORY TILES ------------------------------------------------- */
+
+/* Always ONE row, on every screen. When the tiles don't fit, the row scrolls sideways:
+   by swiping on phones, or with the arrow buttons of the .scroller around it (components.css).
+   Each tile "snaps" into place when the scrolling stops, so none is left cut in half at the left edge. */
+.category-tiles {
+    display: grid;
+    grid-auto-flow: column;             /* add tiles as new COLUMNS, never a new row */
+    grid-auto-columns: 160px;           /* every tile has the same width */
+    gap: var(--space-3);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    /* Room above and below, so the hover lift and the shadow are not cut off by the scroll box. */
+    padding: var(--space-1) 0 var(--space-2);
+}
+
+/* ONE TILE = a photo card.
+   The photo fills the whole tile; the name and count sit in white at the bottom,
+   on a dark fade so they are readable on any photo. Picture layers, back to front:
+     1. .category-tile__image  the photo (or the icon, for a category without photos)
+     2. ::after                the dark fade at the bottom
+     3. .category-tile__text   name + count */
+.category-tile {
+    scroll-snap-align: start;
+    position: relative;                 /* the photo, fade and text are placed inside it */
+    isolation: isolate;                 /* keeps the layers' z-index inside the tile */
+    display: flex;
+    align-items: flex-end;              /* the text sits at the bottom */
+    aspect-ratio: 4 / 3;                /* every tile has the same shape */
+    overflow: hidden;                   /* the zoomed photo must not stick out of the rounded corners */
+    border-radius: var(--radius-lg);
+    background-color: var(--color-text);   /* dark color shown while the photo loads */
+    color: var(--color-text-on-dark);
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.category-tile__image {
+    position: absolute;
+    inset: 0;                           /* cover the whole tile */
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;                  /* fill the tile, cropping the edges instead of stretching */
+    transition: transform 400ms ease;
+}
+
+/* The dark fade: transparent at the top, dark at the bottom where the text is. */
+.category-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, transparent 35%, var(--color-overlay-strong) 100%);
+}
+
+.category-tile__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+}
+
+.category-tile__name {
+    font-weight: 700;                   /* the normal round body font, bold (not the serif) */
+    font-size: 1.05rem;
+    line-height: 1.2;
+    color: var(--color-text-on-dark);
+}
+
+.category-tile__count {
+    color: var(--color-text-on-dark-muted);
+    font-size: 0.8rem;
+}
+
+/* Hover: the tile lifts a little and the photo slowly zooms in. */
+.category-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    color: var(--color-text-on-dark);
+    text-decoration: none;
+}
+
+.category-tile:hover .category-tile__image {
+    transform: scale(1.06);
+}
+
+/* A category whose recipes have no photo yet: a solid green tile with a big faint icon. */
+.category-tile--no-photo {
+    background-color: var(--color-primary);
+}
+
+.category-tile--no-photo::after {
+    display: none;                      /* no photo, so no fade needed */
+}
+
+.category-tile__icon {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-4);
+    font-size: 2.2rem;
+    color: var(--color-text-on-dark-muted);
+}
+
+@media (min-width: 768px) {
+    .category-tiles {
+        grid-auto-columns: 220px;       /* bigger photos on bigger screens */
+    }
+}
+
+/* ----- 1e. HOW IT WORKS + JOIN PANEL -------------------------------------- */
+
+/* Three steps. Phones: stacked; from 768px: three columns. */
+.how-it-works__steps {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;                /* CSS counts the steps itself: 1, 2, 3 */
+}
+
+.how-it-works__step {
+    position: relative;
+    padding: var(--space-5);
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    counter-increment: step;
+}
+
+/* The big faint step number in the top-right corner, made by CSS from the counter above. */
+.how-it-works__step::after {
+    content: counter(step);
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-4);
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--color-surface-soft);
+}
+
+/* The icon in a round orange badge. */
+.how-it-works__step .bi {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--space-3);
+    border-radius: var(--radius-pill);
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-dark);
+    font-size: 1.4rem;
+}
+
+.how-it-works__step h3 {
+    font-size: 1.2rem;
+    margin-bottom: var(--space-2);
+}
+
+.how-it-works__step p {
+    margin: 0;
+    color: var(--color-text-muted);
+}
+
+/* The green "join" banner with the Register button. */
+.join-cta {
+    margin-top: var(--space-7);         /* its own section at the end of the page, with no title above it */
+    display: flex;
+    flex-direction: column;             /* phones: text above the button */
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-5);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-text-on-dark);
+}
+
+.join-cta__title {
+    color: var(--color-text-on-dark);
+    margin-bottom: var(--space-1);
+}
+
+.join-cta__text {
+    margin: 0;
+    opacity: 0.85;                      /* a bit quieter than the title */
+}
+
+@media (min-width: 768px) {
+    .how-it-works__steps {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .join-cta {
+        flex-direction: row;            /* text left, button right */
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-6);
+    }
+}
+
+/* ----- 1f. FADE-IN -------------------------------------------------------- */
+
+/* Each section fades in and slides up a little when the page loads.
+   Only for people who haven't asked their system to reduce motion. */
+@media (prefers-reduced-motion: no-preference) {
+    .hero,
+    .quick-picks,
+    .home-section {
+        animation: home-fade-in 500ms ease both;
+    }
+
+    .quick-picks  { animation-delay: 80ms; }
+    .home-section { animation-delay: 160ms; }
+
+    @keyframes home-fade-in {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: none; }
     }
 }
 
@@ -618,4 +1168,35 @@
 
 .prose h2 {
     margin-top: var(--space-5);
+}
+
+/* ---------------------------------------------------------------------------
+   9. RECIPE LIST — the chips that show the quick filters chosen on the home page
+   --------------------------------------------------------------------------- */
+.active-filters {
+    margin: calc(-1 * var(--space-3)) 0 var(--space-5);   /* sits close under the filter bar */
+}
+
+/* ---------------------------------------------------------------------------
+   10. HOME PAGE PHOTOS (admin) — Views/FeaturedRecipes/Index.cshtml, and the
+       "Покажи на началната страница" button on Views/Recipes/Details.cshtml
+   --------------------------------------------------------------------------- */
+
+/* Small preview of the photo in the admin table. */
+.featured-thumb {
+    width: 96px;
+    aspect-ratio: 16 / 9;               /* about the shape of the banner */
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+}
+
+/* The admin-only button under the recipe's other actions, separated by a thin line. */
+.feature-toggle {
+    margin-top: var(--space-4);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.feature-toggle .bi-star-fill {
+    color: var(--color-accent);
 }

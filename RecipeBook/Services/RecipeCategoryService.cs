@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using RecipeBook.Data;
 using RecipeBook.Models;
+using RecipeBook.ViewModels.Home;
 
 namespace RecipeBook.Services
 {
@@ -18,6 +19,29 @@ namespace RecipeBook.Services
 
         public Task<RecipeCategory?> GetByIdAsync(int id)
             => _context.RecipeCategories.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
+
+        public Task<List<CategoryTileViewModel>> GetWithRecipeCountsAsync(int count)
+            => _context.RecipeCategories
+                .AsNoTracking()
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    RecipeCount = c.Recipes.Count,
+                    // The tile's photo: from the category's most liked recipe that has one (newest wins a tie).
+                    ImageUrl = c.Recipes
+                        .Where(r => r.ImageUrl != null && r.ImageUrl != "")
+                        .OrderByDescending(r => r.Likes.Count)
+                        .ThenByDescending(r => r.Id)
+                        .Select(r => r.ImageUrl)
+                        .FirstOrDefault()
+                })
+                .Where(c => c.RecipeCount > 0)
+                .OrderByDescending(c => c.RecipeCount)
+                .ThenBy(c => c.Id)
+                .Take(count)
+                .Select(c => new CategoryTileViewModel(c.Id, c.Name, c.RecipeCount, c.ImageUrl))
+                .ToListAsync();
 
         public Task<RecipeCategory?> FindByNamePartAsync(string namePart)
         {

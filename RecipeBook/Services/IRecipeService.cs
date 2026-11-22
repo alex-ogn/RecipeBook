@@ -23,6 +23,17 @@ namespace RecipeBook.Services
         Task<int> CountAsync();
 
         /// <summary>
+        /// Cards for the recipes an administrator featured on the home page, in the order they were featured.
+        /// </summary>
+        Task<List<RecipeCardSource>> GetFeaturedAsync();
+
+        /// <summary>
+        /// Puts the recipe in the home page banner (<paramref name="featured"/> = true) or takes it out.
+        /// Only recipes with a photo can be featured.
+        /// </summary>
+        Task<FeatureResult> SetFeaturedAsync(int recipeId, bool featured);
+
+        /// <summary>
         /// Everything the details page needs. The recipe is tracked so its view count can be updated.
         /// </summary>
         Task<RecipeDetailsResult?> GetDetailsAsync(int id, string? currentUserId);

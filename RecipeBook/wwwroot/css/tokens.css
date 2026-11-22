@@ -53,9 +53,19 @@
     --color-text: #264653;          /* normal text: dark blue-grey, softer than pure black */
     --color-text-muted: #6B7F86;    /* secondary text: dates, counters, hints */
     --color-text-on-dark: #FFFFFF;  /* text on green / red buttons */
+    --color-text-on-dark-muted: rgba(255, 255, 255, 0.8);  /* secondary text on dark photos (white at 80%) */
 
     /* Lines */
     --color-border: #E9E1D3;        /* thin borders around cards and inputs */
+
+    /* Dark see-through layers over photos, so white text stays readable
+       (home page banner slideshow, category tiles). They are plain black (0, 0, 0)
+       at different opacities: the last number, 0 = invisible, 1 = solid.
+       Keep them NEUTRAL black: a colored layer (e.g. our blue-green text color)
+       tints the food and makes it look unappetizing. */
+    --color-overlay-strong: rgba(0, 0, 0, 0.7);   /* right behind the text */
+    --color-overlay: rgba(0, 0, 0, 0.45);         /* middle; also the caption pill */
+    --color-overlay-soft: rgba(0, 0, 0, 0);       /* far side of the banner: the photo shows untouched */
 
     /* ---------------------------------------------------------------------
        FONTS
@@ -89,7 +99,6 @@
 
     --shadow-sm: 0 1px 2px rgba(38, 70, 83, 0.06);    /* resting card */
     --shadow-md: 0 6px 20px rgba(38, 70, 83, 0.10);   /* hovered card, dropdown menu */
-
     /* ---------------------------------------------------------------------
        LAYOUT SIZES (used by layout.css)
        --------------------------------------------------------------------- */

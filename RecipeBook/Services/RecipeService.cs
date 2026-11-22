@@ -72,6 +72,36 @@ namespace RecipeBook.Services
                 query = query.Where(r => r.Title.ToLower().Contains(title));
             }
 
+            if (filter.HasImage)
+            {
+                query = query.Where(r => r.ImageUrl != null && r.ImageUrl != "");
+            }
+
+            if (filter.MaxCookingTime.HasValue)
+            {
+                query = query.Where(r => r.CookingTime <= filter.MaxCookingTime);
+            }
+
+            if (filter.IsVegetarian)
+            {
+                query = query.Where(r => r.IsVegetarian);
+            }
+
+            if (filter.IsVegan)
+            {
+                query = query.Where(r => r.IsVegan);
+            }
+
+            if (filter.IsGlutenFree)
+            {
+                query = query.Where(r => r.IsGlutenFree);
+            }
+
+            if (filter.IsLactoseFree)
+            {
+                query = query.Where(r => r.IsLactoseFree);
+            }
+
             // The Id tie-breaker keeps pages stable when many recipes share a like or view count.
             return filter.Sort switch
             {
@@ -91,6 +121,39 @@ namespace RecipeBook.Services
                 .ToListAsync();
 
         public Task<int> CountAsync() => _context.Recipes.CountAsync();
+
+        public Task<List<RecipeCardSource>> GetFeaturedAsync()
+            => _context.Recipes
+                .AsNoTracking()
+                .Where(r => r.FeaturedAt != null)
+                .OrderBy(r => r.FeaturedAt)
+                .ThenBy(r => r.Id)
+                .Select(RecipeCardSource.Projection)
+                .ToListAsync();
+
+        public async Task<FeatureResult> SetFeaturedAsync(int recipeId, bool featured)
+        {
+            var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == recipeId);
+            if (recipe == null)
+            {
+                return FeatureResult.NotFound;
+            }
+
+            if (featured && string.IsNullOrWhiteSpace(recipe.ImageUrl))
+            {
+                return FeatureResult.NoImage;
+            }
+
+            // Featuring an already featured recipe keeps its place in the slideshow.
+            if (featured && recipe.FeaturedAt != null)
+            {
+                return FeatureResult.Updated;
+            }
+
+            recipe.FeaturedAt = featured ? DateTime.UtcNow : null;
+            await _context.SaveChangesAsync();
+            return FeatureResult.Updated;
+        }
 
         public async Task<RecipeDetailsResult?> GetDetailsAsync(int id, string? currentUserId)
         {

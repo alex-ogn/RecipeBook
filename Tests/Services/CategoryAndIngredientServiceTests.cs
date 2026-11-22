@@ -1,3 +1,4 @@
+using RecipeBook.Constants;
 using RecipeBook.Models;
 using RecipeBook.Services;
 
@@ -15,6 +16,62 @@ namespace Tests.Services
 
             Assert.True(await service.NameExistsAsync("Soups"));
             Assert.False(await service.NameExistsAsync("Soups", excludeId: 1));
+        }
+
+        [Fact]
+        public async Task RecipeCategory_WithRecipeCounts_SkipsEmptyCategories_AndPutsTheLargestFirst()
+        {
+            using var context = TestDb.Create();
+            context.RecipeCategories.AddRange(
+                new RecipeCategory { Id = 1, Name = "Soups" },
+                new RecipeCategory { Id = 2, Name = "Desserts" },
+                new RecipeCategory { Id = 3, Name = "Empty" },
+                new RecipeCategory { Id = 4, Name = "Salads" });
+            context.Recipes.AddRange(
+                TestDb.Recipe(10, "u1", categoryId: 1),
+                TestDb.Recipe(11, "u1", categoryId: 2),
+                TestDb.Recipe(12, "u1", categoryId: 2),
+                TestDb.Recipe(13, "u1", categoryId: 4));
+            await context.SaveChangesAsync();
+            var service = new RecipeCategoryService(context);
+
+            var all = await service.GetWithRecipeCountsAsync(count: 10);
+            var top2 = await service.GetWithRecipeCountsAsync(count: 2);
+
+            // Same count (Soups, Salads): the lower Id comes first.
+            Assert.Equal(new[] { (2, 2), (1, 1), (4, 1) }, all.Select(c => (c.Id, c.RecipeCount)));
+            Assert.Equal(new[] { 2, 1 }, top2.Select(c => c.Id));
+        }
+
+        [Fact]
+        public async Task RecipeCategory_WithRecipeCounts_TakesThePhotoOfTheMostLikedRecipeThatHasOne()
+        {
+            using var context = TestDb.Create();
+            context.RecipeCategories.AddRange(
+                new RecipeCategory { Id = 1, Name = "Soups" },
+                new RecipeCategory { Id = 2, Name = "Desserts" });
+
+            var likedWithoutPhoto = TestDb.Recipe(10, "u1", categoryId: 1);
+            var likedWithPhoto = TestDb.Recipe(11, "u1", categoryId: 1);
+            likedWithPhoto.ImageUrl = ImageConstants.RecipeImagesUrlPrefix + "liked.jpg";
+            var newerWithPhoto = TestDb.Recipe(12, "u1", categoryId: 1);
+            newerWithPhoto.ImageUrl = ImageConstants.RecipeImagesUrlPrefix + "newer.jpg";
+            var dessertWithEmptyPhoto = TestDb.Recipe(13, "u1", categoryId: 2);
+            dessertWithEmptyPhoto.ImageUrl = string.Empty;
+            context.Recipes.AddRange(likedWithoutPhoto, likedWithPhoto, newerWithPhoto, dessertWithEmptyPhoto);
+
+            // Recipe 10 is the most liked but has no photo, so the soups tile uses recipe 11 (more likes than 12).
+            context.RecipeLikes.AddRange(
+                new RecipeLike { RecipeId = 10, UserId = "a" },
+                new RecipeLike { RecipeId = 10, UserId = "b" },
+                new RecipeLike { RecipeId = 11, UserId = "a" });
+            await context.SaveChangesAsync();
+            var service = new RecipeCategoryService(context);
+
+            var tiles = (await service.GetWithRecipeCountsAsync(count: 10)).ToDictionary(c => c.Id);
+
+            Assert.Equal(likedWithPhoto.ImageUrl, tiles[1].ImageUrl);
+            Assert.Null(tiles[2].ImageUrl);
         }
 
         [Fact]

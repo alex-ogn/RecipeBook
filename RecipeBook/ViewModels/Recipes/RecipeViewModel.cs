@@ -24,6 +24,7 @@ namespace RecipeBook.ViewModels.Recipes
             IsVegan = recipe.IsVegan;
             IsGlutenFree = recipe.IsGlutenFree;
             IsLactoseFree = recipe.IsLactoseFree;
+            FeaturedAt = recipe.FeaturedAt;
             this.SimilarRecipes = SimilarRecipes;
         }
 

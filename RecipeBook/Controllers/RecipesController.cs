@@ -54,9 +54,28 @@ namespace RecipeBook.Controllers
 
         private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        public async Task<IActionResult> Index(int? SelectedCategoryId, RecipeSortOption sortOrder = RecipeSortOption.Newest, int page = 1)
+        // The time and diet parameters are named like the RecipeFilterViewModel properties,
+        // so the home page's quick picks and the filter form's hidden inputs bind to them.
+        public async Task<IActionResult> Index(
+            int? SelectedCategoryId,
+            RecipeSortOption sortOrder = RecipeSortOption.Newest,
+            int? MaxCookingTime = null,
+            bool IsVegetarian = false,
+            bool IsVegan = false,
+            bool IsGlutenFree = false,
+            bool IsLactoseFree = false,
+            int page = 1)
         {
-            var filter = new RecipeListFilter { CategoryId = SelectedCategoryId, Sort = sortOrder };
+            var filter = new RecipeListFilter
+            {
+                CategoryId = SelectedCategoryId,
+                Sort = sortOrder,
+                MaxCookingTime = MaxCookingTime > 0 ? MaxCookingTime : null,
+                IsVegetarian = IsVegetarian,
+                IsVegan = IsVegan,
+                IsGlutenFree = IsGlutenFree,
+                IsLactoseFree = IsLactoseFree
+            };
             return View(await BuildRecipeListAsync(filter, page));
         }
 
@@ -462,7 +481,12 @@ namespace RecipeBook.Controllers
                 Recipes = recipes.Map(card => RecipeCardMapper.ToCard(card, currentUserId, isAdmin)),
                 Categories = await CategorySelectListAsync(filter.CategoryId),
                 SelectedCategoryId = filter.CategoryId,
-                SortOrder = filter.Sort
+                SortOrder = filter.Sort,
+                MaxCookingTime = filter.MaxCookingTime,
+                IsVegetarian = filter.IsVegetarian,
+                IsVegan = filter.IsVegan,
+                IsGlutenFree = filter.IsGlutenFree,
+                IsLactoseFree = filter.IsLactoseFree
             };
         }
 

@@ -47,6 +47,11 @@ namespace RecipeBook.Models
 
         public int ViewCount { get; set; } = 0;
 
+        /// <summary>
+        /// When an administrator put the recipe in the home page banner; null when it is not featured.
+        /// </summary>
+        public DateTime? FeaturedAt { get; set; }
+
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
