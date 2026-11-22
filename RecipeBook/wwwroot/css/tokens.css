@@ -50,8 +50,8 @@
     --color-danger-soft: #FCE8EA;
 
     /* Text */
-    --color-text: #264653;          /* normal text: dark blue-grey, softer than pure black */
-    --color-text-muted: #6B7F86;    /* secondary text: dates, counters, hints */
+    --color-text: #1B333D;          /* normal text: dark blue-grey, softer than pure black */
+    --color-text-muted: #4F6168;    /* secondary text: dates, counters, hints (dark enough to read easily: 6:1 on white) */
     --color-text-on-dark: #FFFFFF;  /* text on green / red buttons */
     --color-text-on-dark-muted: rgba(255, 255, 255, 0.8);  /* secondary text on dark photos (white at 80%) */
 
