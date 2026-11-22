@@ -160,8 +160,11 @@
     gap: var(--space-3);
     height: var(--topbar-height);
     padding: 0 var(--space-4);
-    /* Slightly see-through cream with a blur of whatever scrolls underneath. */
-    background-color: rgba(250, 246, 238, 0.88);
+    /* Slightly see-through medium-light gray (#DCDFDB, a step darker than the
+       page so the bar stands apart), with a blur of whatever scrolls underneath.
+       Written as rgba because a CSS variable cannot be made see-through here;
+       the last number (0.92) is how solid it is: 0 = invisible, 1 = solid. */
+    background-color: rgba(220, 223, 219, 0.92);
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--color-border);

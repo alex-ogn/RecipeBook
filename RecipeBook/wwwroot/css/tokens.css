@@ -25,14 +25,14 @@
 :root {
     /* ---------------------------------------------------------------------
        COLORS
-       The palette is "cozy kitchen": warm cream paper, herb green,
-       pumpkin orange, and tomato red for hearts and warnings.
+       The palette is "cozy kitchen": a light gray page with white cards,
+       herb green, pumpkin orange, and tomato red for hearts and warnings.
        --------------------------------------------------------------------- */
 
     /* Backgrounds */
-    --color-bg: #FAF6EE;            /* page background: warm cream, like cookbook paper */
+    --color-bg: #EFF0EE;            /* page background: light neutral gray */
     --color-surface: #FFFFFF;       /* cards, menus, inputs: anything that sits ON the page */
-    --color-surface-soft: #F4EEE2;  /* slightly darker cream: hover states, table headers, chips */
+    --color-surface-soft: #F4EEE2;  /* light cream: hover states, table headers, chips */
 
     /* Brand green: main buttons, active menu item, links */
     --color-primary: #1A6158;
@@ -66,6 +66,12 @@
     --color-overlay-strong: rgba(0, 0, 0, 0.7);   /* right behind the text */
     --color-overlay: rgba(0, 0, 0, 0.45);         /* middle; also the caption pill */
     --color-overlay-soft: rgba(0, 0, 0, 0);       /* far side of the banner: the photo shows untouched */
+
+    /* The home page banner uses its own, LIGHTER pair, so the photo stays bright.
+       A soft shadow behind the banner text (pages.css, 1a) keeps it readable.
+       To make the banner darker or lighter, change only these two numbers. */
+    --color-hero-overlay-strong: rgba(0, 0, 0, 0.5);   /* right behind the text */
+    --color-hero-overlay: rgba(0, 0, 0, 0.15);         /* middle of the banner */
 
     /* ---------------------------------------------------------------------
        FONTS
