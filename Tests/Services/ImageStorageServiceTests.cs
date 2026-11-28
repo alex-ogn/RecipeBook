@@ -118,6 +118,48 @@ namespace Tests.Services
             Assert.True(File.Exists(Path.Combine(_webRoot, ImageConstants.ImagesFolder, "secret.txt")));
         }
 
+        [Fact]
+        public async Task SaveProfilePictureAsync_StoresFileUnderProfilesFolder()
+        {
+            var url = await _service.SaveProfilePictureAsync(CreateFile("me.jpg", JpegHeader));
+
+            Assert.StartsWith(ImageConstants.ProfileImagesUrlPrefix, url);
+            Assert.True(File.Exists(ProfilePath(url)));
+        }
+
+        [Fact]
+        public async Task DeleteProfilePicture_DeletesFileInProfilesFolder()
+        {
+            var url = await _service.SaveProfilePictureAsync(CreateFile("me.png", PngHeader));
+
+            _service.DeleteProfilePicture(url);
+
+            Assert.False(File.Exists(ProfilePath(url)));
+        }
+
+        [Theory]
+        [InlineData("/images/profiles/../../secret.txt")]
+        [InlineData("/images/profiles/..\\..\\secret.txt")]
+        [InlineData("/images/secret.txt")]
+        [InlineData("/images/recipes/photo.jpg")]
+        public void DeleteProfilePicture_IgnoresPathsOutsideProfilesFolder(string imageUrl)
+        {
+            var secret = Path.Combine(_webRoot, "secret.txt");
+            var recipePhoto = Path.Combine(_recipeImagesFolder, "photo.jpg");
+            File.WriteAllText(secret, "keep me");
+            File.WriteAllText(Path.Combine(_webRoot, ImageConstants.ImagesFolder, "secret.txt"), "keep me");
+            File.WriteAllBytes(recipePhoto, JpegHeader);
+
+            _service.DeleteProfilePicture(imageUrl);
+
+            Assert.True(File.Exists(secret));
+            Assert.True(File.Exists(Path.Combine(_webRoot, ImageConstants.ImagesFolder, "secret.txt")));
+            Assert.True(File.Exists(recipePhoto));
+        }
+
+        private string ProfilePath(string url)
+            => Path.Combine(_webRoot, ImageConstants.ImagesFolder, ImageConstants.ProfileImagesFolder, Path.GetFileName(url));
+
         private static IFormFile CreateFile(string fileName, byte[] content, long? length = null)
         {
             var stream = new MemoryStream(content);

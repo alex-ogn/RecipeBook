@@ -12,7 +12,7 @@
 <section class="panel panel--narrow">
     <h1 class="panel__title">Преглед на потребител</h1>
 
-    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.Id, pictureVersion = Model.ProfilePictureVersion })"
+    <img src="@Model.ExistingProfilePictureUrl"
          alt="Профилна снимка" class="avatar avatar--xl mb-4" />
 
     <dl class="detail-list">

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using RecipeBook.Constants;
 using RecipeBook.Models;
 using RecipeBook.ViewModels.Users;
 using System.Security.Claims;
@@ -29,7 +30,7 @@ namespace RecipeBook.ViewComponents
             return View(new ProfileImageViewModel
             {
                 UserId = user.Id,
-                ProfilePictureVersion = user.ProfilePictureVersion
+                ProfilePictureUrl = ImageConstants.ProfilePictureOrDefault(user.ProfilePictureUrl)
             });
         }
     }

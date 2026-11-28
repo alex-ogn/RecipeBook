@@ -23,7 +23,7 @@
 <partial name="_Alerts" />
 
 <section class="profile-header">
-    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion })"
+    <img src="@ImageConstants.ProfilePictureOrDefault(user.ProfilePictureUrl)"
          alt="Профилна снимка" class="avatar avatar--lg" />
 
     <div class="profile-header__info">

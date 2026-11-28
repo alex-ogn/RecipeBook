@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using RecipeBook.Resources;
+using RecipeBook.Constants;
 
 namespace RecipeBook.Models
 {
@@ -36,7 +37,7 @@ namespace RecipeBook.Models
         public ApplicationUser? User { get; set; }
 
         [Display(Name = nameof(DisplayTexts.Image), ResourceType = typeof(DisplayTexts))]
-        [StringLength(500)]
+        [StringLength(ImageConstants.MaxImageUrlLength)]
         public string? ImageUrl { get; set; }
 
         [Required]

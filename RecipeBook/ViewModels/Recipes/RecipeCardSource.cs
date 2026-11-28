@@ -14,6 +14,7 @@ namespace RecipeBook.ViewModels.Recipes
         string? ImageUrl,
         string UserId,
         string? UserName,
+        string? UserProfilePictureUrl,
         int LikesCount,
         int ViewCount)
     {
@@ -27,6 +28,7 @@ namespace RecipeBook.ViewModels.Recipes
             r.ImageUrl,
             r.UserId,
             r.User != null ? r.User.UserName : null,
+            r.User != null ? r.User.ProfilePictureUrl : null,
             r.Likes.Count,
             r.ViewCount);
 
@@ -40,6 +42,7 @@ namespace RecipeBook.ViewModels.Recipes
             recipe.ImageUrl,
             recipe.UserId,
             recipe.User?.UserName,
+            recipe.User?.ProfilePictureUrl,
             recipe.Likes?.Count ?? 0,
             recipe.ViewCount);
     }

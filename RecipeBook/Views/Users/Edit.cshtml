@@ -172,7 +172,7 @@
 
     @* ---------- Current picture ---------- *@
     <aside class="settings__aside panel">
-        <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.Id, pictureVersion = Model.ProfilePictureVersion })"
+        <img src="@Model.ExistingProfilePictureUrl"
              alt="Текуща профилна снимка" class="avatar avatar--xl" />
         <div class="fw-bold mt-3">@Model.UserName</div>
         <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.Id" class="small">Виж профила</a>

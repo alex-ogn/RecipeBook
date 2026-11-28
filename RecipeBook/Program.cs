@@ -131,7 +131,21 @@ else
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    // Uploaded recipe photos and profile pictures get a new GUID file name on every upload,
+    // so a file at a given URL never changes and browsers may keep it for good.
+    OnPrepareResponse = context =>
+    {
+        var path = context.Context.Request.Path.Value ?? string.Empty;
+        if (path.StartsWith(ImageConstants.RecipeImagesUrlPrefix, StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith(ImageConstants.ProfileImagesUrlPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            context.Context.Response.Headers.CacheControl =
+                $"public, max-age={ImageConstants.UploadedImageCacheSeconds}, immutable";
+        }
+    }
+});
 
 app.UseRouting();
 app.UseRateLimiter();

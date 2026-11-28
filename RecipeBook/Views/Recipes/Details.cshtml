@@ -46,7 +46,7 @@
             @* ----- Author box: avatar + name, both link to the author's profile ----- *@
             <section class="panel recipe__author">
                 <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId">
-                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId })"
+                    <img src="@ImageConstants.ProfilePictureOrDefault(Model.User?.ProfilePictureUrl)"
                          alt="" class="avatar avatar--md" />
                 </a>
                 <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId" class="recipe__author-name">
@@ -247,7 +247,7 @@
             {
                 <div class="comment">
                     <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@comment.UserId">
-                        <img src="@Url.Action("GetProfilePicture", "Users", new { userId = comment.UserId })"
+                        <img src="@ImageConstants.ProfilePictureOrDefault(comment.User?.ProfilePictureUrl)"
                              alt="" class="avatar avatar--sm" loading="lazy" />
                     </a>
 
