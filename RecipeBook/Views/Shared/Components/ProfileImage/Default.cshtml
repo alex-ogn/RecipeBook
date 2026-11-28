@@ -2,8 +2,8 @@
     ProfileImage view component — the signed-in user's avatar in the top bar.
     Clicking it opens the profile settings (Users/Edit).
 
-    "v" in the picture address is only a version number: when the user uploads
-    a new picture the number changes, so the browser does not show the old one
+    The picture is a plain file under /images/profiles/ (or the default avatar).
+    Every upload gets a new file name, so the browser never shows an old picture
     from its cache.
 *@
 @using RecipeBook.ViewModels.Users;
@@ -12,7 +12,7 @@
 @if (Model != null)
 {
     <a asp-controller="Users" asp-action="Edit" asp-route-id="@Model.UserId" title="Настройки на профила">
-        <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId, v = Model.ProfilePictureVersion })"
+        <img src="@Model.ProfilePictureUrl"
              alt="Профил" class="avatar avatar--sm" />
     </a>
 }

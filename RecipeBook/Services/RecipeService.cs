@@ -469,6 +469,7 @@ namespace RecipeBook.Services
                     r.ImageUrl,
                     r.UserId,
                     UserName = r.User != null ? r.User.UserName : null,
+                    UserProfilePictureUrl = r.User != null ? r.User.ProfilePictureUrl : null,
                     LikesCount = r.Likes.Count,
                     r.ViewCount,
                     Score =
@@ -490,7 +491,7 @@ namespace RecipeBook.Services
                 .ToListAsync();
 
             return ranked
-                .Select(r => new RecipeCardSource(r.Id, r.Title, r.Description, r.ImageUrl, r.UserId, r.UserName, r.LikesCount, r.ViewCount))
+                .Select(r => new RecipeCardSource(r.Id, r.Title, r.Description, r.ImageUrl, r.UserId, r.UserName, r.UserProfilePictureUrl, r.LikesCount, r.ViewCount))
                 .ToList();
         }
 

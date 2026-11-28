@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using RecipeBook.Constants;
 using RecipeBook.Resources;
 
 namespace RecipeBook.ViewModels.Users
@@ -22,9 +23,7 @@ namespace RecipeBook.ViewModels.Users
         [Display(Name = nameof(DisplayTexts.ProfilePicture), ResourceType = typeof(DisplayTexts))]
         public IFormFile? ProfilePicture { get; set; }
 
-        public string? ExistingProfilePictureUrl { get; set; } // за показване в изгледите
-
-        public int ProfilePictureVersion { get; set; } // за да се показва винаги най-новата
+        public string ExistingProfilePictureUrl { get; set; } = ImageConstants.DefaultProfilePictureUrl; // the stored picture or the default, for the views
 
         // Account state, shown on the form only (never read from the POST).
         public bool EmailConfirmed { get; set; }

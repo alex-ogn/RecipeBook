@@ -131,15 +131,6 @@ namespace RecipeBook.Controllers
             return isAdmin ? RedirectToAction(nameof(Index)) : RedirectToAction(nameof(Edit));
         }
 
-
-
-        [HttpGet]
-        public async Task<IActionResult> GetProfilePicture(string userId)
-        {
-            var (content, contentType) = await _userProfileService.GetProfilePictureAsync(userId);
-            return File(content, contentType);
-        }
-
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Follow(string userId)
@@ -202,7 +193,7 @@ namespace RecipeBook.Controllers
         private static EditUserViewModel WithAccountState(EditUserViewModel model, ApplicationUser user, string? currentUserId)
         {
             model.Email = user.Email ?? string.Empty;
-            model.ProfilePictureVersion = user.ProfilePictureVersion;
+            model.ExistingProfilePictureUrl = ImageConstants.ProfilePictureOrDefault(user.ProfilePictureUrl);
             model.EmailConfirmed = user.EmailConfirmed;
             model.IsLockedOut = user.IsLockedOutNow();
             model.IsDisabled = user.IsDisabledByAdmin();

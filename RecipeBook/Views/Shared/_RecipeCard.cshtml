@@ -28,7 +28,7 @@
     @* ----- Author row ----- *@
     <header class="recipe-card__header">
         <a class="recipe-card__author" asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@Model.UserId">
-            <img src="@Url.Action("GetProfilePicture", "Users", new { userId = Model.UserId })"
+            <img src="@Model.UserProfilePictureUrl"
                  alt="" class="avatar avatar--sm" loading="lazy" />
             <span class="recipe-card__author-name">@Model.UserName</span>
         </a>

@@ -50,6 +50,7 @@ namespace RecipeBook.ViewModels.Recipes
                     : source.ImageUrl,
                 UserName = source.UserName ?? DisplayTexts.DefaultUserName,
                 UserId = source.UserId,
+                UserProfilePictureUrl = ImageConstants.ProfilePictureOrDefault(source.UserProfilePictureUrl),
                 LikesCount = source.LikesCount,
                 ViewCount = source.ViewCount,
                 IsOwner = isAdmin || (!string.IsNullOrEmpty(currentUserId) && source.UserId == currentUserId)

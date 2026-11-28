@@ -47,7 +47,7 @@
         {
             <li class="person">
                 <a asp-controller="Recipes" asp-action="MyIndex" asp-route-id="@user.Id">
-                    <img src="@Url.Action("GetProfilePicture", "Users", new { userId = user.Id, pictureVersion = user.ProfilePictureVersion })"
+                    <img src="@ImageConstants.ProfilePictureOrDefault(user.ProfilePictureUrl)"
                          alt="" class="avatar avatar--md" loading="lazy" />
                 </a>
 

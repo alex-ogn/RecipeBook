@@ -3,6 +3,6 @@
     public class ProfileImageViewModel
     {
         public string UserId { get; set; } = string.Empty;
-        public int ProfilePictureVersion { get; set; }
+        public string ProfilePictureUrl { get; set; } = string.Empty;
     }
 }

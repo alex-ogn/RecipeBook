@@ -30,11 +30,5 @@ namespace RecipeBook.Services
         /// <param name="userId"></param>
         /// <returns></returns>
         Task<IdentityResult> DeleteOwnAccountAsync(string userId);
-        /// <summary>
-        /// Return profile picture for user id
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        Task<(byte[] Content, string ContentType)> GetProfilePictureAsync(string userId);
     }
 }

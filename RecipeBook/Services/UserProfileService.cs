@@ -19,7 +19,6 @@ namespace RecipeBook.Services
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IRecipeService _recipeService;
-        private readonly IWebHostEnvironment _env;
         private readonly IImageStorageService _imageStorage;
         private readonly IStringLocalizer _localizer;
 
@@ -27,14 +26,12 @@ namespace RecipeBook.Services
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
             IRecipeService recipeService,
-            IWebHostEnvironment env,
             IImageStorageService imageStorage,
             IStringLocalizerFactory factory)
         {
             _context = context;
             _userManager = userManager;
             _recipeService = recipeService;
-            _env = env;
             _imageStorage = imageStorage;
             _localizer = factory.Create("IdentityErrorTexts", Assembly.GetExecutingAssembly().GetName().Name!);
 
@@ -94,18 +91,34 @@ namespace RecipeBook.Services
                 if (!setPhoneResult.Succeeded) return setPhoneResult;
             }
 
-            // Profile picture
+            // Profile picture: saved as a new file (new name = browsers fetch the new one), the old file
+            // is deleted only once the user row points at the new one.
+            var oldPictureUrl = user.ProfilePictureUrl;
+            string? newPictureUrl = null;
             if (model.ProfilePicture != null)
             {
-                using var ms = new MemoryStream();
-                await model.ProfilePicture.CopyToAsync(ms);
-                user.ProfilePicture = ms.ToArray();
-                user.ProfilePictureVersion++;
+                newPictureUrl = await _imageStorage.SaveProfilePictureAsync(model.ProfilePicture);
+                user.ProfilePictureUrl = newPictureUrl;
             }
 
             // Email and password are not changed here: they have their own forms in AccountController,
             // which ask for the current password and confirm the new email address.
-            return await _userManager.UpdateAsync(user);
+            var result = await _userManager.UpdateAsync(user);
+
+            if (newPictureUrl != null)
+            {
+                if (result.Succeeded)
+                {
+                    _imageStorage.DeleteProfilePicture(oldPictureUrl);
+                }
+                else
+                {
+                    user.ProfilePictureUrl = oldPictureUrl;
+                    _imageStorage.DeleteProfilePicture(newPictureUrl);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -161,28 +174,14 @@ namespace RecipeBook.Services
 
             await _context.SaveChangesAsync();
 
-            return await _userManager.DeleteAsync(user);
-        }
-
-        /// <summary>
-        /// Load profile picture, if not available - the default picture
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        public async Task<(byte[] Content, string ContentType)> GetProfilePictureAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user != null && user.ProfilePicture != null)
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
             {
-                return (user.ProfilePicture, UserProfileConstants.DefaultProfilePictureFormat);
+                _imageStorage.DeleteProfilePicture(user.ProfilePictureUrl);
             }
 
-            var defaultPath = Path.Combine(_env.WebRootPath, ImageConstants.ImagesFolder, UserProfileConstants.DefaultProfilePictureName);
-            var defaultImage = await File.ReadAllBytesAsync(defaultPath);
-            return (defaultImage, UserProfileConstants.DefaultProfilePictureFormat);
+            return result;
         }
-
     }
 
 }

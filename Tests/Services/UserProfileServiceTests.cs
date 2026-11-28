@@ -1,5 +1,5 @@
 ﻿
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
@@ -24,7 +24,7 @@ namespace Tests.Services
     {
         private readonly Mock<UserManager<ApplicationUser>> _mockUserManager;
         private readonly Mock<IRecipeService> _mockRecipeService;
-        private readonly Mock<IWebHostEnvironment> _mockEnv;
+        private readonly Mock<IImageStorageService> _mockImageStorage;
         private readonly UserProfileService _service;
 
         public UserProfileServiceTests()
@@ -37,7 +37,7 @@ namespace Tests.Services
 
             _mockUserManager = MockUserManager();
             _mockRecipeService = new Mock<IRecipeService>();
-            _mockEnv = new Mock<IWebHostEnvironment>();
+            _mockImageStorage = new Mock<IImageStorageService>();
 
             var localizationOptions = Options.Create(new LocalizationOptions
             {
@@ -47,17 +47,11 @@ namespace Tests.Services
             var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             var factory = new ResourceManagerStringLocalizerFactory(localizationOptions, loggerFactory);
 
-            var solutionRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../../../../.."));
-            var realWebRoot = Path.Combine(solutionRoot, "RecipeBook", "RecipeBook", "wwwroot");
-
-            _mockEnv.Setup(e => e.WebRootPath).Returns(realWebRoot);
-
             _service = new UserProfileService(
                 context,
                 _mockUserManager.Object,
                 _mockRecipeService.Object,
-                _mockEnv.Object,
-                new Mock<IImageStorageService>().Object,
+                _mockImageStorage.Object,
                 factory
             );
         }
@@ -114,16 +108,60 @@ namespace Tests.Services
             _mockUserManager.Verify(m => m.DeleteAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
 
-        [Fact]
-        public async Task GetProfilePictureAsync_ShouldReturnDefault_WhenNoPicture()
+        private const string OldPictureUrl = ImageConstants.ProfileImagesUrlPrefix + "old.png";
+        private const string NewPictureUrl = ImageConstants.ProfileImagesUrlPrefix + "new.png";
+
+        private (ApplicationUser User, EditUserViewModel Model) UserUploadingPicture()
         {
-            _mockUserManager.Setup(m => m.FindByIdAsync("non-existent-id"))
-                .ReturnsAsync((ApplicationUser?)null);
+            var user = new ApplicationUser { Id = "1", UserName = "user", ProfilePictureUrl = OldPictureUrl };
+            var picture = new FormFile(new MemoryStream(new byte[] { 1 }), 0, 1, "ProfilePicture", "photo.png");
+            var model = new EditUserViewModel { UserName = "user", ProfilePicture = picture };
 
-            var (content, contentType) = await _service.GetProfilePictureAsync("non-existent-id");
+            _mockImageStorage.Setup(s => s.Validate(picture)).Returns((string?)null);
+            _mockImageStorage.Setup(s => s.SaveProfilePictureAsync(picture)).ReturnsAsync(NewPictureUrl);
+            return (user, model);
+        }
 
-            Assert.NotNull(content);
-            Assert.Equal(UserProfileConstants.DefaultProfilePictureFormat, contentType);
+        [Fact]
+        public async Task UpdateUserProfileAsync_SavesNewPicture_AndDeletesOldFile()
+        {
+            var (user, model) = UserUploadingPicture();
+            _mockUserManager.Setup(m => m.UpdateAsync(user)).ReturnsAsync(IdentityResult.Success);
+
+            var result = await _service.UpdateUserProfileAsync(user, model);
+
+            Assert.True(result.Succeeded);
+            Assert.Equal(NewPictureUrl, user.ProfilePictureUrl);
+            _mockImageStorage.Verify(s => s.DeleteProfilePicture(OldPictureUrl), Times.Once);
+            _mockImageStorage.Verify(s => s.DeleteProfilePicture(NewPictureUrl), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateUserProfileAsync_KeepsOldPicture_WhenSavingUserFails()
+        {
+            var (user, model) = UserUploadingPicture();
+            _mockUserManager.Setup(m => m.UpdateAsync(user)).ReturnsAsync(IdentityResult.Failed(new IdentityError()));
+
+            var result = await _service.UpdateUserProfileAsync(user, model);
+
+            Assert.False(result.Succeeded);
+            Assert.Equal(OldPictureUrl, user.ProfilePictureUrl);
+            _mockImageStorage.Verify(s => s.DeleteProfilePicture(NewPictureUrl), Times.Once);
+            _mockImageStorage.Verify(s => s.DeleteProfilePicture(OldPictureUrl), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateUserProfileAsync_DoesNotSave_WhenPictureIsInvalid()
+        {
+            var (user, model) = UserUploadingPicture();
+            _mockImageStorage.Setup(s => s.Validate(model.ProfilePicture)).Returns(ValidationTexts.InvalidImageType);
+
+            var result = await _service.UpdateUserProfileAsync(user, model);
+
+            Assert.False(result.Succeeded);
+            Assert.Equal(OldPictureUrl, user.ProfilePictureUrl);
+            _mockImageStorage.Verify(s => s.SaveProfilePictureAsync(It.IsAny<IFormFile>()), Times.Never);
+            _mockUserManager.Verify(m => m.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
     }
 }
